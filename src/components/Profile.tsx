@@ -2,61 +2,69 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Shield, Heart, Zap, Brain, Target } from "lucide-react";
+import { User, Settings, Shield, Activity, Brain } from "lucide-react";
 import styles from "./Profile.module.css";
 
-interface DeepProfile {
-    ocean: {
-        openness: number;
-        conscientiousness: number;
-        extraversion: number;
-        agreeableness: number;
-        neuroticism: number;
-    };
-    values: string[];
-    stressors: string[];
-    communicationStyle: string;
-}
-
 export default function Profile() {
-    const [profile, setProfile] = useState<DeepProfile | null>(null);
-    const [userName, setUserName] = useState("User");
+    const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
-        const savedDeepProfile = localStorage.getItem("deepProfile");
-        const savedUserProfile = localStorage.getItem("userProfile");
-
-        if (savedDeepProfile) setProfile(JSON.parse(savedDeepProfile));
-        if (savedUserProfile) setUserName(JSON.parse(savedUserProfile).name);
+        const savedProfile = localStorage.getItem("userProfile");
+        if (savedProfile) {
+            setProfile(JSON.parse(savedProfile));
+        }
     }, []);
 
-    if (!profile) return <div className={styles.loading}>Loading Profile...</div>;
+    if (!profile) {
+        return <div className={styles.loading}>Loading profile...</div>;
+    }
 
     return (
         <div className={styles.container}>
-            <div className="ambient-glow" />
-
             <header className={styles.header}>
-                <div className={styles.avatar}>
-                    {userName.charAt(0)}
-                </div>
-                <h1 className={styles.name}>{userName}</h1>
-                <p className={styles.tagline}>The Architect of Serenity</p>
+                <h1 className={styles.title}>Your Profile</h1>
+                <p className={styles.subtitle}>Manage your journey and preferences.</p>
             </header>
 
             <div className={styles.grid}>
                 <motion.div
+                    className={styles.card}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`${styles.card} liquid-border`}
                 >
-                    <h2 className={styles.cardTitle}><Brain size={20} /> Personality (OCEAN)</h2>
-                    <div className={styles.traits}>
-                        {Object.entries(profile.ocean).map(([trait, score]) => (
-                            <div key={trait} className={styles.traitRow}>
+                    <div className={styles.cardHeader}>
+                        <User className={styles.icon} />
+                        <h2>Identity</h2>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Name</span>
+                        <span className={styles.value}>{profile.name}</span>
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Joined</span>
+                        <span className={styles.value}>{new Date().toLocaleDateString()}</span>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div className={styles.cardHeader}>
+                        <Brain className={styles.icon} />
+                        <h2>Deep Profile</h2>
+                    </div>
+                    <div className={styles.oceanGrid}>
+                        {profile.ocean && Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
+                            <div key={trait} className={styles.trait}>
                                 <span className={styles.traitName}>{trait}</span>
                                 <div className={styles.traitBar}>
-                                    <div className={styles.traitFill} style={{ width: `${score * 10}%` }} />
+                                    <div
+                                        className={styles.traitFill}
+                                        style={{ width: `${score * 10}%` }}
+                                    />
                                 </div>
                             </div>
                         ))}
@@ -64,41 +72,23 @@ export default function Profile() {
                 </motion.div>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className={`${styles.card} liquid-border`}
-                >
-                    <h2 className={styles.cardTitle}><Heart size={20} /> Core Values</h2>
-                    <div className={styles.tags}>
-                        {profile.values.map(val => (
-                            <span key={val} className={styles.tag}>{val}</span>
-                        ))}
-                    </div>
-                </motion.div>
-
-                <motion.div
+                    className={styles.card}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className={`${styles.card} liquid-border`}
                 >
-                    <h2 className={styles.cardTitle}><Shield size={20} /> Stressors</h2>
-                    <div className={styles.tags}>
-                        {profile.stressors.map(stress => (
-                            <span key={stress} className={styles.tagRed}>{stress}</span>
-                        ))}
+                    <div className={styles.cardHeader}>
+                        <Settings className={styles.icon} />
+                        <h2>Preferences</h2>
                     </div>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className={`${styles.card} liquid-border`}
-                >
-                    <h2 className={styles.cardTitle}><Zap size={20} /> Communication Style</h2>
-                    <p className={styles.text}>{profile.communicationStyle}</p>
+                    <div className={styles.settingRow}>
+                        <span>Voice Input</span>
+                        <div className={styles.toggle}>On</div>
+                    </div>
+                    <div className={styles.settingRow}>
+                        <span>Notifications</span>
+                        <div className={styles.toggle}>Off</div>
+                    </div>
                 </motion.div>
             </div>
         </div>

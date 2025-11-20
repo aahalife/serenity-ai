@@ -1,125 +1,124 @@
 .container {
-    padding: var(--spacing-xl);
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
-    min-height: 100vh;
+    padding: 2rem;
 }
 
 .header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: 3rem;
 }
 
-.avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: var(--gradient-primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: var(--spacing-md);
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-}
-
-.name {
+.title {
     font-size: 2.5rem;
-    margin-bottom: var(--spacing-xs);
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
 }
 
-.tagline {
+.subtitle {
     color: var(--muted);
     font-size: 1.1rem;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
 }
 
 .card {
-    background: rgba(20, 20, 25, 0.6);
-    backdrop-filter: blur(20px);
-    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
 }
 
-.cardTitle {
+.card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cardHeader {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    font-size: 1.2rem;
-    margin-bottom: var(--spacing-lg);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--primary);
 }
 
-.traits {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
+.icon {
+    width: 24px;
+    height: 24px;
 }
 
-.traitRow {
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.label {
+    color: var(--muted);
+}
+
+.value {
+    font-weight: 500;
+}
+
+.oceanGrid {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 1rem;
+}
+
+.trait {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .traitName {
     font-size: 0.9rem;
-    text-transform: capitalize;
     color: var(--muted);
+    text-transform: capitalize;
 }
 
 .traitBar {
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-full);
+    border-radius: 3px;
     overflow: hidden;
 }
 
 .traitFill {
     height: 100%;
-    background: var(--gradient-calm);
-    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    border-radius: 3px;
 }
 
-.tags {
+.settingRow {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.tag,
-.tagRed {
-    padding: 6px 12px;
-    border-radius: var(--radius-full);
-    font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tagRed {
-    border-color: rgba(248, 113, 113, 0.3);
-    color: #fca5a5;
-}
-
-.text {
-    line-height: 1.6;
-    color: var(--foreground);
+.toggle {
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    font-size: 0.8rem;
 }
 
 .loading {
     display: flex;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
-    font-size: 1.5rem;
+    align-items: center;
+    height: 50vh;
     color: var(--muted);
 }
