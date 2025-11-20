@@ -84,74 +84,87 @@ export default function Journal() {
 
     return (
         <div className={styles.container}>
-            <div className="ambient-glow" style={{ top: '20%', left: '20%' }} />
-
-            <header className={styles.header}>
-                <motion.h1
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={styles.title}
+            <div className={styles.videoBackground}>
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className={styles.video}
                 >
-                    Your Hero Book
-                </motion.h1>
-                <p className={styles.subtitle}>Chronicle your legend.</p>
-            </header>
+                    <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                </video>
+                <div className={styles.videoOverlay}></div>
+            </div>
 
-            <div className={styles.bookContainer}>
-                <div className={styles.inputPage}>
-                    <textarea
-                        className={styles.textarea}
-                        value={newEntry}
-                        onChange={(e) => setNewEntry(e.target.value)}
-                        placeholder="What is your story today?"
-                    />
-                    <div className={styles.controls}>
-                        <button
-                            onClick={toggleRecording}
-                            className={styles.voiceButton}
-                            style={isRecording ? { background: "var(--accent)", color: "white", borderColor: "var(--accent)" } : {}}
-                        >
-                            <Mic size={18} />
-                            {isRecording ? "Listening..." : "Voice Note"}
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            className={styles.saveButton}
-                            disabled={!newEntry.trim() || isAnalyzing}
-                        >
-                            {isAnalyzing ? (
-                                <Sparkles className="animate-spin" size={18} />
-                            ) : (
-                                <Save size={18} style={{ marginRight: 8, display: "inline" }} />
-                            )}
-                            {isAnalyzing ? "Divining..." : "Inscribe"}
-                        </button>
+            <div className={styles.content}>
+                <header className={styles.header}>
+                    <motion.h1
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={styles.title}
+                    >
+                        Your Hero Book
+                    </motion.h1>
+                    <p className={styles.subtitle}>Chronicle your legend.</p>
+                </header>
+
+                <div className={styles.bookContainer}>
+                    <div className={styles.inputPage}>
+                        <textarea
+                            className={styles.textArea}
+                            value={newEntry}
+                            onChange={(e) => setNewEntry(e.target.value)}
+                            placeholder="What is your story today?"
+                        />
+                        <div className={styles.controls}>
+                            <button
+                                onClick={toggleRecording}
+                                className={styles.voiceButton}
+                                style={isRecording ? { background: "var(--accent)", color: "white", borderColor: "var(--accent)" } : {}}
+                            >
+                                <Mic size={18} />
+                                {isRecording ? "Listening..." : "Voice Note"}
+                            </button>
+                            <button
+                                onClick={handleSave}
+                                className={styles.saveButton}
+                                disabled={!newEntry.trim() || isAnalyzing}
+                            >
+                                {isAnalyzing ? (
+                                    <Sparkles className="animate-spin" size={18} />
+                                ) : (
+                                    <Save size={18} style={{ marginRight: 8, display: "inline" }} />
+                                )}
+                                {isAnalyzing ? "Divining..." : "Inscribe"}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={styles.entriesList}>
+                        <AnimatePresence>
+                            {entries.map((entry, index) => (
+                                <motion.div
+                                    key={entry.id}
+                                    initial={{ opacity: 0, rotateX: -90 }}
+                                    animate={{ opacity: 1, rotateX: 0 }}
+                                    transition={{ delay: index * 0.1, type: "spring" }}
+                                    className={`${styles.entryCard} liquid - border`}
+                                >
+                                    <div className={styles.entryDate}>{entry.date}</div>
+                                    <p className={styles.entryText}>{entry.text}</p>
+                                    {entry.richMemory && (
+                                        <div className={styles.richMemory}>
+                                            <Sparkles size={16} className="text-accent" />
+                                            <span className="magic-text">{entry.richMemory.title}</span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </div>
                 </div>
-
-                <div className={styles.entriesList}>
-                    <AnimatePresence>
-                        {entries.map((entry, index) => (
-                            <motion.div
-                                key={entry.id}
-                                initial={{ opacity: 0, rotateX: -90 }}
-                                animate={{ opacity: 1, rotateX: 0 }}
-                                transition={{ delay: index * 0.1, type: "spring" }}
-                                className={`${styles.entryCard} liquid - border`}
-                            >
-                                <div className={styles.entryDate}>{entry.date}</div>
-                                <p className={styles.entryText}>{entry.text}</p>
-                                {entry.richMemory && (
-                                    <div className={styles.richMemory}>
-                                        <Sparkles size={16} className="text-accent" />
-                                        <span className="magic-text">{entry.richMemory.title}</span>
-                                    </div>
-                                )}
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

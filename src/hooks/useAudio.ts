@@ -13,19 +13,24 @@ export function useAudio() {
     const [isMuted, setIsMuted] = useState(false);
 
     const play = useCallback((src: string, options: AudioOptions = {}) => {
-        const { volume = 0.5, loop = false, fadeInDuration = 1000 } = options;
+        const { volume = 1, loop = false, fadeInDuration = 0 } = options;
 
         if (audioRef.current) {
-            // If already playing the same track, just ensure volume/loop
-            if (audioRef.current.src.includes(src)) {
-                if (audioRef.current.paused) {
-                    audioRef.current.play().catch(e => console.error("Audio play error:", e));
-                    setIsPlaying(true);
+            // Fade out current audio if playing
+            const currentAudio = audioRef.current;
+            const fadeOutDuration = 1000; // Default fade out
+            const startVolume = currentAudio.volume;
+            const step = startVolume / (fadeOutDuration / 50);
+
+            const fadeOutInterval = setInterval(() => {
+                if (currentAudio.volume > step) {
+                    currentAudio.volume -= step;
+                } else {
+                    currentAudio.volume = 0;
+                    currentAudio.pause();
+                    clearInterval(fadeOutInterval);
                 }
-                return;
-            }
-            // Stop previous track
-            stop(0);
+            }, 50);
         }
 
         const audio = new Audio(src);
