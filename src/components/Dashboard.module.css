@@ -1,0 +1,192 @@
+.container {
+    padding: var(--spacing-lg);
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+}
+
+.header {
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+    z-index: 10;
+}
+
+.greeting {
+    font-size: 3.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #a8c0ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: var(--spacing-xs);
+    letter-spacing: -0.03em;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--muted);
+    font-weight: 400;
+    max-width: 600px;
+}
+
+.mainContent {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: var(--spacing-xl);
+    position: relative;
+}
+
+/* Timeline Section */
+.timelineSection {
+    position: relative;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--foreground);
+}
+
+.timeline {
+    position: relative;
+    padding-left: var(--spacing-lg);
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary) 0%, transparent 100%);
+    opacity: 0.3;
+}
+
+.timelineItem {
+    margin-bottom: var(--spacing-xl);
+    position: relative;
+}
+
+.time {
+    position: absolute;
+    left: -40px;
+    top: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-family: var(--font-roboto);
+}
+
+.timelineContent {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.timelineContent:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(5px);
+}
+
+.timelineContent h4 {
+    margin: 0 0 var(--spacing-xs) 0;
+    font-size: 1.1rem;
+    color: var(--foreground);
+}
+
+.timelineContent p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+}
+
+/* Sidebar / Status */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.glassCard {
+    composes: glass-panel from global;
+    padding: var(--spacing-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.statusGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.statusItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-sm);
+}
+
+.statusValue {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.statusLabel {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Quick Actions */
+.actionGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+}
+
+.actionButton {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    color: var(--muted);
+}
+
+.actionButton:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--foreground);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.actionButton span {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+    .mainContent {
+        grid-template-columns: 1fr;
+    }
+
+    .greeting {
+        font-size: 2.5rem;
+    }
+}

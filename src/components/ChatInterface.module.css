@@ -1,0 +1,119 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 4rem);
+    /* Adjust based on layout padding */
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--surface-hover);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.headerInfo h3 {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.headerInfo p {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.message {
+    max-width: 80%;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    line-height: 1.5;
+    position: relative;
+}
+
+.userMessage {
+    align-self: flex-end;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-bottom-right-radius: 4px;
+}
+
+.aiMessage {
+    align-self: flex-start;
+    background: var(--surface-hover);
+    color: var(--foreground);
+    border-bottom-left-radius: 4px;
+}
+
+.inputArea {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: var(--spacing-md);
+    background: var(--surface);
+}
+
+.input {
+    flex: 1;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1rem;
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.sendButton {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.sendButton:hover {
+    transform: scale(1.05);
+}
+
+.sendButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

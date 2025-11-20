@@ -1,42 +1,123 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
+    /* Core Palette - Dark Theme */
     --background: #0a0a0a;
     --foreground: #ededed;
-  }
-}
+    --surface: #171717;
+    --surface-hover: #262626;
+    --border: #333333;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+    /* Accents (Pastel/Gradient-friendly) */
+    --primary: #8b5cf6;
+    /* Violet */
+    --primary-foreground: #ffffff;
+    --secondary: #10b981;
+    /* Emerald */
+    --secondary-foreground: #ffffff;
+    --accent: #f472b6;
+    /* Pink */
+    --muted: #737373;
+    /* Organic Dark Theme Palette */
+    --background: #0f0f13;
+    --foreground: #e0e0e0;
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    /* Soft Gradients & Accents */
+    --primary: #a8c0ff;
+    /* Soft Blue */
+    --primary-foreground: #ffffff;
+    /* Keep original foreground for primary */
+    --secondary: #fbc2eb;
+    /* Soft Pink */
+    --secondary-foreground: #ffffff;
+    /* Keep original foreground for secondary */
+    --accent: #d4fc79;
+    /* Soft Green */
+    --muted: #6c757d;
+
+    --surface: rgba(255, 255, 255, 0.05);
+    --surface-hover: rgba(255, 255, 255, 0.1);
+    --border: #333333;
+    /* Keep original border */
+    --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+    --gradient-calm: linear-gradient(135deg, #2dd4bf 0%, #3b82f6 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(23, 23, 23, 0.8) 0%, rgba(10, 10, 10, 0.8) 100%);
+
+    /* Typography */
+    --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-roboto: 'Roboto', sans-serif;
+
+    /* Spacing */
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 32px;
+    --radius-full: 9999px;
+
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2.5rem;
+    --spacing-xl: 4rem;
 }
 
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-inter), sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-image:
+        radial-gradient(circle at 10% 20%, rgba(168, 192, 255, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(251, 194, 235, 0.1) 0%, transparent 40%);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.6;
+}
+
+/* Utility Classes for Organic Design */
+.glass-panel {
+    background: rgba(20, 20, 25, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.fluid-shape {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    transition: border-radius 0.5s ease;
+}
+
+.fluid-shape:hover {
+    border-radius: 60% 40% 30% 70% / 50% 40% 50% 60%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
+    color: inherit;
+    text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+button {
+    font-family: inherit;
 }
