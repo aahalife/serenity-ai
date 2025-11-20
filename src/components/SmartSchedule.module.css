@@ -1,0 +1,141 @@
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--foreground);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.flowBadge {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: 0.9rem;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.1);
+    padding: 4px 8px;
+    border-radius: var(--radius-full);
+}
+
+.insight {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: var(--spacing-lg);
+    font-style: italic;
+}
+
+.timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateX(4px);
+}
+
+.timeColumn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    gap: 0.5rem;
+}
+
+.time {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.line {
+    flex: 1;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    border-radius: 1px;
+    opacity: 0.3;
+}
+
+.item:last-child .line {
+    display: none;
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.itemHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.activity {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.duration {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.description {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: var(--spacing-sm);
+}
+
+.type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.loading {
+    text-align: center;
+    color: var(--muted);
+    padding: var(--spacing-xl);
+    font-style: italic;
+}

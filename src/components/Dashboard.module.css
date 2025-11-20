@@ -1,158 +1,138 @@
 .container {
     padding: var(--spacing-lg);
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
     position: relative;
 }
 
 .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: var(--spacing-xl);
-    position: relative;
-    z-index: 10;
 }
 
 .greeting {
-    font-size: 3.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #fff 0%, #a8c0ff 100%);
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-xs);
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    margin-bottom: var(--spacing-xs);
-    letter-spacing: -0.03em;
 }
 
-.subtitle {
-    font-size: 1.2rem;
+.subtext {
     color: var(--muted);
-    font-weight: 400;
-    max-width: 600px;
+    font-size: 1.1rem;
 }
 
-.mainContent {
+.muteButton {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--muted);
+    padding: var(--spacing-sm);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.muteButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--foreground);
+}
+
+.grid {
     display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: var(--spacing-xl);
-    position: relative;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
 }
 
-/* Timeline Section */
-.timelineSection {
-    position: relative;
+.card {
+    background: rgba(20, 20, 25, 0.6);
+    backdrop-filter: blur(20px);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
-.sectionTitle {
-    font-size: 1.5rem;
-    margin-bottom: var(--spacing-lg);
+.cardTitle {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
-    color: var(--foreground);
+    font-size: 1.2rem;
+    color: var(--primary);
 }
 
 .timeline {
-    position: relative;
-    padding-left: var(--spacing-lg);
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(to bottom, var(--primary) 0%, transparent 100%);
-    opacity: 0.3;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
 }
 
 .timelineItem {
-    margin-bottom: var(--spacing-xl);
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    border-left: 2px solid var(--border);
     position: relative;
+}
+
+.timelineItem::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
 }
 
 .time {
-    position: absolute;
-    left: -40px;
-    top: 0;
     font-size: 0.9rem;
     color: var(--muted);
-    font-family: var(--font-roboto);
+    min-width: 60px;
 }
 
-.timelineContent {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
-}
-
-.timelineContent:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateX(5px);
-}
-
-.timelineContent h4 {
-    margin: 0 0 var(--spacing-xs) 0;
-    font-size: 1.1rem;
-    color: var(--foreground);
-}
-
-.timelineContent p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--muted);
-}
-
-/* Sidebar / Status */
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-}
-
-.glassCard {
-    composes: glass-panel from global;
-    padding: var(--spacing-lg);
-    position: relative;
-    overflow: hidden;
+.activity {
+    font-weight: 500;
 }
 
 .statusGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-md);
-    margin-top: var(--spacing-md);
 }
 
 .statusItem {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-xs);
+    background: rgba(255, 255, 255, 0.05);
     padding: var(--spacing-md);
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--radius-sm);
-}
-
-.statusValue {
-    font-size: 1.2rem;
-    font-weight: 600;
+    border-radius: var(--radius-md);
+    text-align: center;
 }
 
 .statusLabel {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
 }
 
-/* Quick Actions */
-.actionGrid {
+.statusValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.quickActions {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: var(--spacing-md);
 }
 
@@ -160,33 +140,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    background: rgba(255, 255, 255, 0.03);
+    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    border: 1px solid transparent;
-    transition: all 0.3s ease;
-    color: var(--muted);
+    color: var(--foreground);
+    text-decoration: none;
+    transition: all 0.2s ease;
 }
 
 .actionButton:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--foreground);
-    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
-}
-
-.actionButton span {
-    font-size: 0.9rem;
-}
-
-@media (max-width: 1024px) {
-    .mainContent {
-        grid-template-columns: 1fr;
-    }
-
-    .greeting {
-        font-size: 2.5rem;
-    }
+    border-color: var(--primary);
 }

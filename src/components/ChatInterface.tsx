@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Calendar, Battery, Zap, Wind, BookOpen, MessageCircle, Sparkles, Send, Mic } from "lucide-react";
+import { Calendar, Battery, Zap, Wind, BookOpen, MessageCircle, Sparkles, Send, Mic, Volume2, VolumeX } from "lucide-react";
 import styles from "./ChatInterface.module.css";
 import { useVoice } from "@/hooks/useVoice";
+import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -26,10 +27,18 @@ export default function ChatInterface() {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    const { play, toggleMute, isMuted, duck, unduck } = useAudio();
+
+    useEffect(() => {
+        play("/audio/chatbkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
+    }, [play]);
+
     const { isListening, isSpeaking, transcript, startListening, stopListening, speak } = useVoice({
         onSpeechEnd: (text) => {
             handleSend(text);
-        }
+        },
+        onSpeakStart: () => duck(0, 0.05), // Duck background audio when AI speaks
+        onSpeakEnd: () => unduck(0.2)     // Restore volume when AI stops
     });
 
     const scrollToBottom = () => {
@@ -56,12 +65,22 @@ export default function ChatInterface() {
         setIsTyping(true);
 
         try {
+            // Retrieve profile from localStorage
+            const savedDeepProfile = localStorage.getItem("deepProfile");
+            const savedUserProfile = localStorage.getItem("userProfile");
+
+            const profile = {
+                ...JSON.parse(savedUserProfile || "{}"),
+                ...JSON.parse(savedDeepProfile || "{}")
+            };
+
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     message: textToSend,
-                    history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] }))
+                    history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] })),
+                    profile // Send the full profile context
                 }),
             });
 
@@ -100,6 +119,9 @@ export default function ChatInterface() {
                     <h3>Serenity</h3>
                     <p>{isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}</p>
                 </div>
+                <button onClick={toggleMute} className={styles.muteButton}>
+                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </button>
             </div>
 
             <div className={styles.messages}>

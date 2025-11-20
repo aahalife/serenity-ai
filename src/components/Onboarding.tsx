@@ -1,172 +1,145 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Check } from "lucide-react";
+import { ChevronRight, Check, Volume2, VolumeX } from "lucide-react";
 import styles from "./Onboarding.module.css";
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import { useAudio } from "@/hooks/useAudio";
 
-type Step = "welcome" | "name" | "personality" | "complete";
-
-const personalityQuestions = [
+const questions = [
     {
-        id: "q1",
-        question: "How do you usually recharge?",
-        options: [
-            "Spending time alone (Introversion)",
-            "Socializing with friends (Extraversion)",
-            "A mix of both",
-        ],
+        id: 1,
+        text: "How do you usually recharge?",
+        options: ["Spending time alone", "Socializing with friends", "Engaging in a hobby", "Sleeping or resting"],
     },
     {
-        id: "q2",
-        question: "When facing a new challenge, you tend to...",
-        options: [
-            "Plan everything out (Conscientiousness)",
-            "Go with the flow (Openness)",
-            "Worry about outcomes (Neuroticism)",
-        ],
+        id: 2,
+        text: "When facing a difficult problem, you tend to...",
+        options: ["Analyze it logically", "Follow your intuition", "Ask for advice", "Take immediate action"],
     },
-    // Add more simplified OCEAN questions as needed
+    {
+        id: 3,
+        text: "What is your primary goal right now?",
+        options: ["Reduce stress", "Improve focus", "Understand myself", "Find more joy"],
+    },
 ];
 
 export default function Onboarding() {
     const router = useRouter();
-    const [step, setStep] = useState<Step>("welcome");
+    const [step, setStep] = useState(0);
     const [name, setName] = useState("");
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [answers, setAnswers] = useState<Record<string, string>>({});
+    const [answers, setAnswers] = useState<Record<number, string>>({});
+    const { play, stop, toggleMute, isMuted } = useAudio();
 
-    const handleStart = () => setStep("name");
+    useEffect(() => {
+        // Play Intro once, then Onboarding loop
+        play("/audio/Intro.mp3", { volume: 0.5, loop: false });
 
-    const handleNameSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (name.trim()) setStep("personality");
+        const timer = setTimeout(() => {
+            play("/audio/onboarding.wav", { volume: 0.3, loop: true, fadeInDuration: 3000 });
+        }, 10000); // Approx length of intro
+
+        return () => clearTimeout(timer);
+    }, [play]);
+
+    const handleNext = () => {
+        if (step === 0 && !name.trim()) return;
+        setStep((prev) => prev + 1);
     };
 
-    const handleOptionSelect = (option: string) => {
-        setAnswers({ ...answers, [personalityQuestions[currentQuestionIndex].id]: option });
-
-        if (currentQuestionIndex < personalityQuestions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-        } else {
-            setStep("complete");
-        }
+    const handleOptionSelect = (questionId: number, option: string) => {
+        setAnswers((prev) => ({ ...prev, [questionId]: option }));
+        setTimeout(() => {
+            if (step < questions.length) {
+                setStep((prev) => prev + 1);
+            } else {
+                finishOnboarding();
+            }
+        }, 500);
     };
 
-    const handleComplete = async () => {
-        // Save initial profile
-        const initialProfile = { name, answers };
-        localStorage.setItem("userProfile", JSON.stringify(initialProfile));
+    const finishOnboarding = async () => {
+        localStorage.setItem("userProfile", JSON.stringify({ name }));
 
-        // Trigger background inference (simulated for now as we can't call server actions directly from here without setup)
-        // In a real app, this would be a server action or API call
+        // Store raw answers for now, inference happens later
+        localStorage.setItem("onboardingAnswers", JSON.stringify(answers));
+
+        // Call inference API
         try {
-            console.log("Inferring deep profile...");
-            // const deepProfile = await inferProfile(initialProfile); 
-            // localStorage.setItem("deepProfile", JSON.stringify(deepProfile));
+            const response = await fetch("/api/inference/profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, answers })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem("deepProfile", JSON.stringify(data.profile));
+            }
         } catch (e) {
-            console.error(e);
+            console.error("Inference failed", e);
         }
 
-        router.push("/dashboard");
+        stop(2000); // Fade out audio
+        router.push("/");
     };
 
     return (
         <div className={styles.container}>
+            <button onClick={toggleMute} className={styles.muteButton}>
+                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            </button>
+            <div className="ambient-glow" />
             <AnimatePresence mode="wait">
-                {step === "welcome" && (
+                {step === 0 && (
                     <motion.div
-                        key="welcome"
+                        key="step0"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         className={styles.card}
                     >
-                        <h1 className={styles.title}>Welcome to Serenity AI</h1>
-                        <p className={styles.description}>
-                            Your personal companion for a balanced, stress-free life.
-                        </p>
-                        <button onClick={handleStart} className={styles.button}>
-                            Get Started <ArrowRight size={18} style={{ marginLeft: 8, display: "inline" }} />
+                        <h1 className={styles.title}>Welcome to Serenity</h1>
+                        <p className={styles.description}>Let's get to know you better. What should we call you?</p>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            placeholder="Your Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                        />
+                        <button className={styles.button} onClick={handleNext} disabled={!name.trim()}>
+                            Continue <ChevronRight size={20} />
                         </button>
                     </motion.div>
                 )}
 
-                {step === "name" && (
+                {step > 0 && step <= questions.length && (
                     <motion.div
-                        key="name"
-                        initial={{ opacity: 0, x: 20 }}
+                        key={`step${step}`}
+                        initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
+                        exit={{ opacity: 0, x: -50 }}
                         className={styles.card}
                     >
-                        <h2 className={styles.title}>What should we call you?</h2>
-                        <form onSubmit={handleNameSubmit} className={styles.inputGroup}>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Your Name"
-                                className={styles.input}
-                                autoFocus
-                            />
-                            <button type="submit" className={styles.button} disabled={!name.trim()}>
-                                Continue
-                            </button>
-                        </form>
-                    </motion.div>
-                )}
-
-                {step === "personality" && (
-                    <motion.div
-                        key="personality"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className={styles.card}
-                    >
-                        <div className={styles.progress}>
-                            <div
-                                className={styles.progressBar}
-                                style={{ width: `${((currentQuestionIndex + 1) / personalityQuestions.length) * 100}%` }}
-                            />
+                        <div className={styles.progressBar}>
+                            <div className={styles.progressFill} style={{ width: `${(step / questions.length) * 100}%` }} />
                         </div>
-                        <h2 className={styles.title}>{personalityQuestions[currentQuestionIndex].question}</h2>
+                        <h2 className={styles.question}>{questions[step - 1].text}</h2>
                         <div className={styles.options}>
-                            {personalityQuestions[currentQuestionIndex].options.map((option) => (
+                            {questions[step - 1].options.map((option) => (
                                 <button
                                     key={option}
-                                    onClick={() => handleOptionSelect(option)}
-                                    className={styles.option}
+                                    className={`${styles.option} ${answers[questions[step - 1].id] === option ? styles.selected : ""}`}
+                                    onClick={() => handleOptionSelect(questions[step - 1].id, option)}
                                 >
                                     {option}
+                                    {answers[questions[step - 1].id] === option && <Check size={16} />}
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
-                )}
-
-                {step === "complete" && (
-                    <motion.div
-                        key="complete"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className={styles.card}
-                    >
-                        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
-                            <div style={{ background: "var(--secondary)", padding: "1rem", borderRadius: "50%" }}>
-                                <Check size={32} color="white" />
-                            </div>
-                        </div>
-                        <h2 className={styles.title}>All set, {name}!</h2>
-                        <p className={styles.description}>
-                            Your journey to serenity begins now.
-                        </p>
-                        <button onClick={handleComplete} className={styles.button}>
-                            Go to Dashboard
-                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>

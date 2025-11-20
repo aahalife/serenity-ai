@@ -1,20 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mic, Save, Book } from "lucide-react";
+import { Mic, Save, Book, PenTool, Volume2, VolumeX, Sparkles } from "lucide-react";
 import styles from "./Journal.module.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { useVoice } from "@/hooks/useVoice";
+import { useAudio } from "@/hooks/useAudio";
 
 interface Entry {
     id: string;
     text: string;
     date: string;
+    richMemory?: {
+        title: string;
+        visualDescription: string;
+        emotion: string;
+    };
 }
 
 export default function Journal() {
     const [entries, setEntries] = useState<Entry[]>([]);
     const [newEntry, setNewEntry] = useState("");
     const [isRecording, setIsRecording] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     useEffect(() => {
         const savedEntries = localStorage.getItem("journalEntries");
@@ -23,13 +31,38 @@ export default function Journal() {
         }
     }, []);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!newEntry.trim()) return;
+
+        setIsAnalyzing(true);
+        let richMemory = undefined;
+
+        // Analyze entry with Gemini
+        try {
+            const response = await fetch("/api/inference/journal", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ entry: newEntry }),
+            });
+
+            if (response.ok) {
+                const analysis = await response.json();
+                if (analysis.richMemory) {
+                    richMemory = analysis.richMemory;
+                }
+                // In a real app, we would also handle 'tasks' and 'profileUpdate' here
+            }
+        } catch (e) {
+            console.error("Analysis failed", e);
+        } finally {
+            setIsAnalyzing(false);
+        }
 
         const entry: Entry = {
             id: Date.now().toString(),
             text: newEntry,
             date: new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+            richMemory
         };
 
         const updatedEntries = [entry, ...entries];
@@ -51,55 +84,73 @@ export default function Journal() {
 
     return (
         <div className={styles.container}>
+            <div className="ambient-glow" style={{ top: '20%', left: '20%' }} />
+
             <header className={styles.header}>
-                <h1 className={styles.title}>Your Hero Book</h1>
-                <p className={styles.subtitle}>Document your journey, wins, and learnings.</p>
+                <motion.h1
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={styles.title}
+                >
+                    Your Hero Book
+                </motion.h1>
+                <p className={styles.subtitle}>Chronicle your legend.</p>
             </header>
 
-            <div className={styles.inputSection}>
-                <textarea
-                    className={styles.textarea}
-                    value={newEntry}
-                    onChange={(e) => setNewEntry(e.target.value)}
-                    placeholder="What's on your mind today?"
-                />
-                <div className={styles.controls}>
-                    <button
-                        onClick={toggleRecording}
-                        className={styles.voiceButton}
-                        style={isRecording ? { background: "var(--accent)", color: "white", borderColor: "var(--accent)" } : {}}
-                    >
-                        <Mic size={18} />
-                        {isRecording ? "Listening..." : "Voice Note"}
-                    </button>
-                    <button onClick={handleSave} className={styles.saveButton} disabled={!newEntry.trim()}>
-                        <Save size={18} style={{ marginRight: 8, display: "inline" }} />
-                        Save Entry
-                    </button>
+            <div className={styles.bookContainer}>
+                <div className={styles.inputPage}>
+                    <textarea
+                        className={styles.textarea}
+                        value={newEntry}
+                        onChange={(e) => setNewEntry(e.target.value)}
+                        placeholder="What is your story today?"
+                    />
+                    <div className={styles.controls}>
+                        <button
+                            onClick={toggleRecording}
+                            className={styles.voiceButton}
+                            style={isRecording ? { background: "var(--accent)", color: "white", borderColor: "var(--accent)" } : {}}
+                        >
+                            <Mic size={18} />
+                            {isRecording ? "Listening..." : "Voice Note"}
+                        </button>
+                        <button
+                            onClick={handleSave}
+                            className={styles.saveButton}
+                            disabled={!newEntry.trim() || isAnalyzing}
+                        >
+                            {isAnalyzing ? (
+                                <Sparkles className="animate-spin" size={18} />
+                            ) : (
+                                <Save size={18} style={{ marginRight: 8, display: "inline" }} />
+                            )}
+                            {isAnalyzing ? "Divining..." : "Inscribe"}
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div className={styles.heroBook}>
-                <AnimatePresence>
-                    {entries.length > 0 ? (
-                        entries.map((entry) => (
+                <div className={styles.entriesList}>
+                    <AnimatePresence>
+                        {entries.map((entry, index) => (
                             <motion.div
                                 key={entry.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className={styles.entry}
+                                initial={{ opacity: 0, rotateX: -90 }}
+                                animate={{ opacity: 1, rotateX: 0 }}
+                                transition={{ delay: index * 0.1, type: "spring" }}
+                                className={`${styles.entryCard} liquid - border`}
                             >
                                 <div className={styles.entryDate}>{entry.date}</div>
                                 <p className={styles.entryText}>{entry.text}</p>
+                                {entry.richMemory && (
+                                    <div className={styles.richMemory}>
+                                        <Sparkles size={16} className="text-accent" />
+                                        <span className="magic-text">{entry.richMemory.title}</span>
+                                    </div>
+                                )}
                             </motion.div>
-                        ))
-                    ) : (
-                        <div className={styles.emptyState}>
-                            <Book size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
-                            <p>Your story begins with the first page. Write something today.</p>
-                        </div>
-                    )}
-                </AnimatePresence>
+                        ))}
+                    </AnimatePresence>
+                </div>
             </div>
         </div>
     );

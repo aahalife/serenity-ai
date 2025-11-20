@@ -1,111 +1,199 @@
 .container {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
-    max-width: 700px;
-    margin: 0 auto;
-    text-align: center;
-    padding: var(--spacing-xl);
-}
-
-.card {
-    background: var(--surface);
-    padding: var(--spacing-xl);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    width: 100%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    padding: var(--spacing-lg);
     position: relative;
     overflow: hidden;
 }
 
-.question {
-    font-size: 1.8rem;
-    margin-bottom: var(--spacing-lg);
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+.muteButton {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--muted);
+    padding: var(--spacing-sm);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.subtext {
+.muteButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--foreground);
+}
+
+.card {
+    background: rgba(20, 20, 25, 0.6);
+    backdrop-filter: blur(20px);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.title {
+    font-size: 2.5rem;
+    text-align: center;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.subtitle {
+    font-size: 1.8rem;
+    text-align: center;
+    color: var(--foreground);
+}
+
+.description {
+    text-align: center;
     color: var(--muted);
-    margin-bottom: var(--spacing-xl);
     font-size: 1.1rem;
-    line-height: 1.6;
 }
 
 .textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-    background: var(--background);
+    padding: var(--spacing-md);
     color: var(--foreground);
-    font-size: 1rem;
-    margin-bottom: var(--spacing-lg);
+    font-size: 1.1rem;
+    min-height: 100px;
     resize: vertical;
+    transition: all 0.2s ease;
 }
 
 .textarea:focus {
     outline: none;
-    border-color: var(--primary);
-}
-
-.buttonGroup {
-    display: flex;
-    gap: var(--spacing-md);
-    justify-content: center;
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .button {
-    padding: var(--spacing-md) var(--spacing-xl);
-    border-radius: var(--radius-full);
     background: var(--primary);
-    color: var(--primary-foreground);
-    font-weight: 600;
+    color: white;
     border: none;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.button:hover {
-    transform: translateY(-2px);
-}
-
-.buttonSecondary {
-    background: var(--surface-hover);
-    color: var(--foreground);
-    border: 1px solid var(--border);
-}
-
-.buttonSecondary:hover {
-    background: var(--border);
-}
-
-.cameraMock {
-    width: 100%;
-    height: 200px;
-    background: #000;
+    padding: var(--spacing-md);
     border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-lg);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--muted);
-    flex-direction: column;
     gap: var(--spacing-sm);
+    transition: all 0.2s ease;
 }
 
-.cameraIcon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 2px solid white;
+.button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.4);
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.secondaryButton {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--foreground);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.secondaryButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cameraContainer {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: black;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.videoPreview,
+.capturedImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.progressBar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+}
+
+.question {
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.thoughtDisplay {
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+}
+
+.turnaroundBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.turnaroundText {
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--accent);
 }

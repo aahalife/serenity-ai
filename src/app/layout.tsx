@@ -17,7 +17,19 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
     title: "Serenity AI",
-    description: "Your personal stress management companion.",
+    description: "Your intelligent companion for well-being.",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "Serenity",
+    },
+};
+
+export const viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
 };
 
 import Layout from "@/components/Layout";
