@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mic, Save, Book, PenTool, Volume2, VolumeX, Sparkles } from "lucide-react";
+import { Mic, Save, Sparkles } from "lucide-react";
 import styles from "./Journal.module.css";
 import { motion, AnimatePresence } from "framer-motion";
-import { useVoice } from "@/hooks/useVoice";
-import { useAudio } from "@/hooks/useAudio";
 
 interface Entry {
     id: string;
@@ -23,6 +21,7 @@ export default function Journal() {
     const [newEntry, setNewEntry] = useState("");
     const [isRecording, setIsRecording] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [videoEnded, setVideoEnded] = useState(false);
 
     useEffect(() => {
         const savedEntries = localStorage.getItem("journalEntries");
@@ -50,7 +49,6 @@ export default function Journal() {
                 if (analysis.richMemory) {
                     richMemory = analysis.richMemory;
                 }
-                // In a real app, we would also handle 'tasks' and 'profileUpdate' here
             }
         } catch (e) {
             console.error("Analysis failed", e);
@@ -84,13 +82,13 @@ export default function Journal() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.videoBackground}>
+            <div className={`${styles.videoBackground} ${videoEnded ? styles.videoBlurred : ''}`}>
                 <video
                     autoPlay
-                    loop
                     muted
                     playsInline
                     className={styles.video}
+                    onEnded={() => setVideoEnded(true)}
                 >
                     <source src="/videos/herobookbkg.mp4" type="video/mp4" />
                 </video>
@@ -99,14 +97,14 @@ export default function Journal() {
 
             <div className={styles.content}>
                 <header className={styles.header}>
-                    <motion.h1
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={styles.title}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 1, ease: "easeOut" }}
                     >
-                        Your Hero Book
-                    </motion.h1>
-                    <p className={styles.subtitle}>Chronicle your legend.</p>
+                        <h1 className={styles.title}>Your Hero Book</h1>
+                        <p className={styles.subtitle}>Chronicle your legend.</p>
+                    </motion.div>
                 </header>
 
                 <div className={styles.bookContainer}>
@@ -149,7 +147,7 @@ export default function Journal() {
                                     initial={{ opacity: 0, rotateX: -90 }}
                                     animate={{ opacity: 1, rotateX: 0 }}
                                     transition={{ delay: index * 0.1, type: "spring" }}
-                                    className={`${styles.entryCard} liquid - border`}
+                                    className={`${styles.entryCard} liquid-border`}
                                 >
                                     <div className={styles.entryDate}>{entry.date}</div>
                                     <p className={styles.entryText}>{entry.text}</p>
@@ -164,7 +162,7 @@ export default function Journal() {
                         </AnimatePresence>
                     </div>
                 </div>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

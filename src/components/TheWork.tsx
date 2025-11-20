@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle, Mic, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, CheckCircle, Volume2, VolumeX } from "lucide-react";
 import styles from "./TheWork.module.css";
 
 const questions = [
@@ -17,6 +17,8 @@ export default function TheWork() {
     const [thought, setThought] = useState("");
     const [answers, setAnswers] = useState<string[]>([]);
     const [isMuted, setIsMuted] = useState(true);
+    const [videoEnded, setVideoEnded] = useState(false);
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const audio = new Audio("/audio/work.mp3");
@@ -42,15 +44,20 @@ export default function TheWork() {
         }
     };
 
+    const handleComplete = () => {
+        // Save session logic would go here
+        window.location.href = '/';
+    };
+
     return (
         <div className={styles.container}>
-            <div className={styles.videoBackground}>
+            <div className={`${styles.videoBackground} ${videoEnded ? styles.videoBlurred : ''}`}>
                 <video
                     autoPlay
-                    loop
                     muted
                     playsInline
                     className={styles.video}
+                    onEnded={() => setVideoEnded(true)}
                 >
                     <source src="/videos/herobookbkg.mp4" type="video/mp4" />
                 </video>
@@ -166,7 +173,7 @@ export default function TheWork() {
                             </p>
                             <div className={styles.buttonGroup}>
                                 <button className={styles.button} onClick={() => setStep(0)}>New Inquiry</button>
-                                <button className={styles.primaryButton} onClick={() => window.location.href = '/'}>Complete</button>
+                                <button className={styles.primaryButton} onClick={handleComplete}>Complete</button>
                             </div>
                         </motion.div>
                     )}

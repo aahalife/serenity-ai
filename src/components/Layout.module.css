@@ -6,11 +6,12 @@
 
 .main {
     flex: 1;
-    margin-left: 280px;
+    margin-left: 320px;
     /* Width of sidebar */
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+    width: calc(100% - 320px);
 }
 
 @media (max-width: 768px) {
