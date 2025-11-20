@@ -1,13 +1,26 @@
 .container {
-    width: 100%;
-    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    background: #000;
+    color: #fff;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 50;
+    /* Above sidebar */
+}
+
+.section {
+    height: 100vh;
+    width: 100vw;
+    scroll-snap-align: start;
     position: relative;
-    overflow: hidden;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    overflow: hidden;
 }
 
 .videoBackground {
@@ -17,251 +30,214 @@
     width: 100%;
     height: 100%;
     z-index: 0;
-    transition: filter 2s ease;
-}
-
-.videoBlurred {
-    filter: blur(20px) brightness(0.6);
 }
 
 .video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    opacity: 0.5;
-    mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
-    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+    opacity: 0.6;
 }
 
-.videoOverlay {
+.overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at center, transparent 0%, var(--background) 80%);
-    pointer-events: none;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
 }
 
 .content {
     position: relative;
     z-index: 10;
-    width: 100%;
-    max-width: 600px;
-}
-
-.muteButton {
-    position: absolute;
-    top: var(--spacing-lg);
-    right: var(--spacing-lg);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--muted);
-    padding: var(--spacing-sm);
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.muteButton:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--foreground);
-}
-
-.card {
-    background: rgba(20, 20, 25, 0.6);
-    backdrop-filter: blur(20px);
-    padding: var(--spacing-2xl);
-    border-radius: var(--radius-xl);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 100%;
-    max-width: 600px;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-lg);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    width: 90%;
+    text-align: center;
 }
 
 .title {
-    font-size: 2.5rem;
-    text-align: center;
-    background: var(--gradient-primary);
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    background: linear-gradient(to right, #fff, #ccc);
     -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
 }
 
 .subtitle {
-    font-size: 1.8rem;
-    text-align: center;
-    color: var(--foreground);
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 3rem;
+    font-weight: 300;
 }
 
-.description {
-    text-align: center;
-    color: var(--muted);
+.question {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    line-height: 1.2;
+}
 
-    .question {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-        line-height: 1.3;
-        background: linear-gradient(180deg, #fff, #cbd5e1);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+.thoughtDisplay {
+    font-size: 1.5rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: inline-block;
+}
+
+.inputContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.textarea {
+    width: 100%;
+    min-height: 150px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.2rem;
+    resize: none;
+    outline: none;
+    padding: 1rem;
+}
+
+.textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.button {
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    align-self: center;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.button:hover {
+    background: #fff;
+    color: #000;
+    transform: scale(1.05);
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.suggestionChip {
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestionChip:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.turnaroundCard {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 24px;
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.turnaroundText {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #a5b4fc;
+}
+
+.turnaroundExample {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.scrollIndicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: bounce 2s infinite;
+    opacity: 0.7;
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0) translateX(-50%);
     }
 
-    /* Missing closing brace was here */
-
-    .subtext {
-        font-size: 1.1rem;
-        color: var(--muted);
-        margin-bottom: 2.5rem;
-        line-height: 1.6;
+    40% {
+        transform: translateY(-10px) translateX(-50%);
     }
 
-    .textArea {
-        width: 100%;
-        min-height: 150px;
-        background: rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 16px;
-        padding: 1.5rem;
-        color: var(--foreground);
-        font-size: 1.1rem;
-        resize: none;
-        outline: none;
-        transition: all 0.3s ease;
-        font-family: var(--font-sans);
+    60% {
+        transform: translateY(-5px) translateX(-50%);
     }
+}
 
-    .textArea:focus {
-        border-color: var(--primary);
-        background: rgba(0, 0, 0, 0.3);
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
-    }
+.closeButton {
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
 
-    .buttonGroup {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    .button {
-        flex: 1;
-        padding: 1rem;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--foreground);
-    }
-
-    .button:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-
-    .primaryButton {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        border: none;
-        color: white;
-        box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
-    }
-
-    .primaryButton:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-    }
-
-    .cameraContainer {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16/9;
-        background: #000;
-        border-radius: 24px;
-        overflow: hidden;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .captureOverlay {
-        position: absolute;
-        bottom: 2rem;
-        left: 0;
-        right: 0;
-        display: flex;
-        justify-content: center;
-    }
-
-    .captureButton {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: white;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .captureButton:active {
-        transform: scale(0.95);
-    }
-
-    .progressBar {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-        margin-bottom: 3rem;
-        overflow: hidden;
-    }
-
-    .progressFill {
-        height: 100%;
-    }
-
-    .question {
-        font-size: 1.5rem;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .thoughtDisplay {
-        font-style: italic;
-        color: var(--muted);
-        text-align: center;
-        padding: var(--spacing-md);
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: var(--radius-md);
-    }
-
-    .turnaroundBox {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: var(--spacing-lg);
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: var(--radius-lg);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .turnaroundText {
-        font-size: 1.3rem;
-        font-weight: 600;
-        text-align: center;
-        color: var(--accent);
-    }
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}

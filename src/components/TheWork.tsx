@@ -2,183 +2,247 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, CheckCircle, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, ChevronDown, X, Sparkles, RefreshCw } from "lucide-react";
 import styles from "./TheWork.module.css";
+import LiquidGlass from "./LiquidGlass";
 
-const questions = [
-    "Is it true?",
-    "Can you absolutely know that it's true?",
-    "How do you react, what happens, when you believe that thought?",
-    "Who would you be without the thought?"
+const steps = [
+    { id: "intro", title: "The Work", subtitle: "Identify a stressful thought." },
+    { id: "q1", title: "Is it true?", subtitle: "Question 1" },
+    { id: "q2", title: "Can you absolutely know that it's true?", subtitle: "Question 2" },
+    { id: "q3", title: "How do you react when you believe that thought?", subtitle: "Question 3" },
+    { id: "q4", title: "Who would you be without the thought?", subtitle: "Question 4" },
+    { id: "turnaround", title: "Turn it around", subtitle: "Find the opposite." }
 ];
 
 export default function TheWork() {
-    const [step, setStep] = useState(0);
+    const [currentStep, setCurrentStep] = useState(0);
     const [thought, setThought] = useState("");
     const [answers, setAnswers] = useState<string[]>([]);
-    const [isMuted, setIsMuted] = useState(true);
-    const [videoEnded, setVideoEnded] = useState(false);
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [turnarounds, setTurnarounds] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
 
+    // Auto-scroll to next section when step changes
     useEffect(() => {
-        const audio = new Audio("/audio/work.mp3");
-        audio.loop = true;
-        if (!isMuted) {
-            audio.play().catch(e => console.log("Audio play failed", e));
+        if (containerRef.current) {
+            const sections = containerRef.current.querySelectorAll(`.${styles.section}`);
+            if (sections[currentStep]) {
+                sections[currentStep].scrollIntoView({ behavior: "smooth" });
+            }
         }
-        return () => {
-            audio.pause();
-            audio.currentTime = 0;
+    }, [currentStep]);
+
+    // Fetch suggestions on mount
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            try {
+                const res = await fetch("/api/inference/work", {
+                    method: "POST",
+                    body: JSON.stringify({ mode: "suggestions" })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setSuggestions(data);
+                }
+            } catch (e) {
+                console.error("Failed to fetch suggestions", e);
+            }
         };
-    }, [isMuted]);
+        fetchSuggestions();
+    }, []);
 
-    const nextStep = () => {
-        if (step < questions.length + 2) {
-            setStep(step + 1);
+    const handleNext = () => {
+        if (currentStep < steps.length - 1) {
+            setCurrentStep(prev => prev + 1);
         }
     };
 
-    const prevStep = () => {
-        if (step > 0) {
-            setStep(step - 1);
+    const handleTurnaround = async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch("/api/inference/work", {
+                method: "POST",
+                body: JSON.stringify({
+                    mode: "turnaround",
+                    input: thought
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setTurnarounds(data);
+                handleNext();
+            }
+        } catch (e) {
+            console.error("Failed to fetch turnarounds", e);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleComplete = () => {
-        // Save session logic would go here
-        window.location.href = '/';
+    const handleSuggestionClick = (text: string) => {
+        setThought(text);
     };
 
     return (
-        <div className={styles.container}>
-            <div className={`${styles.videoBackground} ${videoEnded ? styles.videoBlurred : ''}`}>
-                <video
-                    autoPlay
-                    muted
-                    playsInline
-                    className={styles.video}
-                    onEnded={() => setVideoEnded(true)}
-                >
-                    <source src="/videos/herobookbkg.mp4" type="video/mp4" />
-                </video>
-                <div className={styles.videoOverlay}></div>
-            </div>
+        <div className={styles.container} ref={containerRef}>
+            <button className={styles.closeButton} onClick={() => window.location.href = '/'}>
+                <X size={24} />
+            </button>
 
-            <div className={styles.content}>
-                <div className={styles.progressBar}>
-                    <div
-                        className={styles.progressFill}
-                        style={{ width: `${((step + 1) / (questions.length + 2)) * 100}%` }}
-                    />
+            {/* Intro Section */}
+            <section className={styles.section}>
+                <div className={styles.videoBackground}>
+                    <video autoPlay muted loop playsInline className={styles.video}>
+                        <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                    </video>
+                    <div className={styles.overlay} />
                 </div>
 
-                <button
-                    className={styles.muteButton}
-                    onClick={() => setIsMuted(!isMuted)}
+                <motion.div
+                    className={styles.content}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
                 >
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </button>
+                    <h1 className={styles.title}>The Work</h1>
+                    <p className={styles.subtitle}>Identify a stressful thought to investigate.</p>
 
-                <AnimatePresence mode="wait">
-                    {step === 0 && (
-                        <motion.div
-                            key="intro"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className={styles.card}
-                        >
-                            <h1 className={styles.title}>The Work</h1>
-                            <p className={styles.description}>
-                                Identify a stressful thought. We will question it together.
-                            </p>
-                            <textarea
-                                className={styles.textArea}
-                                placeholder="I am angry with... because..."
-                                value={thought}
-                                onChange={(e) => setThought(e.target.value)}
-                            />
-                            <button
-                                className={styles.primaryButton}
-                                onClick={nextStep}
-                                disabled={!thought.trim()}
-                            >
-                                Begin Inquiry <ArrowRight size={18} />
-                            </button>
-                        </motion.div>
+                    <LiquidGlass className={styles.inputContainer}>
+                        <textarea
+                            className={styles.textarea}
+                            placeholder="I am angry with... because..."
+                            value={thought}
+                            onChange={(e) => setThought(e.target.value)}
+                        />
+                    </LiquidGlass>
+
+                    {suggestions.length > 0 && !thought && (
+                        <div className={styles.suggestions}>
+                            {suggestions.map((s, i) => (
+                                <motion.button
+                                    key={i}
+                                    className={styles.suggestionChip}
+                                    onClick={() => handleSuggestionClick(s)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    {s}
+                                </motion.button>
+                            ))}
+                        </div>
                     )}
 
-                    {step === 1 && (
-                        <motion.div
-                            key="pause"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 1.1 }}
-                            className={styles.card}
+                    <div style={{ marginTop: '2rem' }}>
+                        <button
+                            className={styles.button}
+                            onClick={handleNext}
+                            disabled={!thought.trim()}
                         >
-                            <h2 className={styles.question}>Close your eyes.</h2>
-                            <p className={styles.description}>
-                                Hold the thought: "{thought}"
-                            </p>
-                            <p className={styles.subtext}>
-                                Be still. Witness the thought.
-                            </p>
-                            <button className={styles.primaryButton} onClick={nextStep}>
-                                I am ready
-                            </button>
-                        </motion.div>
-                    )}
+                            Begin Inquiry <ArrowRight size={20} />
+                        </button>
+                    </div>
+                </motion.div>
 
-                    {step >= 2 && step < 6 && (
-                        <motion.div
-                            key={`q${step}`}
-                            initial={{ opacity: 0, x: 50 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            className={styles.card}
-                        >
-                            <h2 className={styles.question}>{questions[step - 2]}</h2>
-                            <p className={styles.thoughtDisplay}>"{thought}"</p>
+                <div className={styles.scrollIndicator}>
+                    <ChevronDown size={32} color="#fff" />
+                </div>
+            </section>
 
+            {/* Questions 1-4 */}
+            {[0, 1, 2, 3].map((qIndex) => (
+                <section key={qIndex} className={styles.section}>
+                    <div className={styles.videoBackground}>
+                        <video autoPlay muted loop playsInline className={styles.video}>
+                            <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                        </video>
+                        <div className={styles.overlay} />
+                    </div>
+
+                    <motion.div
+                        className={styles.content}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.6 }}
+                    >
+                        <h2 className={styles.question}>{steps[qIndex + 1].title}</h2>
+                        <div className={styles.thoughtDisplay}>"{thought}"</div>
+
+                        <LiquidGlass className={styles.inputContainer}>
                             <textarea
-                                className={styles.textArea}
+                                className={styles.textarea}
                                 placeholder="Your answer..."
-                                value={answers[step - 2] || ""}
+                                value={answers[qIndex] || ""}
                                 onChange={(e) => {
                                     const newAnswers = [...answers];
-                                    newAnswers[step - 2] = e.target.value;
+                                    newAnswers[qIndex] = e.target.value;
                                     setAnswers(newAnswers);
                                 }}
-                                style={{ minHeight: '150px' }}
                             />
+                        </LiquidGlass>
 
-                            <div className={styles.buttonGroup}>
-                                <button className={styles.button} onClick={prevStep}>Back</button>
-                                <button className={styles.primaryButton} onClick={nextStep}>Next</button>
-                            </div>
-                        </motion.div>
-                    )}
+                        <div style={{ marginTop: '2rem' }}>
+                            {qIndex === 3 ? (
+                                <button
+                                    className={styles.button}
+                                    onClick={handleTurnaround}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? <RefreshCw className="animate-spin" /> : "Find Turnarounds"}
+                                </button>
+                            ) : (
+                                <button className={styles.button} onClick={handleNext}>
+                                    Next Question <ChevronDown size={20} />
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                </section>
+            ))}
 
-                    {step === 6 && (
-                        <motion.div
-                            key="turnaround"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className={styles.card}
-                        >
-                            <CheckCircle size={48} className={styles.successIcon} />
-                            <h2 className={styles.title}>Turn it around</h2>
-                            <p className={styles.description}>
-                                Consider the opposite of your thought. Could it be as true or truer?
-                            </p>
-                            <div className={styles.buttonGroup}>
-                                <button className={styles.button} onClick={() => setStep(0)}>New Inquiry</button>
-                                <button className={styles.primaryButton} onClick={handleComplete}>Complete</button>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+            {/* Turnaround Section */}
+            <section className={styles.section}>
+                <div className={styles.videoBackground}>
+                    <video autoPlay muted loop playsInline className={styles.video}>
+                        <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                    </video>
+                    <div className={styles.overlay} />
+                </div>
+
+                <motion.div
+                    className={styles.content}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                >
+                    <h2 className={styles.title}>Turn it Around</h2>
+                    <p className={styles.subtitle}>Consider the opposite. Could it be as true?</p>
+
+                    <div className={styles.inputContainer} style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
+                        {turnarounds.map((t, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ x: -50, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: i * 0.2 }}
+                                style={{ marginBottom: '1rem' }}
+                            >
+                                <LiquidGlass>
+                                    <div className={styles.turnaroundText}>{t.text}</div>
+                                    <div className={styles.turnaroundExample}>Example: {t.example}</div>
+                                </LiquidGlass>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    <div style={{ marginTop: '2rem' }}>
+                        <button className={styles.button} onClick={() => window.location.href = '/'}>
+                            Complete Session <Sparkles size={20} />
+                        </button>
+                    </div>
+                </motion.div>
+            </section>
         </div>
     );
 }
