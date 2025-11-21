@@ -19,12 +19,12 @@ const roboto = Roboto({
 const montage = localFont({
     src: [
         {
-            path: "../../public/styles/font/Montage.woff2",
+            path: "./fonts/Montage.woff2",
             weight: "400",
             style: "normal",
         },
         {
-            path: "../../public/styles/font/Montage.woff",
+            path: "./fonts/Montage.woff",
             weight: "400",
             style: "normal",
         },
