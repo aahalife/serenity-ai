@@ -1,124 +1,217 @@
 .sidebar {
-    width: 320px;
-    background: rgba(10, 10, 15, 0.6);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    width: 280px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     flex-direction: column;
-    padding: 2rem 1.5rem;
-    height: 100vh;
+    padding: 2rem;
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 100;
-    transition: transform 0.3s ease;
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.3);
+    z-index: 50;
+    overflow: hidden;
+    /* Prevent content spill when collapsed */
+}
+
+.collapsed {
+    padding: 2rem 1rem;
+    align-items: center;
+}
+
+.collapseBtn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    z-index: 10;
+}
+
+.collapseBtn:hover {
+    color: var(--foreground);
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 1rem;
+    font-family: var(--font-montage), serif;
     font-size: 1.5rem;
-    font-weight: 700;
     color: var(--foreground);
-    margin-bottom: var(--spacing-xl);
-    padding-left: var(--spacing-xs);
+    margin-bottom: 3rem;
+    margin-top: 1rem;
+    white-space: nowrap;
+    padding-left: 0.5rem;
+    letter-spacing: -0.5px;
 }
 
 .logoIcon {
     color: var(--primary);
+    filter: drop-shadow(0 0 10px rgba(var(--primary-rgb), 0.5));
 }
 
 .nav {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 2rem;
+    /* Increased gap as requested */
     flex: 1;
+}
+
+.collapsed .navItem {
+    justify-content: center;
+    padding: 1rem 0;
 }
 
 .navItem {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    border-radius: var(--radius-md);
-    color: var(--muted);
+    gap: 1.2rem;
+    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     font-weight: 500;
     position: relative;
     overflow: hidden;
+    font-size: 1.1rem;
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    /* Fixed width for alignment */
 }
 
 .navItem:hover {
     color: var(--foreground);
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(5px);
 }
 
 .active {
     color: var(--foreground);
-    background: linear-gradient(90deg, rgba(168, 192, 255, 0.1) 0%, transparent 100%);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    box-shadow: inset 1px 0 0 0 var(--primary);
 }
 
 .active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 20px;
-    width: 3px;
-    background: var(--primary);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    box-shadow: 0 0 10px var(--primary);
-}
-
-.navItem span {
-    font-size: 0.95rem;
+    display: none;
+    /* Removing the old bar indicator for a cleaner look */
 }
 
 .userProfile {
     margin-top: auto;
-    padding: var(--spacing-md);
-    border-top: 1px solid var(--glass-border);
+    padding: 2rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: 1rem;
+}
+
+.profileLink {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    transition: opacity 0.2s ease;
+}
+
+.profileLink:hover {
+    opacity: 0.8;
 }
 
 .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-full);
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     color: #fff;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .userInfo {
     display: flex;
     flex-direction: column;
+    gap: 0.2rem;
 }
 
 .userName {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
+    color: var(--foreground);
 }
 
 .userStatus {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--muted);
+}
+
+.loginBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.loginBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.logoutBtn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0.8rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoutBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--foreground);
+    transform: rotate(90deg);
 }
 
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        width: 100%;
+        background: rgba(10, 10, 15, 0.95);
     }
 
     .sidebar.open {

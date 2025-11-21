@@ -2,59 +2,131 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
-    max-width: 800px;
+    max-width: 100%;
     margin: 0 auto;
-    background: rgba(20, 20, 25, 0.8);
-    backdrop-filter: blur(20px);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    position: relative;
+    overflow: hidden;
 }
 
-.header {
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.videoBackground {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.glassOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 15, 0.05);
+    /* Almost transparent */
+    backdrop-filter: blur(0px);
+    /* No blur */
+    -webkit-backdrop-filter: blur(0px);
+    z-index: 0;
+}
+
+.headerWrapper {
+    padding: 1rem 1.5rem;
+    z-index: 10;
+}
+
+.headerGlass {
+    width: 100%;
+}
+
+.headerContent {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    background: rgba(20, 20, 25, 0.9);
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.headerInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* Left align */
+}
+
+.headerInfo h3 {
+    margin: 0;
+    font-size: 2rem;
+    /* Larger title */
+    color: var(--foreground);
+    font-weight: 700;
+}
+
+.headerInfo p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--muted);
+    /* Subtitle color */
+    transition: color 0.3s ease;
+}
+
+.statusListening {
+    color: var(--accent) !important;
+    font-weight: 600;
+    animation: pulseText 1.5s infinite;
+}
+
+@keyframes pulseText {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
 }
 
 .avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+    transition: all 0.3s ease;
 }
 
-.headerInfo {
-    flex: 1;
-}
-
-.headerInfo h3 {
-    font-size: 1.1rem;
-    margin-bottom: 2px;
-}
-
-.headerInfo p {
-    font-size: 0.8rem;
-    color: var(--muted);
+.avatarListening {
+    background: var(--accent);
+    box-shadow: 0 0 20px rgba(244, 114, 182, 0.6);
+    transform: scale(1.1);
 }
 
 .muteButton {
     background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: none;
     color: var(--muted);
-    padding: var(--spacing-sm);
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .muteButton:hover {
@@ -65,61 +137,90 @@
 .messages {
     flex: 1;
     overflow-y: auto;
-    padding: var(--spacing-lg);
+    padding: 2rem 15%;
+    /* Added horizontal padding for better readability on wide screens */
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 2rem;
+    /* Increased gap */
+    scroll-behavior: smooth;
+    position: relative;
+    z-index: 1;
+    /* Ensure messages are above the glass overlay */
 }
 
 .message {
-    max-width: 80%;
-    padding: var(--spacing-md);
-    border-radius: var(--radius-lg);
-    line-height: 1.5;
+    max-width: 75%;
+    padding: 1rem 1.5rem;
+    border-radius: 20px;
     font-size: 1rem;
+    line-height: 1.5;
+    position: relative;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    animation: floatUp 0.3s ease-out forwards;
+}
+
+@keyframes floatUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .userMessage {
     align-self: flex-end;
-    background: var(--primary);
-    color: white;
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.2), rgba(var(--primary-rgb), 0.1));
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
     border-bottom-right-radius: 4px;
+    color: var(--foreground);
 }
 
 .aiMessage {
     align-self: flex-start;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--foreground);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-bottom-left-radius: 4px;
+    color: var(--foreground);
+}
+
+.inputWrapper {
+    padding: 1.5rem 2rem;
+    background: linear-gradient(to top, rgba(10, 10, 15, 0.8), transparent);
+}
+
+.liquidInput {
+    width: 100%;
 }
 
 .inputArea {
-    padding: var(--spacing-md);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
-    gap: var(--spacing-sm);
-    background: rgba(20, 20, 25, 0.9);
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem;
 }
 
 .input {
     flex: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-full);
-    padding: var(--spacing-sm) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    padding: 0.8rem 1rem;
     color: var(--foreground);
     font-size: 1rem;
 }
 
 .input:focus {
     outline: none;
-    border-color: var(--primary);
-    background: rgba(255, 255, 255, 0.1);
 }
 
 .sendButton {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: none;
     background: var(--primary);
@@ -128,32 +229,37 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
 }
 
 .sendButton:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.4);
 }
 
 .sendButton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: var(--muted);
+    box-shadow: none;
 }
 
 .listening {
     animation: pulse 1.5s infinite;
+    background: var(--accent);
 }
 
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+        box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.4);
     }
 
     70% {
-        box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0);
+        box-shadow: 0 0 0 10px rgba(244, 114, 182, 0);
     }
 
     100% {
-        box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+        box-shadow: 0 0 0 0 rgba(244, 114, 182, 0);
     }
 }

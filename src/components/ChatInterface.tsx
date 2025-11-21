@@ -6,6 +6,7 @@ import styles from "./ChatInterface.module.css";
 import { useVoice } from "@/hooks/useVoice";
 import { useAudio } from "@/hooks/useAudio";
 import { motion, AnimatePresence } from "framer-motion";
+import LiquidGlass from "./LiquidGlass";
 
 interface Message {
     id: string;
@@ -65,13 +66,15 @@ export default function ChatInterface() {
         setIsTyping(true);
 
         try {
-            // Retrieve profile from localStorage
+            // Retrieve profile and flow state from localStorage
             const savedDeepProfile = localStorage.getItem("deepProfile");
             const savedUserProfile = localStorage.getItem("userProfile");
+            const savedFlowState = localStorage.getItem("flowState");
 
             const profile = {
                 ...JSON.parse(savedUserProfile || "{}"),
-                ...JSON.parse(savedDeepProfile || "{}")
+                ...JSON.parse(savedDeepProfile || "{}"),
+                currentState: JSON.parse(savedFlowState || "{}") // Add stress/energy context
             };
 
             const response = await fetch("/api/chat", {
@@ -85,10 +88,11 @@ export default function ChatInterface() {
             });
 
             const data = await response.json();
+            console.log("Chat API Response:", data);
 
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: data.text || "I'm listening...",
+                text: data.response || "I'm listening...",
                 sender: "ai",
                 timestamp: new Date(),
             };
@@ -111,17 +115,35 @@ export default function ChatInterface() {
 
     return (
         <div className={styles.container}>
-            <div className={styles.header}>
-                <div className={styles.avatar}>
-                    <Sparkles size={20} />
-                </div>
-                <div className={styles.headerInfo}>
-                    <h3>Serenity</h3>
-                    <p>{isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}</p>
-                </div>
-                <button onClick={toggleMute} className={styles.muteButton}>
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </button>
+            <div className={styles.videoBackground}>
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className={styles.video}
+                >
+                    <source src="/videos/chatbkg.mp4" type="video/mp4" />
+                </video>
+                <div className={styles.glassOverlay}></div>
+            </div>
+            <div className={styles.headerWrapper}>
+                <LiquidGlass className={styles.headerGlass}>
+                    <div className={styles.headerContent}>
+                        <div className={`${styles.avatar} ${isListening ? styles.avatarListening : ''}`}>
+                            <Sparkles size={20} />
+                        </div>
+                        <div className={styles.headerInfo}>
+                            <h3 className="font-montage">Serenity</h3>
+                            <p className={isListening ? styles.statusListening : ''}>
+                                {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}
+                            </p>
+                        </div>
+                        <button onClick={toggleMute} className={styles.muteButton}>
+                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                        </button>
+                    </div>
+                </LiquidGlass>
             </div>
 
             <div className={styles.messages}>
@@ -150,29 +172,33 @@ export default function ChatInterface() {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className={styles.inputArea}>
-                <button
-                    onClick={isListening ? stopListening : startListening}
-                    className={`${styles.sendButton} ${isListening ? styles.listening : ""}`}
-                    style={{ background: isListening ? "var(--accent)" : "var(--surface-hover)", color: isListening ? "white" : "var(--foreground)" }}
-                >
-                    <Mic size={20} />
-                </button>
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={isListening ? "Listening..." : "Type a message..."}
-                    className={styles.input}
-                />
-                <button
-                    onClick={() => handleSend()}
-                    className={styles.sendButton}
-                    disabled={!inputValue.trim()}
-                >
-                    <Send size={20} />
-                </button>
+            <div className={styles.inputWrapper}>
+                <LiquidGlass className={styles.liquidInput}>
+                    <div className={styles.inputArea}>
+                        <button
+                            onClick={isListening ? stopListening : startListening}
+                            className={`${styles.sendButton} ${isListening ? styles.listening : ""}`}
+                            style={{ background: isListening ? "var(--accent)" : "var(--surface-hover)", color: isListening ? "white" : "var(--foreground)" }}
+                        >
+                            <Mic size={20} />
+                        </button>
+                        <input
+                            type="text"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={isListening ? "Listening..." : "Type a message..."}
+                            className={styles.input}
+                        />
+                        <button
+                            onClick={() => handleSend()}
+                            className={styles.sendButton}
+                            disabled={!inputValue.trim()}
+                        >
+                            <Send size={20} />
+                        </button>
+                    </div>
+                </LiquidGlass>
             </div>
         </div>
     );

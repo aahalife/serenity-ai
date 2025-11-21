@@ -117,7 +117,7 @@ export async function inferFlowState(userProfile: any, journalEntries: any[]) {
 // import fs from 'fs'; // Removed for Vercel compatibility
 // import path from 'path'; // Removed for Vercel compatibility
 
-const PSYCHOLOGICAL_RICHNESS_PROMPT = `
+export const PSYCHOLOGICAL_RICHNESS_PROMPT = `
 # Psychologically Rich Schedule Generator
 
 You are an expert psychologist and lifestyle designer specializing in "Psychological Richness" - a dimension of a good life characterized by variety, novelty, complexity, and perspective-shifting experiences.

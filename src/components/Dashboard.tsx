@@ -7,12 +7,17 @@ import { useRouter } from "next/navigation";
 import { useAudio } from "@/hooks/useAudio";
 import SmartSchedule from "@/components/SmartSchedule";
 
+import StressModal from "@/components/StressModal";
+import StressSelfReportModal from "@/components/StressSelfReportModal";
+
 export default function Dashboard() {
     const router = useRouter();
     const [userName, setUserName] = useState("Friend");
     const { toggleMute, isMuted, play } = useAudio();
     const [flowState, setFlowState] = useState<any>(null);
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [isStressModalOpen, setIsStressModalOpen] = useState(false);
+    const [isDebugModalOpen, setIsDebugModalOpen] = useState(false);
 
     // Mock habits for now - in a real app, these would come from a database or user input
     const habits = [
@@ -47,22 +52,81 @@ export default function Dashboard() {
             ease: 60,
             optimism: 70,
             focus: 90,
+            stress: 25, // Low stress for now
+            energy: 80,
             insight: "You are in a high-drive state. Perfect for deep work."
         };
         setFlowState(mockFlowState);
     }, []);
 
+    // Check for stress/energy levels to trigger modal whenever flowState changes
+    useEffect(() => {
+        if (flowState && (flowState.stress > 70 || flowState.energy < 30)) {
+            const timer = setTimeout(() => setIsStressModalOpen(true), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [flowState]);
+
+    const [currentDate, setCurrentDate] = useState("");
+
+    useEffect(() => {
+        setCurrentDate(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
+    }, []);
+
+    // Subtle status indicator color
+    const getStatusColor = () => {
+        if (!flowState) return "var(--primary)";
+        if (flowState.stress > 70) return "#ef4444"; // Red
+        if (flowState.stress > 40) return "#f59e0b"; // Orange
+        return "#10b981"; // Green
+    };
+
+    const handleDebugUpdate = (stress: number, energy: number) => {
+        setFlowState((prev: any) => ({
+            ...prev,
+            stress,
+            energy
+        }));
+    };
+
     return (
         <div className={styles.container}>
+            <div className={styles.videoBackground}>
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className={styles.video}
+                >
+                    <source src="/videos/dashboardbkg.webm" type="video/webm" />
+                </video>
+                <div className={styles.videoOverlay}></div>
+            </div>
             <button onClick={toggleMute} className={styles.muteButton}>
                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
             </button>
             <header className={styles.header}>
                 <div className={styles.greeting}>
-                    <h1>Good Morning, {userName}</h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <h1>Good Morning, {userName}</h1>
+                        <div
+                            style={{
+                                width: '12px',
+                                height: '12px',
+                                borderRadius: '50%',
+                                backgroundColor: getStatusColor(),
+                                boxShadow: `0 0 10px ${getStatusColor()}`,
+                                transition: 'all 0.5s ease',
+                                cursor: 'pointer'
+                            }}
+                            title="Debug: Click to set Stress Level"
+                            onClick={() => setIsDebugModalOpen(true)}
+                        />
+                    </div>
                     <p>Your mind is clear. Your potential is limitless.</p>
                 </div>
-                <div className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+                <div className={styles.date}>{currentDate}</div>
             </header>
 
             <div className={styles.grid}>
@@ -75,19 +139,7 @@ export default function Dashboard() {
                 </section>
 
                 <aside className={styles.sidebar}>
-                    <div className={styles.statusCard}>
-                        <h3>Current State</h3>
-                        <div className={styles.statusItem}>
-                            <Zap size={18} className="text-accent" />
-                            <span>Energy</span>
-                            <div className={styles.bar}><div className={styles.fill} style={{ width: '80%' }} /></div>
-                        </div>
-                        <div className={styles.statusItem}>
-                            <Activity size={18} className="text-primary" />
-                            <span>Stress</span>
-                            <div className={styles.bar}><div className={styles.fill} style={{ width: '30%' }} /></div>
-                        </div>
-                    </div>
+                    {/* Removed Status Card with bars as requested */}
 
                     <div className={styles.quickActions}>
                         <button className={styles.actionBtn} onClick={() => router.push('/journal')}>
@@ -102,6 +154,21 @@ export default function Dashboard() {
                     </div>
                 </aside>
             </div>
+
+            <StressModal
+                isOpen={isStressModalOpen}
+                onClose={() => setIsStressModalOpen(false)}
+                stressLevel={flowState?.stress || 0}
+                energyLevel={flowState?.energy || 100}
+            />
+
+            <StressSelfReportModal
+                isOpen={isDebugModalOpen}
+                onClose={() => setIsDebugModalOpen(false)}
+                currentStress={flowState?.stress || 0}
+                currentEnergy={flowState?.energy || 100}
+                onUpdate={handleDebugUpdate}
+            />
         </div>
     );
 }

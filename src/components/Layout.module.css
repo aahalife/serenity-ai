@@ -6,12 +6,19 @@
 
 .main {
     flex: 1;
-    margin-left: 320px;
-    /* Width of sidebar */
+    margin-left: 280px;
+    /* Match sidebar width */
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
-    width: calc(100% - 320px);
+    width: calc(100% - 280px);
+    transition: all 0.3s ease-in-out;
+}
+
+.collapsed {
+    margin-left: 80px;
+    /* Match collapsed sidebar width */
+    width: calc(100% - 80px);
 }
 
 @media (max-width: 768px) {

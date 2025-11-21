@@ -7,12 +7,12 @@ import styles from "./TheWork.module.css";
 import LiquidGlass from "./LiquidGlass";
 
 const steps = [
-    { id: "intro", title: "The Work", subtitle: "Identify a stressful thought." },
-    { id: "q1", title: "Is it true?", subtitle: "Question 1" },
-    { id: "q2", title: "Can you absolutely know that it's true?", subtitle: "Question 2" },
-    { id: "q3", title: "How do you react when you believe that thought?", subtitle: "Question 3" },
-    { id: "q4", title: "Who would you be without the thought?", subtitle: "Question 4" },
-    { id: "turnaround", title: "Turn it around", subtitle: "Find the opposite." }
+    { id: "intro", title: "The Work", subtitle: "Identify a stressful thought.", video: "/videos/theworkbkgs/650057f73744d6f9a46e25e3_AdobeStock_291299852 loop-transcode.mp4" },
+    { id: "q1", title: "Is it true?", subtitle: "Question 1", video: "/videos/theworkbkgs/650057f73744d6f9a46e25f8_LightRays-transcode.mp4" },
+    { id: "q2", title: "Can you absolutely know that it's true?", subtitle: "Question 2", video: "/videos/theworkbkgs/650057f73744d6f9a46e25fb_alforreca-comp-v2-transcode.mp4" },
+    { id: "q3", title: "How do you react when you believe that thought?", subtitle: "Question 3", video: "/videos/theworkbkgs/650057f73744d6f9a46e25fd_caustics-loop-comp-v2-transcode.mp4" },
+    { id: "q4", title: "Who would you be without the thought?", subtitle: "Question 4", video: "/videos/theworkbkgs/650057f73744d6f9a46e2600_above-water-comp-v2-transcode.mp4" },
+    { id: "turnaround", title: "Turn it around", subtitle: "Find the opposite.", video: "/videos/theworkbkgs/650057f73744d6f9a46e2602_AdobeStock_295232596-loop-comp-v2-transcode.mp4" }
 ];
 
 export default function TheWork() {
@@ -95,7 +95,7 @@ export default function TheWork() {
             <section className={styles.section}>
                 <div className={styles.videoBackground}>
                     <video autoPlay muted loop playsInline className={styles.video}>
-                        <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                        <source src={steps[0].video} type="video/mp4" />
                     </video>
                     <div className={styles.overlay} />
                 </div>
@@ -134,7 +134,7 @@ export default function TheWork() {
                         </div>
                     )}
 
-                    <div style={{ marginTop: '2rem' }}>
+                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
                         <button
                             className={styles.button}
                             onClick={handleNext}
@@ -155,7 +155,7 @@ export default function TheWork() {
                 <section key={qIndex} className={styles.section}>
                     <div className={styles.videoBackground}>
                         <video autoPlay muted loop playsInline className={styles.video}>
-                            <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                            <source src={steps[qIndex + 1].video} type="video/mp4" />
                         </video>
                         <div className={styles.overlay} />
                     </div>
@@ -182,7 +182,7 @@ export default function TheWork() {
                             />
                         </LiquidGlass>
 
-                        <div style={{ marginTop: '2rem' }}>
+                        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
                             {qIndex === 3 ? (
                                 <button
                                     className={styles.button}
@@ -205,7 +205,7 @@ export default function TheWork() {
             <section className={styles.section}>
                 <div className={styles.videoBackground}>
                     <video autoPlay muted loop playsInline className={styles.video}>
-                        <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                        <source src={steps[5].video} type="video/mp4" />
                     </video>
                     <div className={styles.overlay} />
                 </div>

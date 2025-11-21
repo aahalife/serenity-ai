@@ -1,4 +1,5 @@
-import { model, JOURNAL_ANALYSIS_PROMPT } from "@/lib/gemini";
+import { anthropic } from "@/lib/anthropic";
+import { JOURNAL_ANALYSIS_PROMPT } from "@/lib/gemini"; // Keeping prompt for now, will refactor later if needed
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -7,11 +8,17 @@ export async function POST(req: Request) {
 
         const prompt = JOURNAL_ANALYSIS_PROMPT.replace("{{ENTRY}}", entry);
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const response = await anthropic.messages.create({
+            model: "claude-sonnet-4-5-20250929",
+            max_tokens: 1024,
+            messages: [{ role: "user", content: prompt }],
+        });
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const textResponse = response.content[0].type === 'text'
+            ? response.content[0].text
+            : "{}";
+
+        const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
         const analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
 
         return NextResponse.json(analysis);

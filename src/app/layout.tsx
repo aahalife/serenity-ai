@@ -34,6 +34,8 @@ export const viewport = {
 
 import Layout from "@/components/Layout";
 
+import { Providers } from "@/components/Providers";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -41,10 +43,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${inter.variable} ${roboto.variable}`}>
-                <Layout>
-                    {children}
-                </Layout>
+            <body className={inter.className}>
+                <Providers>
+                    <Layout>{children}</Layout>
+                </Providers>
             </body>
         </html>
     );

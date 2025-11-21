@@ -1,10 +1,9 @@
-import { genAI } from "@/lib/gemini";
+import { anthropic } from "@/lib/anthropic";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
         const { mode, input, context } = await req.json();
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         let prompt = "";
 
@@ -26,11 +25,18 @@ export async function POST(req: Request) {
             `;
         }
 
-        const result = await model.generateContent(prompt);
-        const response = result.response.text();
+        const response = await anthropic.messages.create({
+            model: "claude-sonnet-4-5-20250929",
+            max_tokens: 1024,
+            messages: [{ role: "user", content: prompt }],
+        });
+
+        const textResponse = response.content[0].type === 'text'
+            ? response.content[0].text
+            : "[]";
 
         // Clean up markdown code blocks if present
-        const cleanedResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
+        const cleanedResponse = textResponse.replace(/```json/g, "").replace(/```/g, "").trim();
 
         return NextResponse.json(JSON.parse(cleanedResponse));
     } catch (error) {

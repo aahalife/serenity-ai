@@ -1,168 +1,168 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Mic, Save, Sparkles } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Mic, Send, Sparkles, Volume2, VolumeX } from "lucide-react";
 import styles from "./Journal.module.css";
+import { useAudio } from "@/hooks/useAudio";
+import LiquidGlass from "./LiquidGlass";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface Entry {
-    id: string;
-    text: string;
-    date: string;
-    richMemory?: {
-        title: string;
-        visualDescription: string;
-        emotion: string;
-    };
-}
-
 export default function Journal() {
-    const [entries, setEntries] = useState<Entry[]>([]);
-    const [newEntry, setNewEntry] = useState("");
+    const [entry, setEntry] = useState("");
     const [isRecording, setIsRecording] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [videoEnded, setVideoEnded] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
+    const { play, toggleMute, isMuted, fadeOut } = useAudio();
+    const [showInputModal, setShowInputModal] = useState(false);
+
+    // Ref for the text area to auto-resize or focus
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
-        const savedEntries = localStorage.getItem("journalEntries");
-        if (savedEntries) {
-            setEntries(JSON.parse(savedEntries));
-        }
-    }, []);
+        // Crossfade logic: Play new background
+        play("/audio/journalbkg.m4a", { volume: 0.3, loop: true, fadeInDuration: 2000 });
 
-    const handleSave = async () => {
-        if (!newEntry.trim()) return;
-
-        setIsAnalyzing(true);
-        let richMemory = undefined;
-
-        // Analyze entry with Gemini
-        try {
-            const response = await fetch("/api/inference/journal", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ entry: newEntry }),
-            });
-
-            if (response.ok) {
-                const analysis = await response.json();
-                if (analysis.richMemory) {
-                    richMemory = analysis.richMemory;
-                }
-            }
-        } catch (e) {
-            console.error("Analysis failed", e);
-        } finally {
-            setIsAnalyzing(false);
-        }
-
-        const entry: Entry = {
-            id: Date.now().toString(),
-            text: newEntry,
-            date: new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
-            richMemory
+        return () => {
+            // Optional: fade out when leaving
+            // fadeOut(1000); 
         };
+    }, [play]);
 
-        const updatedEntries = [entry, ...entries];
-        setEntries(updatedEntries);
-        localStorage.setItem("journalEntries", JSON.stringify(updatedEntries));
-        setNewEntry("");
-    };
-
-    const toggleRecording = () => {
+    const handleStartRecording = () => {
         setIsRecording(!isRecording);
         if (!isRecording) {
-            // Simulate voice input
-            setTimeout(() => {
-                setNewEntry((prev) => prev + " I felt really accomplished today after finishing the project.");
-                setIsRecording(false);
-            }, 2000);
+            // Start mock STT
+            simulateStreamingText();
         }
+    };
+
+    const simulateStreamingText = () => {
+        const phrases = [
+            "Today I felt...",
+            " a sense of calm...",
+            " washing over me.",
+            " It was unexpected but welcome."
+        ];
+
+        let delay = 0;
+        phrases.forEach((phrase, index) => {
+            setTimeout(() => {
+                setEntry(prev => prev + phrase);
+                setIsTyping(true);
+
+                // Reset typing indicator after the last phrase
+                if (index === phrases.length - 1) {
+                    setTimeout(() => setIsTyping(false), 500);
+                    setIsRecording(false);
+                }
+            }, delay);
+            delay += 1000 + Math.random() * 500;
+        });
+    };
+
+    const handleOpenModal = () => {
+        setShowInputModal(true);
+        setTimeout(() => textareaRef.current?.focus(), 100);
+    };
+
+    const handleSave = async () => {
+        if (!entry.trim()) return;
+
+        console.log("Saving entry:", entry);
+        // Logic to save entry would go here
+
+        setEntry("");
+        setShowInputModal(false);
     };
 
     return (
         <div className={styles.container}>
-            <div className={`${styles.videoBackground} ${videoEnded ? styles.videoBlurred : ''}`}>
+            <div className={styles.videoBackground}>
                 <video
                     autoPlay
                     muted
+                    loop
                     playsInline
                     className={styles.video}
-                    onEnded={() => setVideoEnded(true)}
                 >
-                    <source src="/videos/herobookbkg.mp4" type="video/mp4" />
+                    <source src="/videos/journalbkg.mp4" type="video/mp4" />
                 </video>
                 <div className={styles.videoOverlay}></div>
             </div>
 
+            <button onClick={toggleMute} className={styles.muteButton}>
+                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            </button>
+
             <div className={styles.content}>
-                <header className={styles.header}>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                    >
-                        <h1 className={styles.title}>Your Hero Book</h1>
-                        <p className={styles.subtitle}>Chronicle your legend.</p>
-                    </motion.div>
-                </header>
-
-                <div className={styles.bookContainer}>
-                    <div className={styles.inputPage}>
-                        <textarea
-                            className={styles.textArea}
-                            value={newEntry}
-                            onChange={(e) => setNewEntry(e.target.value)}
-                            placeholder="What is your story today?"
-                        />
-                        <div className={styles.controls}>
-                            <button
-                                onClick={toggleRecording}
-                                className={styles.voiceButton}
-                                style={isRecording ? { background: "var(--accent)", color: "white", borderColor: "var(--accent)" } : {}}
-                            >
-                                <Mic size={18} />
-                                {isRecording ? "Listening..." : "Voice Note"}
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                className={styles.saveButton}
-                                disabled={!newEntry.trim() || isAnalyzing}
-                            >
-                                {isAnalyzing ? (
-                                    <Sparkles className="animate-spin" size={18} />
-                                ) : (
-                                    <Save size={18} style={{ marginRight: 8, display: "inline" }} />
-                                )}
-                                {isAnalyzing ? "Divining..." : "Inscribe"}
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className={styles.entriesList}>
-                        <AnimatePresence>
-                            {entries.map((entry, index) => (
-                                <motion.div
-                                    key={entry.id}
-                                    initial={{ opacity: 0, rotateX: -90 }}
-                                    animate={{ opacity: 1, rotateX: 0 }}
-                                    transition={{ delay: index * 0.1, type: "spring" }}
-                                    className={`${styles.entryCard} liquid-border`}
-                                >
-                                    <div className={styles.entryDate}>{entry.date}</div>
-                                    <p className={styles.entryText}>{entry.text}</p>
-                                    {entry.richMemory && (
-                                        <div className={styles.richMemory}>
-                                            <Sparkles size={16} className="text-accent" />
-                                            <span className="magic-text">{entry.richMemory.title}</span>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
-                </div>
+                <h1 className={styles.title}>Reflect & Inscribe</h1>
+                <p className={styles.subtitle}>Your thoughts are safe here.</p>
             </div>
+
+            <AnimatePresence>
+                {!showInputModal && (
+                    <motion.div
+                        className={styles.actionArea}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                    >
+                        <LiquidGlass className={styles.mainButtonGlass}>
+                            <button className={styles.mainButton} onClick={handleOpenModal}>
+                                <Sparkles size={24} />
+                                <span>Begin Entry</span>
+                            </button>
+                        </LiquidGlass>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showInputModal && (
+                    <motion.div
+                        className={styles.modalOverlay}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className={styles.modalContent}
+                            initial={{ scale: 0.9, y: 50, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 0.9, y: 50, opacity: 0 }}
+                        >
+                            <LiquidGlass className={`${styles.inputGlass} ${isRecording ? styles.glow : ''}`}>
+                                <div className={styles.inputWrapper}>
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={entry}
+                                        onChange={(e) => setEntry(e.target.value)}
+                                        placeholder="Speak or type your thoughts..."
+                                        className={`${styles.textarea} ${isTyping ? styles.typingEffect : ''}`}
+                                    />
+
+                                    <div className={styles.controls}>
+                                        <button
+                                            className={`${styles.iconButton} ${isRecording ? styles.recording : ''}`}
+                                            onClick={handleStartRecording}
+                                            title="Voice Note (ElevenLabs VAD)"
+                                        >
+                                            <Mic size={24} />
+                                        </button>
+                                        <button
+                                            className={styles.saveButton}
+                                            onClick={handleSave}
+                                            disabled={!entry.trim()}
+                                        >
+                                            <Send size={20} />
+                                            <span>Inscribe</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </LiquidGlass>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

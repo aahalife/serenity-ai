@@ -42,6 +42,7 @@ export function useAudio() {
 
         if (playPromise !== undefined) {
             playPromise.then(() => {
+                if (!audioRef.current) return; // Check if unmounted/stopped
                 setIsPlaying(true);
                 // Fade in
                 const step = 0.05;
@@ -58,6 +59,10 @@ export function useAudio() {
                     }
                 }, interval);
             }).catch(error => {
+                if (error.name === 'AbortError') {
+                    // Ignore abort errors caused by pausing/stopping immediately
+                    return;
+                }
                 console.error("Audio playback failed:", error);
             });
         }

@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, ArrowRight, Sparkles, X, Image as ImageIcon } from "lucide-react";
+import { Clock, ArrowRight, Sparkles, X, Image as ImageIcon, Calendar, MessageSquare } from "lucide-react";
 import styles from "./SmartSchedule.module.css";
+import FeedbackModal from "./FeedbackModal";
 
 interface ScheduleItem {
+    id: string;
     time: string;
     title: string;
     description: string;
@@ -32,8 +34,11 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
     const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedItem, setSelectedItem] = useState<ScheduleItem | null>(null);
-    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [generatedImages, setGeneratedImages] = useState<Record<string, string>>({});
     const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [feedbackItem, setFeedbackItem] = useState<ScheduleItem | null>(null);
 
     useEffect(() => {
         const fetchSchedule = async () => {
@@ -46,7 +51,17 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
 
                 if (response.ok) {
                     const data = await response.json();
-                    setSchedule(data.schedule);
+                    // Ensure items have IDs
+                    const scheduleWithIds = data.schedule.map((item: any, index: number) => ({
+                        ...item,
+                        id: item.id || `schedule-${index}-${Date.now()}`
+                    }));
+                    setSchedule(scheduleWithIds);
+
+                    // Trigger image generation for ALL items
+                    scheduleWithIds.forEach((item: ScheduleItem) => {
+                        generateImageForItem(item);
+                    });
                 }
             } catch (error) {
                 console.error("Failed to fetch schedule", error);
@@ -60,27 +75,48 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
         }
     }, [flowState, userProfile, habits]);
 
-    const handleItemClick = async (item: ScheduleItem) => {
-        setSelectedItem(item);
-        setGeneratedImage(null);
-        setIsGeneratingImage(true);
+    const generateImageForItem = async (item: ScheduleItem) => {
+        // Skip if already generated or generating (simple check, could be more robust)
+        if (generatedImages[item.id]) return;
 
         try {
             const response = await fetch("/api/visualize", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt: item.visual_prompt })
+                body: JSON.stringify({ prompt: item.visual_prompt + ", oil painting style, artistic, blended edges" })
             });
 
             if (response.ok) {
                 const data = await response.json();
-                setGeneratedImage(data.imageUrl);
+                setGeneratedImages(prev => ({
+                    ...prev,
+                    [item.id]: data.imageUrl
+                }));
             }
         } catch (error) {
-            console.error("Failed to generate image", error);
-        } finally {
-            setIsGeneratingImage(false);
+            console.error(`Failed to generate image for ${item.id}`, error);
         }
+    };
+
+    const handleItemClick = (item: ScheduleItem) => {
+        setSelectedItem(item);
+    };
+
+    const handleAddToCalendar = (e: React.MouseEvent, item: ScheduleItem) => {
+        e.stopPropagation();
+        // Mock calendar addition
+        alert(`Added "${item.title}" to your calendar!`);
+    };
+
+    const handleFeedback = (e: React.MouseEvent, item: ScheduleItem) => {
+        e.stopPropagation();
+        setFeedbackItem(item);
+        setIsFeedbackOpen(true);
+    };
+
+    const submitFeedback = (feedback: string) => {
+        console.log(`Feedback for ${feedbackItem?.title}: ${feedback}`);
+        // In a real app, send this to an API
     };
 
     if (loading) return <div className={styles.loading}>Crafting your rich moments...</div>;
@@ -91,7 +127,7 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
             <div className={styles.timeline}>
                 {schedule.map((item, index) => (
                     <motion.div
-                        key={index}
+                        key={item.id}
                         className={styles.item}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -103,12 +139,47 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
                             <div className={styles.line}></div>
                         </div>
                         <div className={styles.content}>
-                            <div className={styles.header}>
+                            <div className={styles.itemHeader}>
                                 <span className={styles.type}>{item.type}</span>
                                 <span className={styles.duration}><Clock size={12} /> {item.duration}</span>
                             </div>
                             <h3 className={styles.itemTitle}>{item.title}</h3>
                             <p className={styles.description}>{item.description}</p>
+
+                            {/* Inline Image Display */}
+                            <div className={styles.inlineImageContainer}>
+                                {generatedImages[item.id] ? (
+                                    <motion.img
+                                        src={generatedImages[item.id]}
+                                        alt="Visualization"
+                                        className={styles.inlineImage}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                    />
+                                ) : (
+                                    <div className={styles.imagePlaceholder}>
+                                        <div className={styles.spinner}></div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.cardActions}>
+                                <button
+                                    className={styles.actionButton}
+                                    onClick={(e) => handleAddToCalendar(e, item)}
+                                    title="Add to Calendar"
+                                >
+                                    <Calendar size={16} /> Add
+                                </button>
+                                <button
+                                    className={styles.actionButton}
+                                    onClick={(e) => handleFeedback(e, item)}
+                                    title="Give Feedback"
+                                >
+                                    <MessageSquare size={16} /> Feedback
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 ))}
@@ -141,24 +212,15 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
 
                             <div className={styles.modalBody}>
                                 <div className={styles.visualSection}>
-                                    {isGeneratingImage ? (
-                                        <div className={styles.imagePlaceholder}>
-                                            <div className={styles.spinner}></div>
-                                            <p>Visualizing this moment...</p>
-                                        </div>
-                                    ) : generatedImage ? (
+                                    {/* Removed duplicate image display in modal as requested, or kept minimal */}
+                                    {generatedImages[selectedItem.id] && (
                                         <motion.img
-                                            src={generatedImage}
+                                            src={generatedImages[selectedItem.id]}
                                             alt="Visualization"
                                             className={styles.generatedImage}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                         />
-                                    ) : (
-                                        <div className={styles.imagePlaceholder}>
-                                            <ImageIcon size={48} />
-                                            <p>Visualization unavailable</p>
-                                        </div>
                                     )}
                                 </div>
 
@@ -168,8 +230,14 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
                                         <h4>Why this fits you</h4>
                                         <p>{selectedItem.insight}</p>
                                     </div>
-                                    <div className={styles.promptBox}>
-                                        <small>Visual Prompt: {selectedItem.visual_prompt}</small>
+
+                                    <div className={styles.modalActions}>
+                                        <button
+                                            className={styles.modalActionButton}
+                                            onClick={(e) => handleAddToCalendar(e, selectedItem)}
+                                        >
+                                            <Calendar size={18} /> Add to Calendar
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -177,6 +245,13 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <FeedbackModal
+                isOpen={isFeedbackOpen}
+                onClose={() => setIsFeedbackOpen(false)}
+                suggestionTitle={feedbackItem?.title || ""}
+                onSubmit={submitFeedback}
+            />
         </div>
     );
 }

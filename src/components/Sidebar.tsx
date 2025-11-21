@@ -2,24 +2,28 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User } from "lucide-react";
+import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
+import { LogOut, LogIn } from "lucide-react";
 
-interface UserProfile {
-    name: string;
+interface SidebarProps {
+    isCollapsed: boolean;
+    toggleCollapse: () => void;
 }
 
-export default function Sidebar() {
+export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
     const pathname = usePathname();
-    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const { data: session, status } = useSession();
+    const [userProfile, setUserProfile] = useState<any>(null);
 
     useEffect(() => {
         const savedProfile = localStorage.getItem("userProfile");
         if (savedProfile) {
-            setProfile(JSON.parse(savedProfile));
+            setUserProfile(JSON.parse(savedProfile));
         }
     }, []);
 
@@ -28,21 +32,31 @@ export default function Sidebar() {
         { name: "Breathe", href: "/breathing", icon: Wind },
         { name: "Journal", href: "/journal", icon: BookOpen },
         { name: "The Work", href: "/the-work", icon: Activity },
+        { name: "Wins", href: "/wins", icon: Trophy },
         { name: "Chat", href: "/chat", icon: MessageCircle },
+        { name: "Profile", href: "/profile", icon: User }, // Explicit Profile link
     ];
 
     return (
         <motion.aside
-            initial={{ x: -280 }}
-            animate={{ x: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className={styles.sidebar}
+            initial={{ width: 280 }}
+            animate={{ width: isCollapsed ? 80 : 280 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
         >
-            <div className={styles.logo}>
+            <button
+                className={styles.collapseBtn}
+                onClick={toggleCollapse}
+                title={isCollapsed ? "Expand" : "Collapse"}
+            >
+                {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
+
+            <div className={`${styles.logo} font-montage`}>
                 <div className={styles.logoIcon}>
                     <Wind size={24} />
                 </div>
-                Serenity AI
+                {!isCollapsed && "Serenity AI"}
             </div>
 
             <nav className={styles.nav}>
@@ -54,9 +68,12 @@ export default function Sidebar() {
                             key={item.name}
                             href={item.href}
                             className={clsx(styles.navItem, { [styles.active]: isActive })}
+                            title={isCollapsed ? item.name : ""}
                         >
-                            <Icon size={20} />
-                            <span>{item.name}</span>
+                            <div className={styles.iconWrapper}>
+                                <Icon size={20} />
+                            </div>
+                            {!isCollapsed && <span className="font-montage">{item.name}</span>}
                             {isActive && (
                                 <motion.div
                                     layoutId="activeNav"
@@ -72,13 +89,33 @@ export default function Sidebar() {
             </nav>
 
             <div className={styles.userProfile}>
-                <div className={styles.avatar}>
-                    {profile?.name?.charAt(0) || "U"}
-                </div>
-                <div className={styles.userInfo}>
-                    <span className={styles.userName}>{profile?.name || "User"}</span>
-                    <span className={styles.userStatus}>Mindful</span>
-                </div>
+                {status === "authenticated" && session?.user ? (
+                    <>
+                        <Link href="/profile" className={styles.profileLink}>
+                            {session.user.image ? (
+                                <img src={session.user.image} alt="Profile" className={styles.avatar} />
+                            ) : (
+                                <div className={styles.avatar}>
+                                    {session.user.name ? session.user.name[0] : "U"}
+                                </div>
+                            )}
+                            {!isCollapsed && (
+                                <div className={styles.userInfo}>
+                                    <span className={styles.userName}>{session.user.name}</span>
+                                    <span className={styles.userStatus}>Flow Seeker</span>
+                                </div>
+                            )}
+                        </Link>
+                        <button onClick={() => signOut()} className={styles.logoutBtn} title="Sign Out">
+                            <LogOut size={18} />
+                        </button>
+                    </>
+                ) : (
+                    <button onClick={() => signIn('google')} className={styles.loginBtn}>
+                        <LogIn size={18} />
+                        {!isCollapsed && <span>Sign In with Google</span>}
+                    </button>
+                )}
             </div>
         </motion.aside>
     );

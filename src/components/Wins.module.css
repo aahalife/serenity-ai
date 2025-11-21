@@ -1,0 +1,151 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    min-height: 100vh;
+}
+
+.header {
+    margin-bottom: 4rem;
+    text-align: center;
+}
+
+.titleWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.icon {
+    color: var(--accent);
+    filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), 0.5));
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #fff, #a5f3fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 1.1rem;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 24px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.date {
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.emotions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.emotionBad {
+    color: #ff8a8a;
+}
+
+.emotionGood {
+    color: #8affb8;
+}
+
+.arrow {
+    color: var(--muted);
+    opacity: 0.5;
+}
+
+.transformation {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.thoughtSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+.thought {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+
+.turnaround {
+    font-size: 1.3rem;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.5;
+    background: linear-gradient(to right, #fff, #a5f3fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0.3;
+}
+
+.line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, white, transparent);
+}
+
+.sparkle {
+    color: var(--accent);
+}
