@@ -67,7 +67,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} font-sans antialiased`}>
+            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} antialiased`}>
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>

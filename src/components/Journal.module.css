@@ -80,7 +80,6 @@
     font-size: 1.5rem;
     line-height: 1.6;
     resize: none;
-    font-family: var(--font-sans);
 }
 
 .textarea:focus {

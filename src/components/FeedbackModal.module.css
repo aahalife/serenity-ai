@@ -83,7 +83,6 @@
     border-radius: 16px;
     padding: 1rem;
     color: var(--foreground);
-    font-family: var(--font-sans);
     font-size: 1rem;
     resize: vertical;
     margin-bottom: 1.5rem;
