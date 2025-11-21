@@ -137,22 +137,6 @@ export default function Dashboard() {
                         <div className={styles.loading}>Analyzing your flow...</div>
                     )}
                 </section>
-
-                <aside className={styles.sidebar}>
-                    {/* Removed Status Card with bars as requested */}
-
-                    <div className={styles.quickActions}>
-                        <button className={styles.actionBtn} onClick={() => router.push('/journal')}>
-                            <PenTool size={20} /> Journal
-                        </button>
-                        <button className={styles.actionBtn} onClick={() => router.push('/breathing')}>
-                            <Wind size={20} /> Breathe
-                        </button>
-                        <button className={styles.actionBtn} onClick={() => router.push('/chat')}>
-                            <MessageCircle size={20} /> Chat
-                        </button>
-                    </div>
-                </aside>
             </div>
 
             <StressModal
