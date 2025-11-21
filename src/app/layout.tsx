@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Roboto } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const inter = Inter({
@@ -12,6 +13,23 @@ const roboto = Roboto({
     weight: ["400", "500", "700"],
     subsets: ["latin"],
     variable: "--font-roboto",
+    display: "swap",
+});
+
+const montage = localFont({
+    src: [
+        {
+            path: "../../public/styles/font/Montage.woff2",
+            weight: "400",
+            style: "normal",
+        },
+        {
+            path: "../../public/styles/font/Montage.woff",
+            weight: "400",
+            style: "normal",
+        },
+    ],
+    variable: "--font-montage",
     display: "swap",
 });
 
@@ -43,7 +61,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={inter.className}>
+            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${inter.className}`}>
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>

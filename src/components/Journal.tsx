@@ -11,7 +11,7 @@ export default function Journal() {
     const [entry, setEntry] = useState("");
     const [isRecording, setIsRecording] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
-    const { play, toggleMute, isMuted, fadeOut } = useAudio();
+    const { play, toggleMute, isMuted } = useAudio();
     const [showInputModal, setShowInputModal] = useState(false);
 
     // Ref for the text area to auto-resize or focus
@@ -89,12 +89,8 @@ export default function Journal() {
                 <div className={styles.videoOverlay}></div>
             </div>
 
-            <button onClick={toggleMute} className={styles.muteButton}>
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </button>
-
             <div className={styles.content}>
-                <h1 className={styles.title}>Reflect & Inscribe</h1>
+                <h1 className={`${styles.title} font-montage`}>Reflect & Thrive</h1>
                 <p className={styles.subtitle}>Your thoughts are safe here.</p>
             </div>
 

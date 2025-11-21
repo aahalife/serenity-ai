@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play, Square, RotateCcw } from "lucide-react";
 import styles from "./Breathing.module.css";
+import LiquidGlass from "./LiquidGlass";
 
 type BreathingState = "idle" | "intro" | "loop" | "outro";
 
@@ -52,16 +53,18 @@ export default function Breathing() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className={styles.startCard}
+                        className={styles.startCardWrapper}
                     >
-                        <h1 className={styles.title}>Box Breathing</h1>
-                        <p className={styles.description}>
-                            Inhale. Hold. Exhale. Hold.<br />
-                            Reset your nervous system in 4 minutes.
-                        </p>
-                        <button className={styles.playButton} onClick={handlePlay}>
-                            <Play fill="currentColor" /> Begin
-                        </button>
+                        <LiquidGlass className={styles.startCard}>
+                            <h1 className={`${styles.title} font-montage`}>Box Breathing</h1>
+                            <p className={styles.description}>
+                                Inhale. Hold. Exhale. Hold.<br />
+                                Reset your nervous system in 4 minutes.
+                            </p>
+                            <button className={styles.playButton} onClick={handlePlay}>
+                                <Play fill="currentColor" /> Begin
+                            </button>
+                        </LiquidGlass>
                     </motion.div>
                 ) : (
                     <div className={styles.videoWrapper}>

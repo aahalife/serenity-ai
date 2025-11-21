@@ -106,7 +106,7 @@ export default function TheWork() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                 >
-                    <h1 className={styles.title}>The Work</h1>
+                    <h1 className={`${styles.title} font-montage`}>The Work</h1>
                     <p className={styles.subtitle}>Identify a stressful thought to investigate.</p>
 
                     <LiquidGlass className={styles.inputContainer}>
@@ -166,7 +166,7 @@ export default function TheWork() {
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h2 className={styles.question}>{steps[qIndex + 1].title}</h2>
+                        <h2 className={`${styles.question} font-montage`}>{steps[qIndex + 1].title}</h2>
                         <div className={styles.thoughtDisplay}>"{thought}"</div>
 
                         <LiquidGlass className={styles.inputContainer}>
@@ -216,7 +216,7 @@ export default function TheWork() {
                     whileInView={{ opacity: 1 }}
                     transition={{ duration: 1 }}
                 >
-                    <h2 className={styles.title}>Turn it Around</h2>
+                    <h2 className={`${styles.title} font-montage`}>Turn it Around</h2>
                     <p className={styles.subtitle}>Consider the opposite. Could it be as true?</p>
 
                     <div className={styles.inputContainer} style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
