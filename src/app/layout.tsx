@@ -33,6 +33,12 @@ const montage = localFont({
     display: "swap",
 });
 
+const petrona = localFont({
+    src: "../styles/font/Petrona-VariableFont_wght.ttf",
+    variable: "--font-petrona",
+    display: "swap",
+});
+
 export const metadata: Metadata = {
     title: "Serenity AI",
     description: "Your intelligent companion for well-being.",
@@ -61,7 +67,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${inter.className}`}>
+            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} font-sans antialiased`}>
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>
