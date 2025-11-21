@@ -78,6 +78,36 @@ export default function Profile() {
                     transition={{ delay: 0.2 }}
                 >
                     <div className={styles.cardHeader}>
+                        <Shield className={styles.icon} />
+                        <h2>Integrations</h2>
+                    </div>
+                    <div className={styles.settingRow}>
+                        <span>Instagram</span>
+                        <button
+                            className={styles.connectButton}
+                            onClick={() => window.location.href = "/api/integrations/auth?appName=instagram"}
+                        >
+                            Connect
+                        </button>
+                    </div>
+                    <div className={styles.settingRow}>
+                        <span>Google People</span>
+                        <button
+                            className={styles.connectButton}
+                            onClick={() => window.location.href = "/api/integrations/auth?appName=google_people"}
+                        >
+                            Connect
+                        </button>
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                >
+                    <div className={styles.cardHeader}>
                         <Settings className={styles.icon} />
                         <h2>Preferences</h2>
                     </div>
