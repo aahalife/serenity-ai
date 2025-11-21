@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronDown, X, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowRight, ChevronDown, X, Sparkles, RefreshCw, Volume2, VolumeX } from "lucide-react";
 import styles from "./TheWork.module.css";
 import LiquidGlass from "./LiquidGlass";
+import { useAudio } from "@/hooks/useAudio";
 
 const steps = [
     { id: "intro", title: "The Work", subtitle: "Identify a stressful thought.", video: "/videos/theworkbkgs/650057f73744d6f9a46e25e3_AdobeStock_291299852 loop-transcode.mp4" },
@@ -23,6 +24,12 @@ export default function TheWork() {
     const [turnarounds, setTurnarounds] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const { play, toggleMute, isMuted } = useAudio();
+
+    // Play background audio on mount
+    useEffect(() => {
+        play("/audio/homebkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
+    }, [play]);
 
     // Auto-scroll to next section when step changes
     useEffect(() => {

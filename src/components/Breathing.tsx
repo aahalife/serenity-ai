@@ -5,19 +5,24 @@ import { motion } from "framer-motion";
 import { Play, Square, RotateCcw } from "lucide-react";
 import styles from "./Breathing.module.css";
 import LiquidGlass from "./LiquidGlass";
+import { useAudio } from "@/hooks/useAudio";
 
 type BreathingState = "idle" | "intro" | "loop" | "outro";
 
 export default function Breathing() {
     const [state, setState] = useState<BreathingState>("idle");
     const videoRef = useRef<HTMLVideoElement>(null);
+    const { play, stop: stopAudio } = useAudio();
 
     const handlePlay = () => {
         setState("intro");
+        // Play calming background music
+        play("/audio/homebkg.m4a", { volume: 0.3, loop: true, fadeInDuration: 1000 });
     };
 
     const handleStop = () => {
         setState("outro");
+        stopAudio();
     };
 
     const handleVideoEnded = () => {

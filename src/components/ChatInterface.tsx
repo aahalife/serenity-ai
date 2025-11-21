@@ -5,6 +5,7 @@ import { Calendar, Battery, Zap, Wind, BookOpen, MessageCircle, Sparkles, Send, 
 import styles from "./ChatInterface.module.css";
 import { useVoice } from "@/hooks/useVoice";
 import { useAudio } from "@/hooks/useAudio";
+import { useHume } from "@/hooks/useHume";
 import { motion, AnimatePresence } from "framer-motion";
 import LiquidGlass from "./LiquidGlass";
 
@@ -34,6 +35,17 @@ export default function ChatInterface() {
         play("/audio/chatbkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
     }, [play]);
 
+    const [emotions, setEmotions] = useState<any[]>([]);
+    const { connect: connectHume, disconnect: disconnectHume, isConnected: isHumeConnected } = useHume({
+        onEmotion: (newEmotions) => {
+            // Keep top 3 emotions
+            const topEmotions = newEmotions
+                .sort((a: any, b: any) => b.score - a.score)
+                .slice(0, 3);
+            setEmotions(topEmotions);
+        }
+    });
+
     const { isListening, isSpeaking, transcript, startListening, stopListening, speak } = useVoice({
         onSpeechEnd: (text) => {
             handleSend(text);
@@ -41,6 +53,17 @@ export default function ChatInterface() {
         onSpeakStart: () => duck(0, 0.05), // Duck background audio when AI speaks
         onSpeakEnd: () => unduck(0.2)     // Restore volume when AI stops
     });
+
+    // Handle Call Mode toggle
+    const toggleCallMode = () => {
+        if (isListening) {
+            stopListening();
+            disconnectHume();
+        } else {
+            startListening();
+            connectHume();
+        }
+    };
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,7 +106,10 @@ export default function ChatInterface() {
                 body: JSON.stringify({
                     message: textToSend,
                     history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] })),
-                    profile // Send the full profile context
+                    profile: {
+                        ...profile,
+                        currentEmotions: emotions // Pass real-time emotions to LLM
+                    }
                 }),
             });
 
@@ -127,23 +153,19 @@ export default function ChatInterface() {
                 </video>
                 <div className={styles.glassOverlay}></div>
             </div>
+
             <div className={styles.headerWrapper}>
-                <LiquidGlass className={styles.headerGlass}>
-                    <div className={styles.headerContent}>
-                        <div className={`${styles.avatar} ${isListening ? styles.avatarListening : ''}`}>
-                            <Sparkles size={20} />
-                        </div>
-                        <div className={styles.headerInfo}>
-                            <h3 className="font-montage">Serenity</h3>
-                            <p className={isListening ? styles.statusListening : ''}>
-                                {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}
-                            </p>
-                        </div>
-                        <button onClick={toggleMute} className={styles.muteButton}>
-                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                        </button>
+                <div className={styles.headerContent}>
+                    <div className={styles.headerInfo}>
+                        <h3 className="font-montage">Serenity</h3>
+                        <p className={isListening ? styles.statusListening : ''}>
+                            {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}
+                        </p>
                     </div>
-                </LiquidGlass>
+                    <button onClick={toggleMute} className={styles.muteButton}>
+                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    </button>
+                </div>
             </div>
 
             <div className={styles.messages}>
@@ -176,11 +198,12 @@ export default function ChatInterface() {
                 <LiquidGlass className={styles.liquidInput}>
                     <div className={styles.inputArea}>
                         <button
-                            onClick={isListening ? stopListening : startListening}
+                            onClick={toggleCallMode}
                             className={`${styles.sendButton} ${isListening ? styles.listening : ""}`}
                             style={{ background: isListening ? "var(--accent)" : "var(--surface-hover)", color: isListening ? "white" : "var(--foreground)" }}
+                            title={isListening ? "Stop Call" : "Start Call"}
                         >
-                            <Mic size={20} />
+                            <Mic size={18} />
                         </button>
                         <input
                             type="text"
@@ -195,7 +218,7 @@ export default function ChatInterface() {
                             className={styles.sendButton}
                             disabled={!inputValue.trim()}
                         >
-                            <Send size={20} />
+                            <Send size={18} />
                         </button>
                     </div>
                 </LiquidGlass>

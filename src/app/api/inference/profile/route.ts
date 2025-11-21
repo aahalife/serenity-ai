@@ -3,7 +3,15 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const userData = await req.json();
+        const { name, answers, googleData, instagramData } = await req.json();
+
+        // Construct a rich context object
+        const userData = {
+            name,
+            onboardingAnswers: answers,
+            googleProfile: googleData || "Not connected",
+            instagramProfile: instagramData || "Not connected"
+        };
 
         const prompt = PROFILE_INFERENCE_PROMPT.replace(
             "{{USER_DATA}}",
@@ -17,7 +25,7 @@ export async function POST(req: Request) {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         const profile = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
 
-        return NextResponse.json(profile);
+        return NextResponse.json({ profile });
     } catch (error) {
         console.error("Profile Inference Error:", error);
         return NextResponse.json({ error: "Failed to infer profile" }, { status: 500 });
