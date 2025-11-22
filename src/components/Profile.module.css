@@ -152,3 +152,29 @@
     opacity: 0.9;
     transform: translateY(-1px);
 }
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        padding-bottom: 100px;
+        /* Space for bottom nav */
+    }
+
+    .title {
+        font-size: 2rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        /* Stack vertically */
+        gap: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .cardHeader h2 {
+        font-size: 1.25rem;
+    }
+}

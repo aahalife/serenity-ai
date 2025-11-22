@@ -242,3 +242,30 @@
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        padding-bottom: 100px;
+        /* Space for bottom nav */
+    }
+
+    .header {
+        margin-bottom: 1.5rem;
+    }
+
+    .greeting h1 {
+        font-size: 2rem;
+    }
+
+    .greeting p {
+        font-size: 1rem;
+    }
+
+    .muteButton {
+        top: 1rem;
+        right: 1rem;
+        width: 32px;
+        height: 32px;
+    }
+}
