@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.70.1",
     "@elevenlabs/elevenlabs-js": "^2.25.0",
     "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.84.0",
     "clsx": "^2.1.1",
     "composio-core": "^0.5.39",
     "framer-motion": "^12.23.24",

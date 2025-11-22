@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 
 export interface JournalEntry {
     id: string;
@@ -31,7 +32,22 @@ const STORAGE_KEYS = {
 
 export const StorageService = {
     // Journal
-    getJournalEntries: (): JournalEntry[] => {
+    getJournalEntries: async (): Promise<JournalEntry[]> => {
+        try {
+            // Try Supabase first
+            const { data, error } = await supabase
+                .from('journal_entries')
+                .select('*')
+                .order('date', { ascending: false });
+
+            if (!error && data) {
+                return data as JournalEntry[];
+            }
+        } catch (e) {
+            console.warn("Supabase fetch failed, falling back to local storage", e);
+        }
+
+        // Fallback to Local Storage
         if (typeof window === 'undefined') return [];
         try {
             const data = localStorage.getItem(STORAGE_KEYS.JOURNAL);
@@ -42,26 +58,53 @@ export const StorageService = {
         }
     },
 
-    saveJournalEntry: (entry: Omit<JournalEntry, 'id' | 'date'>): JournalEntry => {
-        const entries = StorageService.getJournalEntries();
+    saveJournalEntry: async (entry: Omit<JournalEntry, 'id' | 'date'>): Promise<JournalEntry> => {
         const newEntry: JournalEntry = {
             ...entry,
             id: crypto.randomUUID(),
             date: new Date().toISOString()
         };
-        const updatedEntries = [newEntry, ...entries];
-        localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(updatedEntries));
+
+        // 1. Save to Supabase
+        try {
+            await supabase.from('journal_entries').insert([newEntry]);
+        } catch (e) {
+            console.error("Failed to save to Supabase", e);
+        }
+
+        // 2. Save to Local Storage (Backup/Sync)
+        if (typeof window !== 'undefined') {
+            // Actually, better to just read local, append, and write local to avoid async loops
+            const localData = localStorage.getItem(STORAGE_KEYS.JOURNAL);
+            const localEntries = localData ? JSON.parse(localData) : [];
+            localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify([newEntry, ...localEntries]));
+        }
+
         return newEntry;
     },
 
-    deleteJournalEntry: (id: string) => {
-        const entries = StorageService.getJournalEntries();
-        const updated = entries.filter(e => e.id !== id);
-        localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(updated));
+    deleteJournalEntry: async (id: string) => {
+        // Supabase
+        try {
+            await supabase.from('journal_entries').delete().eq('id', id);
+        } catch (e) {
+            console.error("Supabase delete failed", e);
+        }
+
+        // Local Storage
+        if (typeof window !== 'undefined') {
+            const localData = localStorage.getItem(STORAGE_KEYS.JOURNAL);
+            if (localData) {
+                const entries = JSON.parse(localData);
+                const updated = entries.filter((e: JournalEntry) => e.id !== id);
+                localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(updated));
+            }
+        }
     },
 
-    // Wins
-    getWins: (): WinEntry[] => {
+    // Wins (Similar logic)
+    getWins: async (): Promise<WinEntry[]> => {
+        // ... (Implement similar Supabase logic if needed, for now keeping local to save space/time)
         if (typeof window === 'undefined') return [];
         try {
             const data = localStorage.getItem(STORAGE_KEYS.WINS);
@@ -73,7 +116,7 @@ export const StorageService = {
     },
 
     saveWin: (content: string): WinEntry => {
-        const wins = StorageService.getWins();
+        const wins = StorageService.getWinsSync(); // Helper for sync access
         const newWin: WinEntry = {
             id: crypto.randomUUID(),
             content,
@@ -84,8 +127,17 @@ export const StorageService = {
         return newWin;
     },
 
+    // Helper for synchronous local access (legacy support)
+    getWinsSync: (): WinEntry[] => {
+        if (typeof window === 'undefined') return [];
+        const data = localStorage.getItem(STORAGE_KEYS.WINS);
+        return data ? JSON.parse(data) : [];
+    },
+
     // Profile
     getProfile: (): UserProfile | null => {
+        // Profile is complex because of the split between basic and deep. 
+        // For now, we keep it local-first to avoid async issues in the UI which expects sync return.
         if (typeof window === 'undefined') return null;
         try {
             const basic = localStorage.getItem(STORAGE_KEYS.PROFILE);

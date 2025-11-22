@@ -21,7 +21,11 @@ export default function Journal() {
 
     useEffect(() => {
         // Load entries
-        setEntries(StorageService.getJournalEntries());
+        const loadEntries = async () => {
+            const data = await StorageService.getJournalEntries();
+            setEntries(data);
+        };
+        loadEntries();
 
         // Crossfade logic: Play new background
         play("/audio/journalbkg.m4a", { volume: 0.3, loop: true, fadeInDuration: 2000 });
@@ -72,14 +76,14 @@ export default function Journal() {
     const handleSave = async () => {
         if (!entry.trim()) return;
 
-        const newEntry = StorageService.saveJournalEntry({ content: entry });
+        const newEntry = await StorageService.saveJournalEntry({ content: entry });
         setEntries([newEntry, ...entries]);
         setEntry("");
         setShowInputModal(false);
     };
 
-    const handleDelete = (id: string) => {
-        StorageService.deleteJournalEntry(id);
+    const handleDelete = async (id: string) => {
+        await StorageService.deleteJournalEntry(id);
         setEntries(entries.filter(e => e.id !== id));
     };
 
