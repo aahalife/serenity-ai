@@ -26,10 +26,78 @@ export default function TheWork() {
     const containerRef = useRef<HTMLDivElement>(null);
     const { play, toggleMute, isMuted } = useAudio();
 
+    const [isGuidancePlaying, setIsGuidancePlaying] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     // Play background audio on mount
     useEffect(() => {
         play("/audio/homebkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
     }, [play]);
+
+    // Trigger guidance on step change
+    useEffect(() => {
+        const playGuidance = async () => {
+            // Stop previous guidance
+            if (audioRef.current) {
+                audioRef.current.pause();
+                setIsGuidancePlaying(false);
+            }
+
+            // Don't play guidance for intro if we want to keep it simple, or do.
+            // Let's play for all steps.
+
+            try {
+                // Get user profile for personalization
+                const savedProfile = localStorage.getItem("userProfile");
+                const userProfile = savedProfile ? JSON.parse(savedProfile) : {};
+
+                const res = await fetch("/api/inference/work", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        mode: "guidance",
+                        stepId: steps[currentStep].id,
+                        input: thought, // Will be empty for intro/q1 initially
+                        userProfile
+                    })
+                });
+
+                if (res.ok) {
+                    const { text } = await res.json();
+                    if (text) {
+                        // Generate TTS
+                        const ttsRes = await fetch("/api/tts", {
+                            method: "POST",
+                            body: JSON.stringify({ text })
+                        });
+
+                        if (ttsRes.ok) {
+                            const blob = await ttsRes.blob();
+                            const url = URL.createObjectURL(blob);
+                            const audio = new Audio(url);
+                            audioRef.current = audio;
+
+                            audio.onplay = () => setIsGuidancePlaying(true);
+                            audio.onended = () => setIsGuidancePlaying(false);
+
+                            audio.play();
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to play guidance", e);
+            }
+        };
+
+        // Small delay to allow transition
+        const timer = setTimeout(playGuidance, 1000);
+        return () => clearTimeout(timer);
+    }, [currentStep, thought]); // Re-run if thought changes (e.g. user selects a suggestion)
 
     // Auto-scroll to next section when step changes
     useEffect(() => {
