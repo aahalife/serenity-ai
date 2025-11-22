@@ -1,13 +1,13 @@
-import { ElevenLabsClient } from "elevenlabs";
+import { ElevenLabsClient } from "@elevenlabs/elevenlabs-js";
 
-const apiKey = process.env.ELEVENLABS_API_KEY;
+const apiKey = process.env.ELEVENLABS_API_KEY || "build_placeholder";
 
-if (!apiKey) {
+if (!process.env.ELEVENLABS_API_KEY) {
     console.warn("Missing ELEVENLABS_API_KEY environment variable");
 }
 
 export const elevenlabs = new ElevenLabsClient({
-    apiKey: apiKey || "placeholder", // Prevent crash if key is missing, but will fail on request
+    apiKey: apiKey,
 });
 
 export const VOICE_ID = "kdmDKE6EkgrWrrykO9Qt"; // The requested voice ID

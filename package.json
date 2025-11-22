@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
+    "@elevenlabs/elevenlabs-js": "^2.25.0",
     "@google/generative-ai": "^0.24.1",
     "clsx": "^2.1.1",
     "composio-core": "^0.5.39",
-    "elevenlabs": "^1.59.0",
     "framer-motion": "^12.23.24",
     "hume": "^0.15.6",
     "lucide-react": "^0.554.0",
