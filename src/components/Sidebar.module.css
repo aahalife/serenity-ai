@@ -26,24 +26,35 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        width: 100%;
-        /* Full width on mobile when expanded */
-        transform: translateX(-100%);
-        /* Hidden by default */
+        width: 100% !important;
+        height: 100vh;
+        transform: none !important;
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 50;
     }
 
     .sidebar.collapsed {
         width: 100%;
         transform: translateX(0);
-        height: auto;
-        bottom: 0;
-        top: auto;
+        height: 80px !important;
+        /* Fixed height for bottom bar */
+        bottom: 0 !important;
+        top: auto !important;
         flex-direction: row;
-        padding: 1rem;
+        padding: 0 1rem;
         border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         justify-content: space-around;
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(10, 10, 15, 0.95);
+        /* Darker background */
+        backdrop-filter: blur(20px);
+    }
+
+    /* Hide logo in collapsed mobile view */
+    .sidebar.collapsed .logo {
+        display: none;
     }
 }
 

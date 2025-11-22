@@ -54,14 +54,24 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
         { name: "Profile", href: "/profile", icon: User }, // Explicit Profile link
     ];
 
+    const sidebarVariants: any = {
+        desktop: {
+            width: isCollapsed ? 70 : 280,
+            x: 0,
+            transition: { duration: 0.3, ease: "easeInOut" }
+        },
+        mobile: {
+            width: "100%",
+            x: 0,
+            transition: { duration: 0.3, ease: "easeInOut" }
+        }
+    };
+
     return (
         <motion.aside
-            initial={{ width: 280 }}
-            animate={{
-                width: isMobile ? (isCollapsed ? "100%" : "100%") : (isCollapsed ? 70 : 280),
-                x: isMobile && isCollapsed ? 0 : 0 // Adjust logic if needed for slide-in
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial={false}
+            animate={isMobile ? "mobile" : "desktop"}
+            variants={sidebarVariants}
             className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
         >
             <button
