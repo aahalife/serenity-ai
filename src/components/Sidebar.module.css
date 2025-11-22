@@ -26,35 +26,122 @@
 
 @media (max-width: 768px) {
     .sidebar {
-        width: 100% !important;
-        height: 100vh;
-        transform: none !important;
+        width: auto !important;
+        /* Let content/max-width define width */
+        height: auto !important;
+        /* Height defined by content + padding */
+        min-height: 70px;
         position: fixed;
-        left: 0;
-        top: 0;
-        z-index: 50;
+        left: 50%;
+        bottom: 20px !important;
+        /* Floating from bottom */
+        transform: translateX(-50%) !important;
+        /* Center horizontally */
+        z-index: 100;
+
+        /* Liquid Glass Effect */
+        background: rgba(20, 20, 30, 0.6);
+        /* Semi-transparent dark */
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow:
+            0 10px 30px -10px rgba(0, 0, 0, 0.5),
+            inset 0 0 20px rgba(255, 255, 255, 0.05);
+        border-radius: 35px;
+        /* Pill shape */
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 0.5rem 1.5rem;
+        margin: 0;
+
+        /* Horizontal Scroll */
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        max-width: 90vw;
+        /* Prevent touching edges */
+
+        /* Hide Scrollbar */
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE/Edge */
+    }
+
+    .sidebar::-webkit-scrollbar {
+        display: none;
+        /* Chrome/Safari */
     }
 
     .sidebar.collapsed {
-        width: 100%;
-        transform: translateX(0);
-        height: 80px !important;
-        /* Fixed height for bottom bar */
-        bottom: 0 !important;
-        top: auto !important;
-        flex-direction: row;
-        padding: 0 1rem;
-        border-right: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        justify-content: space-around;
-        background: rgba(10, 10, 15, 0.95);
-        /* Darker background */
-        backdrop-filter: blur(20px);
+        /* On mobile, collapsed/expanded state matters less for the container shape, 
+           but we ensure it stays consistent */
+        width: auto !important;
+        height: auto !important;
+        bottom: 20px !important;
+        background: rgba(20, 20, 30, 0.6);
+        border-radius: 35px;
+        padding: 0.5rem 1.5rem;
     }
 
-    /* Hide logo in collapsed mobile view */
-    .sidebar.collapsed .logo {
-        display: none;
+    /* Nav Container */
+    .nav {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+        /* Space between icons */
+        width: 100%;
+    }
+
+    /* Nav Items */
+    .navItem {
+        padding: 0.8rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        /* Prevent shrinking */
+        color: rgba(255, 255, 255, 0.6);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .navItem:hover,
+    .navItem.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Active Indicator (Glow) */
+    .activeIndicator {
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background: var(--accent);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--accent);
+    }
+
+    /* Hide unnecessary elements */
+    .collapseBtn,
+    .logo,
+    .userProfile {
+        display: none !important;
+    }
+
+    /* Ensure icons are visible */
+    .iconWrapper {
+        margin: 0;
     }
 }
 

@@ -61,8 +61,9 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
             transition: { duration: 0.3, ease: "easeInOut" }
         },
         mobile: {
-            width: "100%",
-            x: 0,
+            width: "auto", // Allow CSS to control width
+            x: "-50%", // Center horizontally (matches CSS transform)
+            y: 0,
             transition: { duration: 0.3, ease: "easeInOut" }
         }
     };
