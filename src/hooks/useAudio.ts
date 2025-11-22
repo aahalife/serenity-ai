@@ -5,6 +5,7 @@ interface AudioOptions {
     loop?: boolean;
     fadeInDuration?: number;
     fadeOutDuration?: number;
+    onEnded?: () => void;
 }
 
 export function useAudio() {
@@ -13,7 +14,7 @@ export function useAudio() {
     const [isMuted, setIsMuted] = useState(false);
 
     const play = useCallback((src: string, options: AudioOptions = {}) => {
-        const { volume = 1, loop = false, fadeInDuration = 0 } = options;
+        const { volume = 1, loop = false, fadeInDuration = 0, onEnded } = options;
 
         if (audioRef.current) {
             // Fade out current audio if playing
@@ -37,6 +38,10 @@ export function useAudio() {
         audio.loop = loop;
         audio.volume = 0; // Start at 0 for fade in
         audioRef.current = audio;
+
+        if (onEnded) {
+            audio.onended = onEnded;
+        }
 
         const playPromise = audio.play();
 

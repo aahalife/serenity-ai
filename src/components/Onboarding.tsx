@@ -40,17 +40,14 @@ export default function Onboarding() {
     useEffect(() => {
         // Audio Sequence Logic
         // 1. Play Intro.mp3 immediately
-        play("/audio/Intro.mp3", { volume: 0.6, loop: false });
-
-        // 2. Schedule transition to onboarding.wav (assuming Intro is ~12s)
-        // Ideally useAudio would provide an onEnded callback, but for now we time it.
-        const introDuration = 12000;
-
-        const timer = setTimeout(() => {
-            play("/audio/onboarding.wav", { volume: 0.3, loop: true, fadeInDuration: 2000 });
-        }, introDuration);
-
-        return () => clearTimeout(timer);
+        // 2. When Intro ends, play onboarding.wav
+        play("/audio/Intro.mp3", {
+            volume: 0.6,
+            loop: false,
+            onEnded: () => {
+                play("/audio/onboarding.wav", { volume: 0.3, loop: true, fadeInDuration: 2000 });
+            }
+        });
     }, [play]);
 
     const handleSplashEnded = () => {

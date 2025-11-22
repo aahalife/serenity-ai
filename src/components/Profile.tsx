@@ -9,9 +9,18 @@ export default function Profile() {
     const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
-        const savedProfile = localStorage.getItem("userProfile");
-        if (savedProfile) {
-            setProfile(JSON.parse(savedProfile));
+        const savedUserProfile = localStorage.getItem("userProfile");
+        const savedDeepProfile = localStorage.getItem("deepProfile");
+
+        if (savedUserProfile) {
+            const basic = JSON.parse(savedUserProfile);
+            const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
+
+            setProfile({
+                ...basic,
+                ...deep,
+                ocean: deep.traits || deep.ocean || {} // Handle both formats
+            });
         }
     }, []);
 
@@ -38,12 +47,18 @@ export default function Profile() {
                     </div>
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Name</span>
-                        <span className={styles.value}>{profile.name}</span>
+                        <span className={styles.value}>{profile.name || "User"}</span>
                     </div>
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Joined</span>
                         <span className={styles.value}>{new Date().toLocaleDateString()}</span>
                     </div>
+                    {profile.identity && (
+                        <div className={styles.infoRow}>
+                            <span className={styles.label}>Archetype</span>
+                            <span className={styles.value}>{profile.identity}</span>
+                        </div>
+                    )}
                 </motion.div>
 
                 <motion.div
@@ -57,17 +72,21 @@ export default function Profile() {
                         <h2>Deep Profile</h2>
                     </div>
                     <div className={styles.oceanGrid}>
-                        {profile.ocean && Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
-                            <div key={trait} className={styles.trait}>
-                                <span className={styles.traitName}>{trait}</span>
-                                <div className={styles.traitBar}>
-                                    <div
-                                        className={styles.traitFill}
-                                        style={{ width: `${score * 10}%` }}
-                                    />
+                        {profile.ocean && Object.entries(profile.ocean).length > 0 ? (
+                            Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
+                                <div key={trait} className={styles.trait}>
+                                    <span className={styles.traitName}>{trait}</span>
+                                    <div className={styles.traitBar}>
+                                        <div
+                                            className={styles.traitFill}
+                                            style={{ width: `${(typeof score === 'number' ? score : 0.5) * 100}%` }}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className={styles.emptyState}>Complete onboarding to generate your deep profile.</p>
+                        )}
                     </div>
                 </motion.div>
 

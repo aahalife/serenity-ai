@@ -12,9 +12,10 @@ interface HumeDebugModalProps {
     };
     llmContext: any;
     transcript: string;
+    isConnected: boolean;
 }
 
-export default function HumeDebugModal({ isOpen, onClose, humeData, llmContext, transcript }: HumeDebugModalProps) {
+export default function HumeDebugModal({ isOpen, onClose, humeData, llmContext, transcript, isConnected }: HumeDebugModalProps) {
     if (!isOpen) return null;
 
     return (
@@ -32,7 +33,20 @@ export default function HumeDebugModal({ isOpen, onClose, humeData, llmContext, 
                     className={styles.modal}
                 >
                     <div className={styles.header}>
-                        <h2><Activity size={20} /> Hume AI Debugger</h2>
+                        <h2>
+                            <Activity size={20} />
+                            Hume AI Debugger
+                            <span style={{
+                                fontSize: '0.8rem',
+                                marginLeft: '1rem',
+                                color: isConnected ? '#4ade80' : '#f87171',
+                                background: 'rgba(0,0,0,0.2)',
+                                padding: '0.2rem 0.6rem',
+                                borderRadius: '12px'
+                            }}>
+                                {isConnected ? "Connected" : "Disconnected"}
+                            </span>
+                        </h2>
                         <button onClick={onClose} className={styles.closeButton}><X size={20} /></button>
                     </div>
 

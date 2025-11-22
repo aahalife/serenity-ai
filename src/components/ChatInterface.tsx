@@ -39,9 +39,10 @@ export default function ChatInterface() {
 
     const [showDebug, setShowDebug] = useState(false);
     const [emotions, setEmotions] = useState<any[]>([]);
+    const [audioError, setAudioError] = useState<string | null>(null);
+
     const { connect: connectHume, disconnect: disconnectHume, isConnected: isHumeConnected } = useHume({
         onEmotion: (newEmotions) => {
-            // Keep top 3 emotions
             const topEmotions = newEmotions
                 .sort((a: any, b: any) => b.score - a.score)
                 .slice(0, 3);
@@ -51,22 +52,37 @@ export default function ChatInterface() {
 
     const [isCallMode, setIsCallMode] = useState(false);
 
+    // Ensure AudioContext is resumed on first interaction
+    const resumeAudioContext = async () => {
+        try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContext) {
+                const ctx = new AudioContext();
+                if (ctx.state === 'suspended') {
+                    await ctx.resume();
+                }
+            }
+        } catch (e) {
+            console.error("Failed to resume AudioContext", e);
+        }
+    };
+
     const { isListening, isSpeaking, transcript, startListening, stopListening, speak } = useVoice({
         onSpeechEnd: (text) => {
             handleSend(text);
         },
-        onSpeakStart: () => duck(0, 0.05), // Duck background audio when AI speaks
+        onSpeakStart: () => duck(0, 0.05),
         onSpeakEnd: () => {
-            unduck(0.2);     // Restore volume when AI stops
-            // If in call mode, restart listening after AI finishes speaking
+            unduck(0.2);
             if (isCallMode) {
                 startListening();
             }
         }
     });
 
-    // Handle Call Mode toggle
-    const toggleCallMode = () => {
+    const toggleCallMode = async () => {
+        await resumeAudioContext();
+
         if (isCallMode) {
             setIsCallMode(false);
             stopListening();
@@ -204,6 +220,7 @@ export default function ChatInterface() {
                     isListening
                 }}
                 transcript={transcript}
+                isConnected={isHumeConnected}
             />
 
             <div className={styles.messages}>
