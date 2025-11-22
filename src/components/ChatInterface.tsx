@@ -87,7 +87,7 @@ export default function ChatInterface() {
 
                 if (text && text.trim()) {
                     // 2. Send to Chat (LLM)
-                    await handleSend(text);
+                    await handleSend(text, true);
                 }
             } catch (e) {
                 console.error("Voice pipeline error", e);
@@ -127,7 +127,7 @@ export default function ChatInterface() {
         scrollToBottom();
     }, [messages]);
 
-    const handleSend = async (textOverride?: string) => {
+    const handleSend = async (textOverride?: string, isVoice: boolean = false) => {
         const textToSend = textOverride || inputValue;
         if (!textToSend.trim()) return;
 
@@ -139,7 +139,9 @@ export default function ChatInterface() {
         };
 
         setMessages((prev) => [...prev, newMessage]);
-        setInputValue("");
+        if (!isVoice) { // Only clear input if it's not a voice input
+            setInputValue("");
+        }
         setIsTyping(true);
 
         try {
@@ -162,7 +164,8 @@ export default function ChatInterface() {
                     ...profile,
                     currentEmotions: emotions, // Pass real-time emotions
                     location: Intl.DateTimeFormat().resolvedOptions().timeZone, // Simple location proxy
-                }
+                },
+                isVoice // Pass voice flag
             };
 
             const response = await fetch("/api/chat", {
@@ -182,7 +185,10 @@ export default function ChatInterface() {
             };
 
             setMessages((prev) => [...prev, aiResponse]);
-            speak(aiResponse.text);
+            // Only speak if it was a voice interaction OR if call mode is active
+            if (isVoice || isCallMode) {
+                speak(aiResponse.text);
+            }
         } catch (error) {
             console.error("Chat Error:", error);
         } finally {

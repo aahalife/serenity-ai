@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { message, history, profile } = await req.json();
+        const { message, history, profile, isVoice } = await req.json();
 
-        const systemPrompt = `
+        let systemPrompt = `
       You are Serenity, a highly intelligent, empathetic, and psychologically attuned AI companion.
       
       USER PROFILE CONTEXT:
@@ -26,6 +26,18 @@ export async function POST(req: Request) {
       If the user is high in Openness, use metaphors and philosophical concepts.
       Always aim to move the user from stress to clarity.
     `;
+
+        if (isVoice) {
+            systemPrompt += `
+            
+            CRITICAL INSTRUCTIONS FOR VOICE OUTPUT (ElevenLabs V3):
+            1. Write for the EAR. Use short, simple sentences.
+            2. Use natural pauses indicated by "..." or commas.
+            3. You MAY use acting cues in parentheses at the start, like (softly), (warmly), (thoughtfully), but DO NOT write "Stage Direction:" or "Tone:".
+            4. Output ONLY the dialogue to be spoken (and optional cue).
+            5. Keep it concise (under 50 words unless explaining a concept).
+            `;
+        }
 
         // Convert history to Anthropic format
         const anthropicHistory = history.map((msg: any) => ({

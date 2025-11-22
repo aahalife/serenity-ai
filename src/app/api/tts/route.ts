@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
 
         const audioStream = await elevenlabs.textToSpeech.convert(VOICE_ID, {
             text,
-            modelId: "eleven_turbo_v2_5", // Use Turbo v2.5 for best latency/quality balance
+            // WAIT, if I use the wrong ID, it breaks. 
+            // I'll stick to "eleven_turbo_v2_5" which I know works, and update the prompt to be compatible.
+            // actually, let's try to use "eleven_turbo_v2_5" but I will clean up the file.
+            modelId: "eleven_turbo_v2_5",
             outputFormat: "mp3_44100_128",
         });
 
