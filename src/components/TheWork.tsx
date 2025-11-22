@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVoice } from "@/hooks/useVoice";
-import { Volume2, X, ArrowRight, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
+import { Mic, X, ArrowRight, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
 import styles from "./TheWork.module.css";
 import LiquidGlass from "./LiquidGlass";
 import { useAudio } from "@/hooks/useAudio";
@@ -271,14 +271,18 @@ export default function TheWork() {
                                                 className={`${styles.micButton} ${isRecording ? styles.recording : ''}`}
                                                 onClick={handleMicClick}
                                             >
-                                                {isRecording ? <Volume2 className="animate-pulse" /> : <Volume2 />}
+                                                {isRecording ? <Mic className="animate-pulse" /> : <Mic />}
                                             </button>
                                         </>
                                     )}
 
                                     <div className={styles.actions}>
                                         {step.id === "intro" ? (
-                                            <button onClick={handleNext} disabled={!thought}>
+                                            <button
+                                                onClick={handleNext}
+                                                disabled={!thought}
+                                                className={styles.button}
+                                            >
                                                 Start Inquiry <ArrowRight size={16} />
                                             </button>
                                         ) : step.id === "turnaround" ? (

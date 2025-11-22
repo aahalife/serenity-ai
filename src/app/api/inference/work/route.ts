@@ -73,13 +73,16 @@ export async function POST(req: Request) {
                 ? response.content[0].text
                 : "Take a moment to breathe.";
 
-            // Double clean to remove any leaked JSON or Meta-text
+            // Double clean to remove any leaked JSON or Meta-text, AND strip acting tags for TTS
             let cleanText = textResponse
                 .replace(/```json/g, "")
                 .replace(/```/g, "")
                 .replace(/Stage Direction:.*$/im, "")
                 .replace(/Tone:.*$/im, "")
                 .replace(/Metadata:.*$/im, "")
+                // Strip bracketed content like [sighs], [softly], (pause) as TTS reads them literally
+                .replace(/\[.*?\]/g, "")
+                .replace(/\(.*?\)/g, "")
                 .trim();
 
             // Ensure we don't have leading/trailing quotes
@@ -87,7 +90,7 @@ export async function POST(req: Request) {
                 cleanText = cleanText.slice(1, -1);
             }
 
-            console.log("Guidance generated:", cleanText);
+            console.log("Guidance generated (Cleaned for TTS):", cleanText);
             return NextResponse.json({ text: cleanText });
         }
 

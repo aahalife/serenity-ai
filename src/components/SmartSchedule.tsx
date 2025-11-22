@@ -104,8 +104,45 @@ export default function SmartSchedule({ flowState, userProfile, habits = [] }: S
 
     const handleAddToCalendar = (e: React.MouseEvent, item: ScheduleItem) => {
         e.stopPropagation();
-        // Mock calendar addition
-        alert(`Added "${item.title}" to your calendar!`);
+
+        // Parse time (e.g. "08:00 AM") to get start/end dates for TODAY
+        const now = new Date();
+        const [timeStr, modifier] = item.time.split(' ');
+        let [hours, minutes] = timeStr.split(':').map(Number);
+
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+
+        const startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+        const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+        // Format dates for ICS (YYYYMMDDTHHmmSS)
+        const formatDate = (date: Date) => {
+            return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        };
+
+        const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Serenity AI//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:${item.id}@serenity.ai
+DTSTAMP:${formatDate(new Date())}
+DTSTART:${formatDate(startDate)}
+DTEND:${formatDate(endDate)}
+SUMMARY:${item.title}
+DESCRIPTION:${item.description}
+END:VEVENT
+END:VCALENDAR`;
+
+        // Create blob and download
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${item.title.replace(/\s+/g, '_')}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     const handleFeedback = (e: React.MouseEvent, item: ScheduleItem) => {
