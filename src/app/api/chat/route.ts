@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         console.log("Chat API Request:", { message, historyLength: history?.length });
 
         const response = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20240620",
+            model: "claude-3-5-sonnet-20241022",
             max_tokens: 500,
             system: systemPrompt,
             messages: messages,
