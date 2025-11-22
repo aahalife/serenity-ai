@@ -115,6 +115,20 @@ export default function Profile() {
                         <h2>Integrations</h2>
                     </div>
                     <div className={styles.settingRow}>
+                        <span>WhatsApp Number</span>
+                        <input
+                            type="tel"
+                            placeholder="+1234567890"
+                            className={styles.input}
+                            value={profile.phoneNumber || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, phoneNumber: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                    <div className={styles.settingRow}>
                         <span>Instagram</span>
                         <button
                             className={styles.connectButton}
