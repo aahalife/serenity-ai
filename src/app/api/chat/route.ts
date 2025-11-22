@@ -39,6 +39,8 @@ export async function POST(req: Request) {
             { role: "user", content: message }
         ];
 
+        console.log("Chat API Request:", { message, historyLength: history?.length });
+
         const response = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20240620",
             max_tokens: 500,
@@ -46,14 +48,18 @@ export async function POST(req: Request) {
             messages: messages,
         });
 
+        console.log("Anthropic Response Status:", response.type);
+
         // Handle the response content safely
         const textResponse = response.content[0].type === 'text'
             ? response.content[0].text
             : "I'm here with you.";
 
+        console.log("Chat API Output:", textResponse);
+
         return NextResponse.json({ response: textResponse });
     } catch (error) {
-        console.error("Chat Error:", error);
+        console.error("Chat Error Detailed:", error);
         return NextResponse.json(
             { error: "Failed to generate response" },
             { status: 500 }

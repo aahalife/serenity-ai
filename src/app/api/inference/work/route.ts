@@ -50,6 +50,7 @@ export async function POST(req: Request) {
             prompt = stepPrompts[stepId] || "Guide the user gently through this moment.";
 
             // Return plain text for guidance, not JSON
+            console.log("Generating guidance for step:", stepId);
             const response = await anthropic.messages.create({
                 model: "claude-3-5-sonnet-20240620",
                 max_tokens: 150,
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
                 ? response.content[0].text
                 : "Take a moment to breathe.";
 
+            console.log("Guidance generated:", textResponse);
             return NextResponse.json({ text: textResponse });
         }
 
@@ -79,7 +81,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json(JSON.parse(cleanedResponse));
     } catch (error) {
-        console.error("Inference Error:", error);
+        console.error("Inference Error Detailed:", error);
         return NextResponse.json(
             { error: "Failed to generate insight" },
             { status: 500 }
