@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
             // actually, let's try to use "eleven_turbo_v2_5" but I will clean up the file.
             modelId: "eleven_turbo_v2_5",
             outputFormat: "mp3_44100_128",
+            voiceSettings: {
+                stability: 0.25,
+                similarityBoost: 0.75,
+            }
         });
 
         return new NextResponse(audioStream as any, {

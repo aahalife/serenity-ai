@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronDown, X, Sparkles, RefreshCw, Volume2, VolumeX } from "lucide-react";
+import { useVoice } from "@/hooks/useVoice";
+import { Volume2, X, ArrowRight, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
 import styles from "./TheWork.module.css";
 import LiquidGlass from "./LiquidGlass";
 import { useAudio } from "@/hooks/useAudio";
@@ -173,164 +174,151 @@ export default function TheWork() {
         setThought(text);
     };
 
+    const [isRecording, setIsRecording] = useState(false);
+    const { startListening, stopListening, isListening } = useVoice({
+        onSpeechEnd: async (audioBlob) => {
+            // Transcribe and append
+            try {
+                const formData = new FormData();
+                formData.append("audio", audioBlob, "recording.webm");
+
+                const sttRes = await fetch("/api/stt", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (sttRes.ok) {
+                    const { text } = await sttRes.json();
+                    if (text) {
+                        setThought(prev => prev ? `${prev} ${text}` : text);
+                    }
+                }
+            } catch (e) {
+                console.error("STT Error", e);
+            } finally {
+                setIsRecording(false);
+            }
+        }
+    });
+
+    const handleMicClick = () => {
+        if (isRecording) {
+            stopListening(); // This triggers onSpeechEnd
+            setIsRecording(false);
+        } else {
+            startListening();
+            setIsRecording(true);
+        }
+    };
+
     return (
         <div className={styles.container} ref={containerRef}>
             <button className={styles.closeButton} onClick={() => window.location.href = '/'}>
                 <X size={24} />
             </button>
 
-            {/* Intro Section */}
-            <section className={styles.section}>
-                <div className={styles.videoBackground}>
-                    <video autoPlay muted loop playsInline className={styles.video}>
-                        <source src={steps[0].video} type="video/mp4" />
-                    </video>
-                    <div className={styles.overlay} />
-                </div>
-
-                <motion.div
-                    className={styles.content}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                >
-                    <h1 className={`${styles.title} font-montage`}>The Work</h1>
-                    <p className={styles.subtitle}>Identify a stressful thought to investigate.</p>
-
-                    <LiquidGlass className={styles.inputContainer}>
-                        <textarea
-                            className={styles.textarea}
-                            placeholder="I am angry with... because..."
-                            value={thought}
-                            onChange={(e) => setThought(e.target.value)}
-                        />
-                    </LiquidGlass>
-
-                    {suggestions.length > 0 && !thought && (
-                        <div className={styles.suggestions}>
-                            {suggestions.map((s, i) => (
-                                <motion.button
-                                    key={i}
-                                    className={styles.suggestionChip}
-                                    onClick={() => handleSuggestionClick(s)}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    {s}
-                                </motion.button>
-                            ))}
-                        </div>
-                    )}
-
-                    <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-                        <button
-                            className={styles.button}
-                            onClick={handleNext}
-                            disabled={!thought.trim()}
-                        >
-                            Begin Inquiry <ArrowRight size={20} />
-                        </button>
-                    </div>
-                </motion.div>
-
-                <div className={styles.scrollIndicator}>
-                    <ChevronDown size={32} color="#fff" />
-                </div>
-            </section>
-
-            {/* Questions 1-4 */}
-            {[0, 1, 2, 3].map((qIndex) => (
-                <section key={qIndex} className={styles.section}>
+            {steps.map((step, index) => (
+                <div key={step.id} className={styles.section}>
                     <div className={styles.videoBackground}>
                         <video autoPlay muted loop playsInline className={styles.video}>
-                            <source src={steps[qIndex + 1].video} type="video/mp4" />
+                            <source src={step.video} type="video/mp4" />
                         </video>
                         <div className={styles.overlay} />
                     </div>
 
-                    <motion.div
-                        className={styles.content}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6 }}
-                    >
-                        <h2 className={`${styles.question} font-montage`}>{steps[qIndex + 1].title}</h2>
-                        <div className={styles.thoughtDisplay}>"{thought}"</div>
+                    <div className={styles.content}>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className={styles.questionBox}
+                        >
+                            <h2>{step.title}</h2>
+                            <p>{step.subtitle}</p>
 
-                        <LiquidGlass className={styles.inputContainer}>
-                            <textarea
-                                className={styles.textarea}
-                                placeholder="Your answer..."
-                                value={answers[qIndex] || ""}
-                                onChange={(e) => {
-                                    const newAnswers = [...answers];
-                                    newAnswers[qIndex] = e.target.value;
-                                    setAnswers(newAnswers);
-                                }}
-                            />
-                        </LiquidGlass>
+                            {currentStep === index && (
+                                <div className={styles.inputContainer}>
+                                    {step.id === "turnaround" ? (
+                                        <div className={styles.turnarounds}>
+                                            {turnarounds.length > 0 ? (
+                                                turnarounds.map((t, i) => (
+                                                    <div key={i} className={styles.turnaroundCard}>
+                                                        <h4>{t.text}</h4>
+                                                        <p>{t.example}</p>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <p>Click below to generate turnarounds.</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <textarea
+                                                value={step.id === "intro" ? thought : (answers[index - 1] || "")}
+                                                onChange={(e) => {
+                                                    if (step.id === "intro") {
+                                                        setThought(e.target.value);
+                                                    } else {
+                                                        const newAnswers = [...answers];
+                                                        newAnswers[index - 1] = e.target.value;
+                                                        setAnswers(newAnswers);
+                                                    }
+                                                }}
+                                                placeholder={step.id === "intro" ? "I am angry with... because..." : "Your answer..."}
+                                                className={styles.textarea}
+                                            />
+                                            <button
+                                                className={`${styles.micButton} ${isRecording ? styles.recording : ''}`}
+                                                onClick={handleMicClick}
+                                            >
+                                                {isRecording ? <Volume2 className="animate-pulse" /> : <Volume2 />}
+                                            </button>
+                                        </>
+                                    )}
 
-                        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center' }}>
-                            {qIndex === 3 ? (
-                                <button
-                                    className={styles.button}
-                                    onClick={handleTurnaround}
-                                    disabled={isLoading}
-                                >
-                                    {isLoading ? <RefreshCw className="animate-spin" /> : "Find Turnarounds"}
-                                </button>
-                            ) : (
-                                <button className={styles.button} onClick={handleNext}>
-                                    Next Question <ChevronDown size={20} />
-                                </button>
+                                    <div className={styles.actions}>
+                                        {step.id === "intro" ? (
+                                            <button onClick={handleNext} disabled={!thought}>
+                                                Start Inquiry <ArrowRight size={16} />
+                                            </button>
+                                        ) : step.id === "turnaround" ? (
+                                            <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+                                                <button onClick={handleTurnaround} disabled={isLoading}>
+                                                    {isLoading ? <RefreshCw className="animate-spin" /> : "Find Turnarounds"}
+                                                </button>
+                                                {turnarounds.length > 0 && (
+                                                    <button onClick={() => window.location.href = '/'}>
+                                                        Complete <Sparkles size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <button onClick={handleNext}>
+                                                Next <ChevronDown size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             )}
-                        </div>
-                    </motion.div>
-                </section>
-            ))}
 
-            {/* Turnaround Section */}
-            <section className={styles.section}>
-                <div className={styles.videoBackground}>
-                    <video autoPlay muted loop playsInline className={styles.video}>
-                        <source src={steps[5].video} type="video/mp4" />
-                    </video>
-                    <div className={styles.overlay} />
+                            {/* Show suggestions only for intro */}
+                            {step.id === "intro" && suggestions.length > 0 && !thought && (
+                                <div className={styles.suggestions}>
+                                    {suggestions.map((s, i) => (
+                                        <button
+                                            key={i}
+                                            className={styles.suggestionChip}
+                                            onClick={() => handleSuggestionClick(s)}
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    </div>
                 </div>
-
-                <motion.div
-                    className={styles.content}
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                >
-                    <h2 className={`${styles.title} font-montage`}>Turn it Around</h2>
-                    <p className={styles.subtitle}>Consider the opposite. Could it be as true?</p>
-
-                    <div className={styles.inputContainer} style={{ background: 'transparent', boxShadow: 'none', border: 'none' }}>
-                        {turnarounds.map((t, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ x: -50, opacity: 0 }}
-                                whileInView={{ x: 0, opacity: 1 }}
-                                transition={{ delay: i * 0.2 }}
-                                style={{ marginBottom: '1rem' }}
-                            >
-                                <LiquidGlass>
-                                    <div className={styles.turnaroundText}>{t.text}</div>
-                                    <div className={styles.turnaroundExample}>Example: {t.example}</div>
-                                </LiquidGlass>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    <div style={{ marginTop: '2rem' }}>
-                        <button className={styles.button} onClick={() => window.location.href = '/'}>
-                            Complete Session <Sparkles size={20} />
-                        </button>
-                    </div>
-                </motion.div>
-            </section>
+            ))}
         </div>
     );
 }

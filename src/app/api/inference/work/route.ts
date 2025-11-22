@@ -40,21 +40,22 @@ export async function POST(req: Request) {
                 CRITICAL INSTRUCTIONS FOR SPEECH GENERATION:
                 1. Write for the EAR. Use short, simple sentences.
                 2. Use natural pauses indicated by "..." or commas.
-                3. **DO NOT** use stage directions, acting cues, or tags (like (softly)). The TTS engine might read them aloud. Just write the spoken words.
-                4. **DO NOT** repeat the question verbatim. Rephrase it gently.
-                5. Use the user's name (${userName}) naturally.
-                6. Keep it under 50 words.
-                7. TONE: ${toneInstruction}
-                8. PERSONALIZATION: Use the context of their thought ("${input}") and their previous answers to make it feel real and immersive.
+                3. **USE NATURAL SOUNDS**: You MAY use [sighs], [exhales], [softly], [whispers] to make it sound natural and supportive.
+                4. **STRICTLY NO META-TEXT**: Do NOT output "Stage Direction:", "Tone:", "JSON", or "Metadata". Output ONLY the spoken text and the bracketed sounds.
+                5. **BREVITY**: Keep it VERY SHORT (under 30 words). Give the user space to think.
+                6. **DO NOT** repeat the question verbatim. Rephrase it gently.
+                7. Use the user's name (${userName}) naturally.
+                8. TONE: ${toneInstruction}
+                9. PERSONALIZATION: Use the context of their thought ("${input}") and their previous answers to make it feel real.
             `;
 
             const stepPrompts: Record<string, string> = {
-                "intro": `Welcome ${userName}. Ask them to gently bring the stressful thought "${input || 'that is on your mind'}" to presence. Tell them there is no rush.`,
-                "q1": `The thought is: "${input}". Ask them gently if it is true. Guide them to close their eyes and listen for a Yes or No from their heart.`,
-                "q2": `Ask if they can absolutely know it's true. Invite them to look deeper, past the quick answer. "Can you really know that..."`,
-                "q3": `Ask how they react when they believe "${input}". What happens in their body? Do they feel tension? Do images of the past appear?`,
-                "q4": `Ask who they would be without the thought "${input}". Invite them to drop the story for just a moment. "Imagine you are looking at the situation, but you cannot think this thought..."`,
-                "turnaround": `Invite them to turn it around. "Let's find the opposite." Guide them to feel the relief or truth in the opposite.`
+                "intro": `Welcome ${userName}. [exhales] Ask them to gently bring the stressful thought "${input || 'that is on your mind'}" to presence. Tell them there is no rush.`,
+                "q1": `The thought is: "${input}". Ask them gently if it is true. [softly] Guide them to close their eyes and listen for a Yes or No from their heart.`,
+                "q2": `Ask if they can absolutely know it's true. Invite them to look deeper... past the quick answer.`,
+                "q3": `Ask how they react when they believe "${input}". [sighs] What happens in their body? Do they feel tension?`,
+                "q4": `Ask who they would be without the thought "${input}". [exhales] Invite them to drop the story for just a moment.`,
+                "turnaround": `Invite them to turn it around. "Let's find the opposite." Guide them to feel the relief.`
             };
 
             prompt = stepPrompts[stepId] || "Guide the user gently through this moment.";
@@ -72,8 +73,19 @@ export async function POST(req: Request) {
                 ? response.content[0].text
                 : "Take a moment to breathe.";
 
-            // Double clean to remove any leaked tags like (softly) or Stage Direction:
-            const cleanText = textResponse.replace(/^\(.*\)\s*/, "").replace(/Stage Direction:.*$/im, "").trim();
+            // Double clean to remove any leaked JSON or Meta-text
+            let cleanText = textResponse
+                .replace(/```json/g, "")
+                .replace(/```/g, "")
+                .replace(/Stage Direction:.*$/im, "")
+                .replace(/Tone:.*$/im, "")
+                .replace(/Metadata:.*$/im, "")
+                .trim();
+
+            // Ensure we don't have leading/trailing quotes
+            if (cleanText.startsWith('"') && cleanText.endsWith('"')) {
+                cleanText = cleanText.slice(1, -1);
+            }
 
             console.log("Guidance generated:", cleanText);
             return NextResponse.json({ text: cleanText });
