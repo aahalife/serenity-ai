@@ -16,8 +16,8 @@ export function useHume(options: UseHumeOptions = {}) {
         try {
             // In a real app, you should fetch a temporary access token from your backend
             // to avoid exposing your API key on the client.
-            // For this demo, we'll use the key directly as requested, but this is not best practice.
-            const apiKey = "JpcpAvRho43BvuD5RkF62EajUxJeVz2LQs3LTtd9okeuagQK";
+            // Use environment variable for API key
+            const apiKey = process.env.NEXT_PUBLIC_HUME_API_KEY || "JpcpAvRho43BvuD5RkF62EajUxJeVz2LQs3LTtd9okeuagQK";
             const socketUrl = `wss://api.hume.ai/v0/stream/models?api_key=${apiKey}`;
 
             const socket = new WebSocket(socketUrl);

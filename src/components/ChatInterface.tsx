@@ -49,20 +49,30 @@ export default function ChatInterface() {
         }
     });
 
+    const [isCallMode, setIsCallMode] = useState(false);
+
     const { isListening, isSpeaking, transcript, startListening, stopListening, speak } = useVoice({
         onSpeechEnd: (text) => {
             handleSend(text);
         },
         onSpeakStart: () => duck(0, 0.05), // Duck background audio when AI speaks
-        onSpeakEnd: () => unduck(0.2)     // Restore volume when AI stops
+        onSpeakEnd: () => {
+            unduck(0.2);     // Restore volume when AI stops
+            // If in call mode, restart listening after AI finishes speaking
+            if (isCallMode) {
+                startListening();
+            }
+        }
     });
 
     // Handle Call Mode toggle
     const toggleCallMode = () => {
-        if (isListening) {
+        if (isCallMode) {
+            setIsCallMode(false);
             stopListening();
             disconnectHume();
         } else {
+            setIsCallMode(true);
             startListening();
             connectHume();
         }

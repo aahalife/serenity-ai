@@ -38,38 +38,29 @@ export default function Onboarding() {
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
-        // Play Intro once, then Onboarding loop
-        // Ensure user interaction has occurred if browser blocks autoplay, 
-        // but for onboarding we assume user clicked "Get Started" or similar previously.
-        // If not, we might need a "Start" overlay. For now, we try to play.
-        play("/audio/Intro.mp3", { volume: 0.5, loop: false });
+        // Audio Sequence Logic
+        // 1. Play Intro.mp3 immediately
+        play("/audio/Intro.mp3", { volume: 0.6, loop: false });
+
+        // 2. Schedule transition to onboarding.wav (assuming Intro is ~12s)
+        // Ideally useAudio would provide an onEnded callback, but for now we time it.
+        const introDuration = 12000;
 
         const timer = setTimeout(() => {
-            play("/audio/onboarding.wav", { volume: 0.3, loop: true, fadeInDuration: 3000 });
-        }, 10000); // Approx length of intro
+            play("/audio/onboarding.wav", { volume: 0.3, loop: true, fadeInDuration: 2000 });
+        }, introDuration);
 
         return () => clearTimeout(timer);
     }, [play]);
 
     const handleSplashEnded = () => {
         setVideoState("journal");
-        setTimeout(() => setShowContent(true), 500); // Slight delay for smooth transition
+        setTimeout(() => setShowContent(true), 500);
     };
 
     const handleNext = () => {
         if (step === 0 && !name.trim()) return;
         setStep((prev) => prev + 1);
-    };
-
-    const handleOptionSelect = (questionId: number, option: string) => {
-        setAnswers((prev) => ({ ...prev, [questionId]: option }));
-        setTimeout(() => {
-            if (step < questions.length) {
-                setStep((prev) => prev + 1);
-            } else {
-                finishOnboarding();
-            }
-        }, 500);
     };
 
     const finishOnboarding = async () => {
@@ -100,6 +91,19 @@ export default function Onboarding() {
         stop(2000);
         router.push("/");
     };
+
+    const handleOptionSelect = (questionId: number, option: string) => {
+        setAnswers((prev) => ({ ...prev, [questionId]: option }));
+        setTimeout(() => {
+            if (step < questions.length) {
+                setStep((prev) => prev + 1);
+            } else {
+                finishOnboarding();
+            }
+        }, 400);
+    };
+
+    // ... finishOnboarding ...
 
     return (
         <div className={styles.container}>
@@ -142,17 +146,25 @@ export default function Onboarding() {
             <AnimatePresence>
                 {showContent && (
                     <motion.div
-                        key="step0"
+                        key="content"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className={styles.cardWrapper}
+                        className={styles.contentWrapper}
                     >
+                        {/* Header Outside Card */}
+                        <div className={styles.header}>
+                            <h1 className={styles.title}>Welcome to Serenity</h1>
+                            <p className={styles.subtitle}>
+                                {step === 0
+                                    ? "Let's get to know you better. What should we call you?"
+                                    : "Help us personalize your experience."}
+                            </p>
+                        </div>
+
                         <LiquidGlass className={styles.card}>
                             {step === 0 ? (
                                 <div className={styles.stepContent}>
-                                    <h1 className={styles.title}>Welcome to Serenity</h1>
-                                    <p className={styles.subtitle}>Let's get to know you better. What should we call you?</p>
                                     <input
                                         type="text"
                                         value={name}
@@ -160,8 +172,9 @@ export default function Onboarding() {
                                         placeholder="Your Name"
                                         className={styles.input}
                                         onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                                        autoFocus
                                     />
-                                    <button onClick={handleNext} className={styles.button}>
+                                    <button onClick={handleNext} className={styles.primaryButton}>
                                         Continue <ChevronRight size={20} />
                                     </button>
                                 </div>
