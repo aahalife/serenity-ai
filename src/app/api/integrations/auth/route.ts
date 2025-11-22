@@ -1,4 +1,4 @@
-import { ComposioToolSet } from "composio-core";
+import { composioToolset } from "@/lib/composio";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -12,13 +12,8 @@ export async function POST(req: Request) {
         // Fallback to a default ID if no session (for dev/testing)
         const entityId = session?.user?.email || "default_user";
 
-        // Initialize Composio ToolSet
-        const toolset = new ComposioToolSet({
-            apiKey: process.env.COMPOSIO_API_KEY,
-        });
-
-        // Initiate connection
-        const connection = await toolset.connectedAccounts.initiate({
+        // Initiate connection using shared toolset
+        const connection = await composioToolset.connectedAccounts.initiate({
             appName: appName,
             entityId: entityId,
             redirectUri: `${process.env.NEXTAUTH_URL}/profile`,

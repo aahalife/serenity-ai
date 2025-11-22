@@ -19,6 +19,23 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
     const pathname = usePathname();
     const { data: session, status } = useSession();
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            if (mobile && !isCollapsed) {
+                toggleCollapse();
+            }
+        };
+
+        // Initial check
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []); // Empty dependency array to run only on mount
 
     useEffect(() => {
         const savedProfile = localStorage.getItem("userProfile");
@@ -40,7 +57,10 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
     return (
         <motion.aside
             initial={{ width: 280 }}
-            animate={{ width: isCollapsed ? 80 : 280 }}
+            animate={{
+                width: isMobile ? (isCollapsed ? "100%" : "100%") : (isCollapsed ? 70 : 280),
+                x: isMobile && isCollapsed ? 0 : 0 // Adjust logic if needed for slide-in
+            }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
         >

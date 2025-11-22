@@ -3,7 +3,7 @@ import { ComposioToolSet } from "composio-core";
 // Initialize Composio ToolSet
 // Using the API Key provided by the user
 export const composioToolset = new ComposioToolSet({
-    apiKey: process.env.COMPOSIO_API_KEY || "ak_ie7nFfXGwv5EhTbquYt3",
+    apiKey: process.env.COMPOSIO_API_KEY || "ak_w5v6SAFvuZGNN3_GxOhA",
 });
 
 export async function getComposioAuthUrl(entityId: string, appName: string) {

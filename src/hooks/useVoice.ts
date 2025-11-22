@@ -66,6 +66,10 @@ export function useVoice(options: UseVoiceOptions = {}) {
 
             recognition.onerror = (event: any) => {
                 console.error("Speech recognition error", event.error);
+                if (event.error === 'no-speech') {
+                    // Ignore no-speech errors, just keep listening if continuous
+                    return;
+                }
                 setIsListening(false);
             };
 

@@ -14,8 +14,6 @@ export function useHume(options: UseHumeOptions = {}) {
 
     const connect = useCallback(async () => {
         try {
-            // In a real app, you should fetch a temporary access token from your backend
-            // to avoid exposing your API key on the client.
             // Use environment variable for API key
             const apiKey = process.env.NEXT_PUBLIC_HUME_API_KEY || "JpcpAvRho43BvuD5RkF62EajUxJeVz2LQs3LTtd9okeuagQK";
             const socketUrl = `wss://api.hume.ai/v0/stream/models?api_key=${apiKey}`;
@@ -47,11 +45,21 @@ export function useHume(options: UseHumeOptions = {}) {
                 console.log("Hume WebSocket closed", event.code, event.reason);
                 setIsConnected(false);
                 stopAudioStreaming();
+
+                // Attempt reconnection if not intentionally closed
+                // Simple retry logic: wait 3s and try again
+                if (event.code !== 1000) {
+                    console.log("Attempting reconnection in 3s...");
+                    setTimeout(() => {
+                        if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
+                            connect();
+                        }
+                    }, 3000);
+                }
             };
 
             socket.onerror = (error) => {
                 console.error("Hume WebSocket error", error);
-                // Try to log more details if available
                 if (error instanceof ErrorEvent) {
                     console.error("Error details:", error.message);
                 }
