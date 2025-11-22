@@ -43,14 +43,13 @@ export default function TheWork() {
     // Trigger guidance on step change
     useEffect(() => {
         const playGuidance = async () => {
-            // Stop previous guidance
+            // Stop previous guidance immediately
             if (audioRef.current) {
                 audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+                audioRef.current = null;
                 setIsGuidancePlaying(false);
             }
-
-            // Don't play guidance for intro if we want to keep it simple, or do.
-            // Let's play for all steps.
 
             try {
                 // Get user profile for personalization
@@ -62,7 +61,8 @@ export default function TheWork() {
                     body: JSON.stringify({
                         mode: "guidance",
                         stepId: steps[currentStep].id,
-                        input: thought, // Will be empty for intro/q1 initially
+                        input: thought,
+                        context: answers, // Pass all previous answers for context
                         userProfile
                     })
                 });
@@ -79,6 +79,12 @@ export default function TheWork() {
                         if (ttsRes.ok) {
                             const blob = await ttsRes.blob();
                             const url = URL.createObjectURL(blob);
+
+                            // Double check if we moved on while fetching
+                            if (audioRef.current) {
+                                (audioRef.current as HTMLAudioElement).pause();
+                            }
+
                             const audio = new Audio(url);
                             audioRef.current = audio;
 
@@ -96,8 +102,15 @@ export default function TheWork() {
 
         // Small delay to allow transition
         const timer = setTimeout(playGuidance, 1000);
-        return () => clearTimeout(timer);
-    }, [currentStep, thought]); // Re-run if thought changes (e.g. user selects a suggestion)
+
+        return () => {
+            clearTimeout(timer);
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, [currentStep, thought, answers]); // Re-run if thought changes (e.g. user selects a suggestion) or answers change
 
     // Auto-scroll to next section when step changes
     useEffect(() => {
