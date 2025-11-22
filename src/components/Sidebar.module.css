@@ -28,9 +28,9 @@
     .sidebar {
         width: auto !important;
         /* Let content/max-width define width */
-        height: auto !important;
-        /* Height defined by content + padding */
-        min-height: 70px;
+        height: 70px !important;
+        /* Fixed height for the pill */
+        min-height: 0 !important;
         position: fixed;
         left: 50%;
         bottom: 20px !important;
@@ -40,8 +40,8 @@
         z-index: 100;
 
         /* Liquid Glass Effect */
-        background: rgba(20, 20, 30, 0.6);
-        /* Semi-transparent dark */
+        background: rgba(20, 20, 30, 0.85);
+        /* Slightly more opaque */
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -51,10 +51,13 @@
         border-radius: 35px;
         /* Pill shape */
 
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        padding: 0.5rem 1.5rem;
+        display: flex !important;
+        flex-direction: row !important;
+        /* Force horizontal */
+        align-items: center !important;
+        justify-content: flex-start;
+        /* Allow scrolling from start */
+        padding: 0 1.5rem !important;
         margin: 0;
 
         /* Horizontal Scroll */
