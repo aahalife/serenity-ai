@@ -52,7 +52,7 @@ export async function POST(req: Request) {
             // Return plain text for guidance, not JSON
             console.log("Generating guidance for step:", stepId);
             const response = await anthropic.messages.create({
-                model: "claude-3-5-sonnet-20241022",
+                model: "claude-sonnet-4-5-20250929",
                 max_tokens: 150,
                 system: systemPrompt,
                 messages: [{ role: "user", content: prompt }],
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         }
 
         const response = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
+            model: "claude-sonnet-4-5-20250929",
             max_tokens: 1024,
             messages: [{ role: "user", content: prompt }],
         });
