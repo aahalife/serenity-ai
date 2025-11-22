@@ -33,6 +33,8 @@
         min-height: 0 !important;
         position: fixed;
         left: 50%;
+        top: auto !important;
+        /* Ensure it's not anchored to top */
         bottom: 20px !important;
         /* Floating from bottom */
         transform: translateX(-50%) !important;
@@ -353,77 +355,5 @@
     .navItem {
         font-size: 1rem;
         padding: 0.9rem 1rem;
-    }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 80px;
-        padding: 1.5rem 0.8rem;
-    }
-
-    .collapsed {
-        width: 80px;
-    }
-
-    .logo span {
-        display: none;
-    }
-
-    .navItem {
-        justify-content: center;
-        padding: 1rem 0.5rem;
-    }
-
-    .navItem span {
-        display: none;
-    }
-
-    .userProfile {
-        padding: 1rem 0.5rem;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .userInfo,
-    .loginBtn span {
-        display: none;
-    }
-
-    .loginBtn {
-        padding: 0.8rem;
-        width: auto;
-    }
-
-    .collapseBtn {
-        display: none;
-    }
-}
-
-/* Very small mobile */
-@media (max-width: 480px) {
-    .sidebar {
-        width: 60px;
-        padding: 1rem 0.5rem;
-    }
-
-    .collapsed {
-        width: 60px;
-    }
-
-    .avatar {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-    }
-
-    .navItem {
-        padding: 0.8rem 0.3rem;
-        gap: 0;
-    }
-
-    .iconWrapper {
-        width: 20px;
     }
 }
