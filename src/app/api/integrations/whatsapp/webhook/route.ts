@@ -8,14 +8,15 @@ const anthropic = new Anthropic({
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        console.log("[WhatsApp Webhook] Received:", body);
+        console.log("[2Chat Webhook] Received:", JSON.stringify(body, null, 2));
 
-        // Parse incoming message (Structure depends on Composio/WhatsApp provider)
-        // Assuming a standard format for now:
-        const message = body.message || body.text;
-        const sender = body.from || body.sender;
+        // Parse incoming message from 2Chat payload
+        // 2Chat structure typically includes 'message' object with 'body' and 'from'
+        const message = body.message?.body || body.text || body.message;
+        const sender = body.message?.from || body.from || body.sender;
 
         if (!message || !sender) {
+            console.log("Ignored webhook: Missing message or sender");
             return NextResponse.json({ status: "ignored" });
         }
 

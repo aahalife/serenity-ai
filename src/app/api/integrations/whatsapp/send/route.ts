@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { OpenAIToolSet } from "composio-core";
+import { Composio } from "composio-core";
 
-let toolset: OpenAIToolSet | null = null;
+let client: Composio | null = null;
 
 try {
     if (process.env.COMPOSIO_API_KEY) {
-        toolset = new OpenAIToolSet({
+        client = new Composio({
             apiKey: process.env.COMPOSIO_API_KEY,
         });
     }
@@ -34,15 +34,21 @@ export async function POST(req: Request) {
 
         console.log(`[WhatsApp] Sending to ${phoneNumber}: ${message}`);
 
-        // Placeholder for actual Composio call until we verify the exact Action ID
-        // if (toolset) {
-        //    const result = await toolset.executeAction('WHATSAPP_SEND_MESSAGE', {
-        //        phone_number: phoneNumber,
-        //        message: message
-        //    });
-        // }
+        if (client) {
+            // Using 2Chat action for sending messages
+            // Action ID assumed to be '2CHAT_SEND_MESSAGE' or similar based on Composio conventions
+            // Using client.tools.execute as per SDK docs (casting to any to avoid TS issues if types are outdated)
+            const result = await (client as any).tools.execute({
+                slug: '2CHAT_SEND_MESSAGE',
+                arguments: {
+                    to_number: phoneNumber,
+                    message: message
+                }
+            });
+            console.log("2Chat Send Result:", result);
+        }
 
-        return NextResponse.json({ success: true, status: "Message queued (Simulated)" });
+        return NextResponse.json({ success: true, status: "Message sent via 2Chat" });
     } catch (error: any) {
         console.error("WhatsApp Send Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
