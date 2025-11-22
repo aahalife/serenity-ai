@@ -33,12 +33,15 @@ export default function Onboarding() {
     const [step, setStep] = useState(0);
     const [name, setName] = useState("");
     const [answers, setAnswers] = useState<Record<number, string>>({});
-    const { play, stop, toggleMute, isMuted } = useAudio();
+    const { play, stop } = useAudio();
     const [videoState, setVideoState] = useState<"splash" | "journal">("splash");
     const [showContent, setShowContent] = useState(false);
 
     useEffect(() => {
         // Play Intro once, then Onboarding loop
+        // Ensure user interaction has occurred if browser blocks autoplay, 
+        // but for onboarding we assume user clicked "Get Started" or similar previously.
+        // If not, we might need a "Start" overlay. For now, we try to play.
         play("/audio/Intro.mp3", { volume: 0.5, loop: false });
 
         const timer = setTimeout(() => {
@@ -74,10 +77,16 @@ export default function Onboarding() {
         localStorage.setItem("onboardingAnswers", JSON.stringify(answers));
 
         try {
+            const signals = {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                userAgent: navigator.userAgent,
+                location: "Unknown" // Could use Geolocation API if permission granted
+            };
+
             const response = await fetch("/api/inference/profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, answers })
+                body: JSON.stringify({ name, answers, signals })
             });
 
             if (response.ok) {
@@ -129,12 +138,9 @@ export default function Onboarding() {
                 <div className={styles.overlay} />
             </div>
 
-            <button onClick={toggleMute} className={styles.muteButton}>
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-            </button>
-
-            <AnimatePresence mode="wait">
-                {showContent && step === 0 && (
+            {/* Main Content */}
+            <AnimatePresence>
+                {showContent && (
                     <motion.div
                         key="step0"
                         initial={{ opacity: 0, y: 20 }}
@@ -143,48 +149,38 @@ export default function Onboarding() {
                         className={styles.cardWrapper}
                     >
                         <LiquidGlass className={styles.card}>
-                            <h1 className={styles.title}>Welcome to Serenity</h1>
-                            <p className={styles.description}>Let's get to know you better. What should we call you?</p>
-                            <input
-                                type="text"
-                                className={styles.input}
-                                placeholder="Your Name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleNext()}
-                            />
-                            <button className={styles.button} onClick={handleNext} disabled={!name.trim()}>
-                                Continue <ChevronRight size={20} />
-                            </button>
-                        </LiquidGlass>
-                    </motion.div>
-                )}
-
-                {showContent && step > 0 && step <= questions.length && (
-                    <motion.div
-                        key={`step${step}`}
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -50 }}
-                        className={styles.cardWrapper}
-                    >
-                        <LiquidGlass className={styles.card}>
-                            <div className={styles.progressBar}>
-                                <div className={styles.progressFill} style={{ width: `${(step / questions.length) * 100}%` }} />
-                            </div>
-                            <h2 className={styles.question}>{questions[step - 1].text}</h2>
-                            <div className={styles.options}>
-                                {questions[step - 1].options.map((option) => (
-                                    <button
-                                        key={option}
-                                        className={`${styles.option} ${answers[questions[step - 1].id] === option ? styles.selected : ""}`}
-                                        onClick={() => handleOptionSelect(questions[step - 1].id, option)}
-                                    >
-                                        {option}
-                                        {answers[questions[step - 1].id] === option && <Check size={16} />}
+                            {step === 0 ? (
+                                <div className={styles.stepContent}>
+                                    <h1 className={styles.title}>Welcome to Serenity</h1>
+                                    <p className={styles.subtitle}>Let's get to know you better. What should we call you?</p>
+                                    <input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        placeholder="Your Name"
+                                        className={styles.input}
+                                        onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                                    />
+                                    <button onClick={handleNext} className={styles.button}>
+                                        Continue <ChevronRight size={20} />
                                     </button>
-                                ))}
-                            </div>
+                                </div>
+                            ) : (
+                                <div className={styles.stepContent}>
+                                    <h2 className={styles.question}>{questions[step - 1].text}</h2>
+                                    <div className={styles.options}>
+                                        {questions[step - 1].options.map((option) => (
+                                            <button
+                                                key={option}
+                                                onClick={() => handleOptionSelect(questions[step - 1].id, option)}
+                                                className={styles.optionButton}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </LiquidGlass>
                     </motion.div>
                 )}

@@ -8,6 +8,8 @@ import { useAudio } from "@/hooks/useAudio";
 import { useHume } from "@/hooks/useHume";
 import { motion, AnimatePresence } from "framer-motion";
 import LiquidGlass from "./LiquidGlass";
+import HumeDebugModal from "./HumeDebugModal";
+import { Activity } from "lucide-react";
 
 interface Message {
     id: string;
@@ -35,6 +37,7 @@ export default function ChatInterface() {
         play("/audio/chatbkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
     }, [play]);
 
+    const [showDebug, setShowDebug] = useState(false);
     const [emotions, setEmotions] = useState<any[]>([]);
     const { connect: connectHume, disconnect: disconnectHume, isConnected: isHumeConnected } = useHume({
         onEmotion: (newEmotions) => {
@@ -89,7 +92,7 @@ export default function ChatInterface() {
         setIsTyping(true);
 
         try {
-            // Retrieve profile and flow state from localStorage
+            // Retrieve profile and flow state
             const savedDeepProfile = localStorage.getItem("deepProfile");
             const savedUserProfile = localStorage.getItem("userProfile");
             const savedFlowState = localStorage.getItem("flowState");
@@ -97,20 +100,24 @@ export default function ChatInterface() {
             const profile = {
                 ...JSON.parse(savedUserProfile || "{}"),
                 ...JSON.parse(savedDeepProfile || "{}"),
-                currentState: JSON.parse(savedFlowState || "{}") // Add stress/energy context
+                currentState: JSON.parse(savedFlowState || "{}")
+            };
+
+            // Construct rich context for LLM
+            const llmPayload = {
+                message: textToSend,
+                history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] })),
+                profile: {
+                    ...profile,
+                    currentEmotions: emotions, // Pass real-time emotions
+                    location: Intl.DateTimeFormat().resolvedOptions().timeZone, // Simple location proxy
+                }
             };
 
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: textToSend,
-                    history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] })),
-                    profile: {
-                        ...profile,
-                        currentEmotions: emotions // Pass real-time emotions to LLM
-                    }
-                }),
+                body: JSON.stringify(llmPayload),
             });
 
             const data = await response.json();
@@ -149,7 +156,7 @@ export default function ChatInterface() {
                     playsInline
                     className={styles.video}
                 >
-                    <source src="/videos/chatbkg.mp4" type="video/mp4" />
+                    <source src="/videos/chatbkg2.m4v" type="video/mp4" />
                 </video>
                 <div className={styles.glassOverlay}></div>
             </div>
@@ -162,11 +169,32 @@ export default function ChatInterface() {
                             {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}
                         </p>
                     </div>
-                    <button onClick={toggleMute} className={styles.muteButton}>
-                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                    </button>
+                    <div className={styles.headerControls}>
+                        <button
+                            onClick={() => setShowDebug(!showDebug)}
+                            className={styles.debugButton}
+                            title="Toggle Hume Debugger"
+                        >
+                            <Activity size={18} />
+                        </button>
+                        <button onClick={toggleMute} className={styles.muteButton}>
+                            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                        </button>
+                    </div>
                 </div>
             </div>
+
+            <HumeDebugModal
+                isOpen={showDebug}
+                onClose={() => setShowDebug(false)}
+                humeData={{ emotions, prosody: {} }}
+                llmContext={{
+                    emotions,
+                    transcript,
+                    isListening
+                }}
+                transcript={transcript}
+            />
 
             <div className={styles.messages}>
                 <AnimatePresence>

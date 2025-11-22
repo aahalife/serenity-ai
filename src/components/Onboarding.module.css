@@ -60,26 +60,51 @@
 }
 
 .cardWrapper {
+    position: relative;
+    z-index: 10;
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
+    /* Increased from default/implicit */
+    padding: 0 2rem;
     display: flex;
     justify-content: center;
 }
 
 .card {
-    width: 100%;
+    /* LiquidGlass handles the background/border */
+    padding: 3rem !important;
+    /* Increased padding */
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    align-items: center;
+    text-align: center;
+}
+
+.stepContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    /* Increased gap */
+    width: 100%;
 }
 
 .title {
-    font-size: 2rem;
-    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    line-height: 1.2;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--muted-foreground);
+    margin: 0;
+    line-height: 1.6;
 }
 
 .description {
