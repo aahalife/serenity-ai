@@ -9,27 +9,35 @@ export default function Profile() {
     const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
-        try {
-            const savedUserProfile = localStorage.getItem("userProfile");
-            const savedDeepProfile = localStorage.getItem("deepProfile");
+        // Move all localStorage logic inside useEffect to avoid hydration mismatch
+        const loadProfile = () => {
+            try {
+                const savedUserProfile = localStorage.getItem("userProfile");
+                const savedDeepProfile = localStorage.getItem("deepProfile");
 
-            if (savedUserProfile) {
-                const basic = JSON.parse(savedUserProfile);
-                const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
+                if (savedUserProfile) {
+                    const basic = JSON.parse(savedUserProfile);
+                    const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
 
-                setProfile({
-                    ...basic,
-                    ...deep,
-                    ocean: deep.traits || deep.ocean || {} // Handle both formats
-                });
+                    setProfile({
+                        ...basic,
+                        ...deep,
+                        ocean: deep.traits || deep.ocean || {} // Handle both formats
+                    });
+                } else {
+                    // Set default empty profile if nothing found
+                    setProfile({ name: "User", ocean: {} });
+                }
+            } catch (e) {
+                console.error("Failed to load profile data", e);
+                setProfile({ name: "User", ocean: {} });
             }
-        } catch (e) {
-            console.error("Failed to load profile data", e);
-            // Fallback to empty profile to avoid crash
-            setProfile({ name: "User", ocean: {} });
-        }
+        };
+
+        loadProfile();
     }, []);
 
+    // Show loading state only until effect runs
     if (!profile) {
         return <div className={styles.loading}>Loading profile...</div>;
     }

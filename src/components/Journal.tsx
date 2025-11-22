@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Mic, Send, Sparkles, Volume2, VolumeX } from "lucide-react";
+import { Mic, Send, Sparkles, Volume2, VolumeX, Trash2, Calendar } from "lucide-react";
 import styles from "./Journal.module.css";
 import { useAudio } from "@/hooks/useAudio";
 import LiquidGlass from "./LiquidGlass";
 import { motion, AnimatePresence } from "framer-motion";
+import { StorageService, JournalEntry } from "@/services/storage";
 
 export default function Journal() {
     const [entry, setEntry] = useState("");
+    const [entries, setEntries] = useState<JournalEntry[]>([]);
     const [isRecording, setIsRecording] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
     const { play, toggleMute, isMuted } = useAudio();
@@ -18,6 +20,9 @@ export default function Journal() {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
+        // Load entries
+        setEntries(StorageService.getJournalEntries());
+
         // Crossfade logic: Play new background
         play("/audio/journalbkg.m4a", { volume: 0.3, loop: true, fadeInDuration: 2000 });
 
@@ -67,11 +72,26 @@ export default function Journal() {
     const handleSave = async () => {
         if (!entry.trim()) return;
 
-        console.log("Saving entry:", entry);
-        // Logic to save entry would go here
-
+        const newEntry = StorageService.saveJournalEntry({ content: entry });
+        setEntries([newEntry, ...entries]);
         setEntry("");
         setShowInputModal(false);
+    };
+
+    const handleDelete = (id: string) => {
+        StorageService.deleteJournalEntry(id);
+        setEntries(entries.filter(e => e.id !== id));
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -92,6 +112,33 @@ export default function Journal() {
             <div className={styles.content}>
                 <h1 className={`${styles.title} font-montage`}>Reflect & Thrive</h1>
                 <p className={styles.subtitle}>Your thoughts are safe here.</p>
+            </div>
+
+            <div className={styles.entriesList}>
+                {entries.map((item) => (
+                    <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={styles.entryCard}
+                    >
+                        <LiquidGlass className={styles.cardGlass}>
+                            <div className={styles.cardHeader}>
+                                <div className={styles.date}>
+                                    <Calendar size={14} />
+                                    <span>{formatDate(item.date)}</span>
+                                </div>
+                                <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className={styles.deleteButton}
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                            <p className={styles.cardContent}>{item.content}</p>
+                        </LiquidGlass>
+                    </motion.div>
+                ))}
             </div>
 
             <AnimatePresence>
@@ -151,6 +198,12 @@ export default function Journal() {
                                         >
                                             <Send size={20} />
                                             <span>Inscribe</span>
+                                        </button>
+                                        <button
+                                            className={styles.closeButton}
+                                            onClick={() => setShowInputModal(false)}
+                                        >
+                                            Cancel
                                         </button>
                                     </div>
                                 </div>
