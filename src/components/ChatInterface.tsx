@@ -67,15 +67,40 @@ export default function ChatInterface() {
         }
     };
 
+    const [isProcessing, setIsProcessing] = useState(false);
+
     const { isListening, isSpeaking, transcript, startListening, stopListening, speak } = useVoice({
-        onSpeechEnd: (text) => {
-            handleSend(text);
+        onSpeechEnd: async (audioBlob) => {
+            setIsProcessing(true);
+            try {
+                // 1. Transcribe (STT)
+                const formData = new FormData();
+                formData.append("audio", audioBlob, "recording.webm");
+
+                const sttRes = await fetch("/api/stt", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!sttRes.ok) throw new Error("Transcription failed");
+                const { text } = await sttRes.json();
+
+                if (text && text.trim()) {
+                    // 2. Send to Chat (LLM)
+                    await handleSend(text);
+                }
+            } catch (e) {
+                console.error("Voice pipeline error", e);
+            } finally {
+                setIsProcessing(false);
+            }
         },
         onSpeakStart: () => duck(0, 0.05),
         onSpeakEnd: () => {
             unduck(0.2);
             if (isCallMode) {
-                startListening();
+                // Small delay before listening again to avoid picking up echo
+                setTimeout(() => startListening(), 500);
             }
         }
     });
@@ -192,7 +217,7 @@ export default function ChatInterface() {
                     <div className={styles.headerInfo}>
                         <h3 className="font-montage">Serenity</h3>
                         <p className={isListening ? styles.statusListening : ''}>
-                            {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Always here for you"}
+                            {isListening ? "Listening..." : isProcessing ? "Thinking..." : isSpeaking ? "Speaking..." : "Always here for you"}
                         </p>
                     </div>
                     <div className={styles.headerControls}>

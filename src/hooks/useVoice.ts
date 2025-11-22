@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface UseVoiceOptions {
     onSpeechStart?: () => void;
-    onSpeechEnd?: (text: string) => void;
+    onSpeechEnd?: (audioBlob: Blob) => void; // Changed to return Blob
     onSpeakStart?: () => void;
     onSpeakEnd?: () => void;
 }
@@ -10,95 +10,53 @@ interface UseVoiceOptions {
 export function useVoice(options: UseVoiceOptions = {}) {
     const [isListening, setIsListening] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [transcript, setTranscript] = useState("");
-    const recognitionRef = useRef<any>(null); // Using any for SpeechRecognition to avoid type issues
+    const [transcript, setTranscript] = useState(""); // Kept for compatibility, but might be empty until STT
+
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const chunksRef = useRef<Blob[]>([]);
     const currentAudioRef = useRef<HTMLAudioElement | null>(null);
-    const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const { onSpeechStart, onSpeechEnd, onSpeakStart, onSpeakEnd } = options;
 
-    const stopListening = useCallback(() => {
-        if (recognitionRef.current) {
-            try {
-                recognitionRef.current.stop();
-            } catch (e) {
-                // Ignore errors if already stopped
-            }
+    const startListening = useCallback(async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            chunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    chunksRef.current.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstart = () => {
+                setIsListening(true);
+                onSpeechStart?.();
+            };
+
+            mediaRecorder.onstop = () => {
+                setIsListening(false);
+                const blob = new Blob(chunksRef.current, { type: "audio/webm" }); // or audio/mp4
+                onSpeechEnd?.(blob);
+
+                // Stop all tracks
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+        } catch (e) {
+            console.error("Failed to start recording", e);
             setIsListening(false);
         }
+    }, [onSpeechStart, onSpeechEnd]);
+
+    const stopListening = useCallback(() => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+            mediaRecorderRef.current.stop();
+        }
     }, []);
-
-    useEffect(() => {
-        if (typeof window !== "undefined" && (window as any).webkitSpeechRecognition) {
-            const SpeechRecognition = (window as any).webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = "en-US";
-
-            recognition.onstart = () => {
-                setIsListening(true);
-                onSpeechStart?.();
-            };
-
-            recognition.onend = () => {
-                setIsListening(false);
-                // Don't call onSpeechEnd here, wait for final result or silence
-            };
-
-            recognition.onresult = (event: any) => {
-                let finalTranscript = "";
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    }
-                }
-                if (finalTranscript) {
-                    setTranscript(finalTranscript);
-                    // Reset silence timer
-                    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-                    silenceTimerRef.current = setTimeout(() => {
-                        stopListening();
-                        onSpeechEnd?.(finalTranscript);
-                    }, 2000);
-                }
-            };
-
-            recognition.onerror = (event: any) => {
-                console.error("Speech recognition error", event.error);
-                if (event.error === 'no-speech') {
-                    // Ignore no-speech errors, just keep listening if continuous
-                    return;
-                }
-                setIsListening(false);
-            };
-
-            recognitionRef.current = recognition;
-        }
-
-        return () => {
-            if (recognitionRef.current) {
-                try {
-                    recognitionRef.current.stop();
-                } catch (e) { }
-            }
-            if (silenceTimerRef.current) {
-                clearTimeout(silenceTimerRef.current);
-            }
-        };
-    }, [onSpeechStart, onSpeechEnd, stopListening]);
-
-    const startListening = useCallback(() => {
-        if (recognitionRef.current) {
-            try {
-                recognitionRef.current.start();
-                setIsListening(true);
-                onSpeechStart?.();
-            } catch (e) {
-                console.error("Speech recognition error", e);
-            }
-        }
-    }, [onSpeechStart]);
 
     const speak = useCallback(async (text: string) => {
         if (!text) return;
@@ -164,12 +122,13 @@ export function useVoice(options: UseVoiceOptions = {}) {
             setIsSpeaking(false);
             onSpeakEnd?.();
         }
-    }, [isSpeaking, onSpeakEnd]);
+        stopListening();
+    }, [isSpeaking, onSpeakEnd, stopListening]);
 
     return {
         isListening,
         isSpeaking,
-        transcript,
+        transcript, // Will be empty in this mode until we get it back from server
         startListening,
         stopListening,
         speak,
