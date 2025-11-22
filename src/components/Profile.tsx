@@ -9,18 +9,24 @@ export default function Profile() {
     const [profile, setProfile] = useState<any>(null);
 
     useEffect(() => {
-        const savedUserProfile = localStorage.getItem("userProfile");
-        const savedDeepProfile = localStorage.getItem("deepProfile");
+        try {
+            const savedUserProfile = localStorage.getItem("userProfile");
+            const savedDeepProfile = localStorage.getItem("deepProfile");
 
-        if (savedUserProfile) {
-            const basic = JSON.parse(savedUserProfile);
-            const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
+            if (savedUserProfile) {
+                const basic = JSON.parse(savedUserProfile);
+                const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
 
-            setProfile({
-                ...basic,
-                ...deep,
-                ocean: deep.traits || deep.ocean || {} // Handle both formats
-            });
+                setProfile({
+                    ...basic,
+                    ...deep,
+                    ocean: deep.traits || deep.ocean || {} // Handle both formats
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load profile data", e);
+            // Fallback to empty profile to avoid crash
+            setProfile({ name: "User", ocean: {} });
         }
     }, []);
 

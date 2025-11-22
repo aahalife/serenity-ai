@@ -43,14 +43,18 @@ export function useHume(options: UseHumeOptions = {}) {
                 }
             };
 
-            socket.onclose = () => {
-                console.log("Hume WebSocket closed");
+            socket.onclose = (event) => {
+                console.log("Hume WebSocket closed", event.code, event.reason);
                 setIsConnected(false);
                 stopAudioStreaming();
             };
 
             socket.onerror = (error) => {
                 console.error("Hume WebSocket error", error);
+                // Try to log more details if available
+                if (error instanceof ErrorEvent) {
+                    console.error("Error details:", error.message);
+                }
             };
 
         } catch (error) {

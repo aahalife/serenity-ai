@@ -1,4 +1,4 @@
-import { getComposioAuthUrl } from "@/lib/composio";
+import { ComposioToolSet } from "composio-core";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -12,9 +12,19 @@ export async function POST(req: Request) {
         // Fallback to a default ID if no session (for dev/testing)
         const entityId = session?.user?.email || "default_user";
 
-        const redirectUrl = await getComposioAuthUrl(entityId, appName);
+        // Initialize Composio ToolSet
+        const toolset = new ComposioToolSet({
+            apiKey: process.env.COMPOSIO_API_KEY,
+        });
 
-        return NextResponse.json({ url: redirectUrl });
+        // Initiate connection
+        const connection = await toolset.connectedAccounts.initiate({
+            appName: appName,
+            entityId: entityId,
+            redirectUri: `${process.env.NEXTAUTH_URL}/profile`,
+        });
+
+        return NextResponse.json({ url: connection.redirectUrl });
     } catch (error) {
         console.error("Auth URL Generation Error:", error);
         return NextResponse.json({ error: "Failed to generate auth URL" }, { status: 500 });
