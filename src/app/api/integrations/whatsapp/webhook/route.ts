@@ -40,13 +40,32 @@ export async function POST(req: Request) {
 
         const aiText = response.content[0].type === 'text' ? response.content[0].text : "I'm here for you.";
 
-        // Send reply back via our Send API (loopback)
-        // Note: We strip 'whatsapp:' prefix if our Send API expects raw number, 
-        // but our Send API now handles it.
-        await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/integrations/whatsapp/send`, {
+        // Send reply back directly via Twilio API
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_PHONE_NUMBER || 'whatsapp:+16696006540';
+
+        if (!accountSid || !authToken) {
+            console.error("Twilio credentials missing");
+            return NextResponse.json({ error: "Twilio configuration missing" }, { status: 500 });
+        }
+
+        const to = sender.startsWith('whatsapp:') ? sender : `whatsapp:${sender}`;
+        const from = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
+
+        const bodyParams = new URLSearchParams({
+            From: from,
+            To: to,
+            Body: aiText,
+        });
+
+        await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phoneNumber: sender, message: aiText })
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: bodyParams.toString(),
         });
 
         return NextResponse.json({ status: "success" });
