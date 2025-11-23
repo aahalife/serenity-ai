@@ -86,7 +86,7 @@ export default function Profile() {
                         <h2>Deep Profile</h2>
                     </div>
                     <div className={styles.oceanGrid}>
-                        {profile.ocean && Object.entries(profile.ocean).length > 0 ? (
+                        {profile.ocean && typeof profile.ocean === 'object' && Object.entries(profile.ocean).length > 0 ? (
                             Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
                                 <div key={trait} className={styles.trait}>
                                     <span className={styles.traitName}>{trait}</span>
@@ -116,17 +116,26 @@ export default function Profile() {
                     </div>
                     <div className={styles.settingRow}>
                         <span>WhatsApp Number</span>
-                        <input
-                            type="tel"
-                            placeholder="+1234567890"
-                            className={styles.input}
-                            value={profile.phoneNumber || ""}
-                            onChange={(e) => {
-                                const newProfile = { ...profile, phoneNumber: e.target.value };
-                                setProfile(newProfile);
-                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
-                            }}
-                        />
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                                type="tel"
+                                placeholder="+1234567890"
+                                className={styles.input}
+                                value={profile.phoneNumber || ""}
+                                onChange={(e) => {
+                                    const newProfile = { ...profile, phoneNumber: e.target.value };
+                                    setProfile(newProfile);
+                                    localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                                }}
+                            />
+                            <button
+                                className={styles.connectButton}
+                                onClick={() => window.open(`https://wa.me/16696006540?text=Hi`, '_blank')}
+                                title="Send test message to opt-in"
+                            >
+                                Test
+                            </button>
+                        </div>
                     </div>
                     <div className={styles.settingRow}>
                         <span>Instagram</span>

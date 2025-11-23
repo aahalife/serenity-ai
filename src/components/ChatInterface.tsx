@@ -19,19 +19,45 @@ interface Message {
 }
 
 export default function ChatInterface() {
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: "1",
-            text: "Hello! I'm Serenity. How are you feeling today?",
-            sender: "ai",
-            timestamp: new Date(),
-        },
-    ]);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const { play, toggleMute, isMuted, duck, unduck } = useAudio();
+
+    // Load messages on mount
+    useEffect(() => {
+        const savedMessages = localStorage.getItem("chatHistory");
+        if (savedMessages) {
+            try {
+                const parsed = JSON.parse(savedMessages);
+                // Convert string timestamps back to Date objects
+                const hydrated = parsed.map((m: any) => ({
+                    ...m,
+                    timestamp: new Date(m.timestamp)
+                }));
+                setMessages(hydrated);
+            } catch (e) {
+                console.error("Failed to load chat history", e);
+            }
+        } else {
+            // Default welcome message if no history
+            setMessages([{
+                id: "1",
+                text: "Hello! I'm Serenity. How are you feeling today?",
+                sender: "ai",
+                timestamp: new Date(),
+            }]);
+        }
+    }, []);
+
+    // Save messages on change
+    useEffect(() => {
+        if (messages.length > 0) {
+            localStorage.setItem("chatHistory", JSON.stringify(messages));
+        }
+    }, [messages]);
 
     useEffect(() => {
         play("/audio/chatbkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });

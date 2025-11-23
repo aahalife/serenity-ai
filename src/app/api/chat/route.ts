@@ -63,9 +63,15 @@ export async function POST(req: Request) {
         console.log("Anthropic Response Status:", response.type);
 
         // Handle the response content safely
-        const textResponse = response.content[0].type === 'text'
+        let textResponse = response.content[0].type === 'text'
             ? response.content[0].text
             : "I'm here with you.";
+
+        // Strip acting tags like (softly), [warmly], etc.
+        textResponse = textResponse
+            .replace(/\(.*?\)/g, "") // Remove (...)
+            .replace(/\[.*?\]/g, "") // Remove [...]
+            .trim();
 
         console.log("Chat API Output:", textResponse);
 

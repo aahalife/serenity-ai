@@ -25,6 +25,43 @@ export function useVoice(options: UseVoiceOptions = {}) {
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
 
+            // VAD Setup
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            const audioContext = new AudioContext();
+            const source = audioContext.createMediaStreamSource(stream);
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 512;
+            source.connect(analyser);
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            let silenceStart = Date.now();
+            let isSpeakingDetected = false;
+            const silenceThreshold = 1500; // 1.5 seconds of silence to stop
+            const volumeThreshold = 20; // Sensitivity threshold (0-255)
+
+            const checkSilence = () => {
+                if (mediaRecorder.state !== "recording") return;
+
+                analyser.getByteFrequencyData(dataArray);
+                const volume = dataArray.reduce((a, b) => a + b) / bufferLength;
+
+                if (volume > volumeThreshold) {
+                    silenceStart = Date.now();
+                    if (!isSpeakingDetected) {
+                        isSpeakingDetected = true;
+                        onSpeechStart?.();
+                    }
+                } else if (isSpeakingDetected && (Date.now() - silenceStart > silenceThreshold)) {
+                    // Silence detected after speech
+                    stopListening();
+                    return;
+                }
+
+                requestAnimationFrame(checkSilence);
+            };
+
             mediaRecorder.ondataavailable = (e) => {
                 if (e.data.size > 0) {
                     chunksRef.current.push(e.data);
@@ -33,16 +70,17 @@ export function useVoice(options: UseVoiceOptions = {}) {
 
             mediaRecorder.onstart = () => {
                 setIsListening(true);
-                onSpeechStart?.();
+                checkSilence(); // Start VAD loop
             };
 
             mediaRecorder.onstop = () => {
                 setIsListening(false);
-                const blob = new Blob(chunksRef.current, { type: "audio/webm" }); // or audio/mp4
+                const blob = new Blob(chunksRef.current, { type: "audio/webm" });
                 onSpeechEnd?.(blob);
 
-                // Stop all tracks
+                // Stop all tracks and close context
                 stream.getTracks().forEach(track => track.stop());
+                audioContext.close();
             };
 
             mediaRecorder.start();
