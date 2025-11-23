@@ -1,17 +1,4 @@
 import { NextResponse } from 'next/server';
-import { Composio } from "composio-core";
-
-let client: Composio | null = null;
-
-try {
-    if (process.env.COMPOSIO_API_KEY) {
-        client = new Composio({
-            apiKey: process.env.COMPOSIO_API_KEY,
-        });
-    }
-} catch (e) {
-    console.warn("Composio SDK initialization failed:", e);
-}
 
 export async function POST(req: Request) {
     try {
@@ -21,35 +8,46 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing phoneNumber or message" }, { status: 400 });
         }
 
-        // In a real implementation, we would use the Composio SDK to send the message.
-        // Since the specific Composio WhatsApp action ID might vary, we'll assume a standard action.
-        // For now, we'll log it as a placeholder if we can't find the exact action ID in docs immediately.
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_PHONE_NUMBER || 'whatsapp:+16696006540'; // Default to user's number
 
-        // However, based on common Composio patterns:
-        // await toolset.executeAction('whatsapp_send_message', { to: phoneNumber, message: message });
-
-        // if (!toolset) {
-        //    return NextResponse.json({ error: "Composio not configured" }, { status: 500 });
-        // }
-
-        console.log(`[WhatsApp] Sending to ${phoneNumber}: ${message}`);
-
-        if (client) {
-            // Using 2Chat action for sending messages
-            // Action ID assumed to be '2CHAT_SEND_MESSAGE' or similar based on Composio conventions
-            // Using client.tools.execute as per SDK docs (casting to any to avoid TS issues if types are outdated)
-            const result = await (client as any).tools.execute({
-                slug: '2CHAT_SEND_MESSAGE',
-                arguments: {
-                    to_number: phoneNumber,
-                    message: message
-                },
-                connected_account_id: process.env.COMPOSIO_AUTH_CONFIG_ID || 'ac_cAaFdlqYBMs9'
-            });
-            console.log("2Chat Send Result:", result);
+        if (!accountSid || !authToken) {
+            console.error("Twilio credentials missing");
+            return NextResponse.json({ error: "Twilio configuration missing" }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, status: "Message sent via 2Chat" });
+        console.log(`[Twilio] Sending WhatsApp to ${phoneNumber}: ${message}`);
+
+        // Ensure numbers have 'whatsapp:' prefix
+        const to = phoneNumber.startsWith('whatsapp:') ? phoneNumber : `whatsapp:${phoneNumber}`;
+        const from = fromNumber.startsWith('whatsapp:') ? fromNumber : `whatsapp:${fromNumber}`;
+
+        const body = new URLSearchParams({
+            From: from,
+            To: to,
+            Body: message,
+        });
+
+        const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from(`${accountSid}:${authToken}`).toString('base64'),
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: body.toString(),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Twilio API Error:", errorData);
+            throw new Error(errorData.message || "Failed to send message via Twilio");
+        }
+
+        const result = await response.json();
+        console.log("Twilio Send Result SID:", result.sid);
+
+        return NextResponse.json({ success: true, status: "Message sent via Twilio", sid: result.sid });
     } catch (error: any) {
         console.error("WhatsApp Send Error:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });

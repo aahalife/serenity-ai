@@ -15,7 +15,14 @@ export function useHume(options: UseHumeOptions = {}) {
     const connect = useCallback(async () => {
         try {
             // Use environment variable for API key
-            const apiKey = process.env.NEXT_PUBLIC_HUME_API_KEY || "JpcpAvRho43BvuD5RkF62EajUxJeVz2LQs3LTtd9okeuagQK";
+            // Use the environment variable, or throw an error if missing to ensure we don't use a stale key
+            const apiKey = process.env.NEXT_PUBLIC_HUME_API_KEY;
+
+            if (!apiKey) {
+                console.error("Hume API Key is missing! Check NEXT_PUBLIC_HUME_API_KEY in .env");
+                return;
+            }
+
             const socketUrl = `wss://api.hume.ai/v0/stream/models?api_key=${apiKey}`;
 
             const socket = new WebSocket(socketUrl);
