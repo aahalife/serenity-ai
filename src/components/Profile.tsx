@@ -7,8 +7,10 @@ import styles from "./Profile.module.css";
 
 export default function Profile() {
     const [profile, setProfile] = useState<any>(null);
+    const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
+        setIsMounted(true);
         // Move all localStorage logic inside useEffect to avoid hydration mismatch
         const loadProfile = () => {
             try {
@@ -36,6 +38,9 @@ export default function Profile() {
 
         loadProfile();
     }, []);
+
+    // Prevent hydration mismatch by not rendering until mounted
+    if (!isMounted) return null;
 
     // Show loading state only until effect runs
     if (!profile) {

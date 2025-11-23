@@ -63,16 +63,38 @@ export default function ChatInterface() {
         play("/audio/chatbkg.m4a", { volume: 0.2, loop: true, fadeInDuration: 2000 });
     }, [play]);
 
+    const [showWhatsAppDebug, setShowWhatsAppDebug] = useState(false);
+    const [waNumber, setWaNumber] = useState("");
+
+    useEffect(() => {
+        const savedProfile = localStorage.getItem("userProfile");
+        if (savedProfile) {
+            const { phoneNumber } = JSON.parse(savedProfile);
+            if (phoneNumber) setWaNumber(phoneNumber);
+        }
+    }, []);
+
+    const saveWhatsAppNumber = () => {
+        const savedProfile = localStorage.getItem("userProfile");
+        const profile = savedProfile ? JSON.parse(savedProfile) : {};
+        const newProfile = { ...profile, phoneNumber: waNumber };
+        localStorage.setItem("userProfile", JSON.stringify(newProfile));
+        alert("Number saved!");
+    };
+
     const [showDebug, setShowDebug] = useState(false);
     const [emotions, setEmotions] = useState<any[]>([]);
     const [audioError, setAudioError] = useState<string | null>(null);
 
     const { connect: connectHume, disconnect: disconnectHume, isConnected: isHumeConnected } = useHume({
         onEmotion: (newEmotions) => {
-            const topEmotions = newEmotions
-                .sort((a: any, b: any) => b.score - a.score)
-                .slice(0, 3);
-            setEmotions(topEmotions);
+            // Only update if we have valid emotions, otherwise keep the last known state
+            if (newEmotions && newEmotions.length > 0) {
+                const topEmotions = newEmotions
+                    .sort((a: any, b: any) => b.score - a.score)
+                    .slice(0, 3);
+                setEmotions(topEmotions);
+            }
         }
     });
 
@@ -254,6 +276,13 @@ export default function ChatInterface() {
                     </div>
                     <div className={styles.headerControls}>
                         <button
+                            onClick={() => setShowWhatsAppDebug(!showWhatsAppDebug)}
+                            className={styles.debugButton}
+                            title="WhatsApp Debug"
+                        >
+                            <MessageCircle size={18} />
+                        </button>
+                        <button
                             onClick={() => setShowDebug(!showDebug)}
                             className={styles.debugButton}
                             title="Toggle Hume Debugger"
@@ -266,6 +295,38 @@ export default function ChatInterface() {
                     </div>
                 </div>
             </div>
+
+            {/* WhatsApp Debug Modal */}
+            {showWhatsAppDebug && (
+                <div style={{
+                    position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    background: 'rgba(0,0,0,0.8)', padding: '20px', borderRadius: '12px', zIndex: 1000,
+                    border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)'
+                }}>
+                    <h3 style={{ color: 'white', marginBottom: '10px' }}>WhatsApp Debug</h3>
+                    <input
+                        type="tel"
+                        value={waNumber}
+                        onChange={(e) => setWaNumber(e.target.value)}
+                        placeholder="+1234567890"
+                        style={{
+                            background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                            color: 'white', padding: '8px', borderRadius: '6px', width: '100%', marginBottom: '10px'
+                        }}
+                    />
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={saveWhatsAppNumber} style={{ padding: '8px 16px', background: '#4CAF50', color: 'white', borderRadius: '6px', border: 'none' }}>
+                            Save
+                        </button>
+                        <button onClick={() => window.open(`https://wa.me/16696006540?text=Hi`, '_blank')} style={{ padding: '8px 16px', background: '#2196F3', color: 'white', borderRadius: '6px', border: 'none' }}>
+                            Test
+                        </button>
+                        <button onClick={() => setShowWhatsAppDebug(false)} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: 'white', borderRadius: '6px', border: 'none' }}>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <HumeDebugModal
                 isOpen={showDebug}
