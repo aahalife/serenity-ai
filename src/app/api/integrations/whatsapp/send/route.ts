@@ -43,7 +43,8 @@ export async function POST(req: Request) {
                 arguments: {
                     to_number: phoneNumber,
                     message: message
-                }
+                },
+                connected_account_id: process.env.COMPOSIO_AUTH_CONFIG_ID || 'ac_cAaFdlqYBMs9'
             });
             console.log("2Chat Send Result:", result);
         }

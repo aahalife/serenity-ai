@@ -8,15 +8,19 @@ const anthropic = new Anthropic({
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        console.log("[2Chat Webhook] Received:", JSON.stringify(body, null, 2));
+        console.log("[Composio Webhook] Received:", JSON.stringify(body, null, 2));
 
-        // Parse incoming message from 2Chat payload
+        // Composio webhooks might wrap the actual provider payload
+        // Structure: { payload: { ... }, type: '...' } or direct provider payload
+        const payload = body.payload || body;
+
+        // Parse incoming message from 2Chat payload (inside Composio wrapper)
         // 2Chat structure typically includes 'message' object with 'body' and 'from'
-        const message = body.message?.body || body.text || body.message;
-        const sender = body.message?.from || body.from || body.sender;
+        const message = payload.message?.body || payload.text || payload.message;
+        const sender = payload.message?.from || payload.from || payload.sender;
 
         if (!message || !sender) {
-            console.log("Ignored webhook: Missing message or sender");
+            console.log("Ignored webhook: Missing message or sender in payload");
             return NextResponse.json({ status: "ignored" });
         }
 
