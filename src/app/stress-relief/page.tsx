@@ -109,26 +109,31 @@ export default function StressReliefPage() {
                 {/* View Toggle */}
                 {/* View Toggle */}
                 {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
-                    <LiquidGlass className="p-1.5 rounded-full flex space-x-2 shrink-0 bg-white/5">
-                        <button
+                    <div className="flex space-x-4 shrink-0">
+                        <LiquidGlass
                             onClick={() => setViewState('HOME')}
-                            className={`px-8 py-3 rounded-full text-base font-medium transition-all duration-300 ${viewState === 'HOME'
-                                    ? 'bg-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)] backdrop-blur-md'
-                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                            className={`rounded-full transition-all duration-300 ${viewState === 'HOME'
+                                    ? 'shadow-[0_0_20px_rgba(59,130,246,0.5)] border-blue-400/50'
+                                    : 'opacity-70 hover:opacity-100'
                                 }`}
                         >
-                            Phrases
-                        </button>
-                        <button
+                            <div className={`px-8 py-3 text-base font-medium ${viewState === 'HOME' ? 'text-blue-100' : 'text-white/60'}`}>
+                                Phrases
+                            </div>
+                        </LiquidGlass>
+
+                        <LiquidGlass
                             onClick={() => setViewState('TECHNIQUES_LIST')}
-                            className={`px-8 py-3 rounded-full text-base font-medium transition-all duration-300 ${viewState === 'TECHNIQUES_LIST'
-                                    ? 'bg-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)] backdrop-blur-md'
-                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                            className={`rounded-full transition-all duration-300 ${viewState === 'TECHNIQUES_LIST'
+                                    ? 'shadow-[0_0_20px_rgba(168,85,247,0.5)] border-purple-400/50'
+                                    : 'opacity-70 hover:opacity-100'
                                 }`}
                         >
-                            Techniques
-                        </button>
-                    </LiquidGlass>
+                            <div className={`px-8 py-3 text-base font-medium ${viewState === 'TECHNIQUES_LIST' ? 'text-purple-100' : 'text-white/60'}`}>
+                                Techniques
+                            </div>
+                        </LiquidGlass>
+                    </div>
                 )}
             </header>
 

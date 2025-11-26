@@ -163,79 +163,68 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
     const currentVideo = videos[(currentStepIndex + 1) % videos.length];
 
     return (
-        <div className="fixed inset-0 z-50 bg-black text-white overflow-hidden flex flex-col items-center justify-center">
+        <div className={styles.container}>
             {/* Video Background */}
-            <div className="absolute inset-0 z-0">
+            <div className={styles.videoBackground}>
                 <video
-                    src={currentVideo} // Changed from key to src to avoid unmounting
+                    src={currentVideo}
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover opacity-50 transition-opacity duration-1000"
+                    className={styles.video}
                 />
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
             </div>
 
             {/* Controls */}
-            <div className="absolute top-6 right-6 z-50 flex items-center space-x-4">
-                <button onClick={() => setIsMuted(!isMuted)} className="p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all">
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </button>
-                <button onClick={handleClose} className="p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all">
-                    <X size={20} />
+            <button onClick={handleClose} className={styles.closeButton}>
+                <X size={24} />
+            </button>
+            <div className="fixed top-8 right-20 z-50">
+                <button onClick={() => setIsMuted(!isMuted)} className={styles.closeButton} style={{ right: 'auto' }}>
+                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
                 </button>
             </div>
 
-            {/* Main Content - Centered Overlay */}
-            <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-8 flex flex-col items-center justify-center min-h-screen py-20">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={currentStepIndex}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 1.05 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="w-full flex flex-col items-center"
-                    >
-                        {isIntro && (
-                            <div className="text-center space-y-8 max-w-3xl">
-                                <h1 className="text-5xl md:text-7xl font-bold font-montage tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 drop-shadow-lg">
-                                    {technique.title}
-                                </h1>
-                                <p className="text-xl md:text-2xl text-white/90 font-petrona leading-relaxed drop-shadow-md">
-                                    {technique.script.opening}
-                                </p>
-                                <div className="pt-12">
-                                    <button
-                                        onClick={handleNext}
-                                        className="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-black bg-white rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
-                                    >
-                                        <span className="relative z-10 flex items-center gap-2">
-                                            Begin Session <ArrowRight size={20} />
-                                        </span>
+            {/* Main Content */}
+            <div className={styles.section}>
+                <div className={styles.overlay}>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentStepIndex}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full flex flex-col items-center text-center"
+                        >
+                            {isIntro && (
+                                <>
+                                    <h1 className={styles.title}>{technique.title}</h1>
+                                    <p className={styles.subtitle}>{technique.script.opening}</p>
+                                    <button onClick={handleNext} className={styles.button}>
+                                        Begin Session <ArrowRight size={20} />
                                     </button>
-                                </div>
-                            </div>
-                        )}
+                                </>
+                            )}
 
-                        {currentStep && (
-                            <div className="w-full max-w-2xl">
-                                <div className="mb-8 text-center">
-                                    <h2 className="text-3xl md:text-5xl font-bold font-montage mb-6 drop-shadow-lg">{currentStep.title}</h2>
-                                    <p className="text-xl md:text-2xl text-white/90 font-petrona leading-relaxed drop-shadow-md">{currentStep.tts_text}</p>
-                                </div>
+                            {currentStep && (
+                                <>
+                                    <h2 className={styles.question}>{currentStep.title}</h2>
+                                    <p className={styles.thoughtDisplay}>{currentStep.tts_text}</p>
 
-                                <LiquidGlass className="p-1 backdrop-blur-xl bg-black/20">
-                                    <div className="p-6 md:p-10 space-y-8">
+                                    <div className="w-full max-w-xl mx-auto mt-8">
                                         {currentStep.ui_type === 'text_input' && (
-                                            <textarea
-                                                value={userInput}
-                                                onChange={(e) => setUserInput(e.target.value)}
-                                                placeholder="Type your thoughts here..."
-                                                className="w-full h-48 bg-white/5 border border-white/20 rounded-xl p-6 text-xl text-white placeholder-white/40 focus:outline-none focus:border-white/50 transition-colors font-petrona resize-none shadow-inner"
-                                                autoFocus
-                                            />
+                                            <div className={styles.inputContainer}>
+                                                <textarea
+                                                    value={userInput}
+                                                    onChange={(e) => setUserInput(e.target.value)}
+                                                    placeholder="Type your thoughts here..."
+                                                    className={styles.textarea}
+                                                    autoFocus
+                                                />
+                                            </div>
                                         )}
 
                                         {currentStep.ui_type === 'timer' && (
@@ -267,50 +256,39 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                                             </div>
                                         )}
 
-                                        {/* Generic Next Button for all steps */}
-                                        <div className="flex justify-end pt-4">
-                                            <button
-                                                onClick={handleNext}
-                                                className="flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white font-medium border border-white/10 hover:border-white/30"
-                                            >
-                                                Next Step <ArrowRight size={18} />
+                                        <div className="flex justify-center mt-8">
+                                            <button onClick={handleNext} className={styles.button}>
+                                                Next Step <ArrowRight size={20} />
                                             </button>
                                         </div>
                                     </div>
-                                </LiquidGlass>
-                            </div>
-                        )}
+                                </>
+                            )}
 
-                        {isClosing && (
-                            <div className="text-center space-y-10 max-w-3xl">
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="w-28 h-28 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30 shadow-[0_0_50px_rgba(74,222,128,0.3)]"
-                                >
-                                    <Check size={56} className="text-green-400" />
-                                </motion.div>
-                                <h2 className="text-6xl font-bold font-montage drop-shadow-lg">Session Complete</h2>
-                                <p className="text-2xl text-white/80 font-petrona max-w-xl mx-auto leading-relaxed drop-shadow-md">
-                                    {technique.script.closing}
-                                </p>
-                                <div className="pt-12">
-                                    <button
-                                        onClick={handleClose}
-                                        className="bg-white text-black px-12 py-5 rounded-full text-lg font-medium hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                            {isClosing && (
+                                <>
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="w-28 h-28 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30 shadow-[0_0_50px_rgba(74,222,128,0.3)]"
                                     >
+                                        <Check size={56} className="text-green-400" />
+                                    </motion.div>
+                                    <h2 className={styles.title}>Session Complete</h2>
+                                    <p className={styles.subtitle}>{technique.script.closing}</p>
+                                    <button onClick={handleClose} className={styles.button}>
                                         Return to Center
                                     </button>
-                                </div>
-                            </div>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
+                                </>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
             </div>
 
             {/* Progress Indicator */}
             {!isIntro && !isClosing && (
-                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex space-x-3 z-50">
+                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex space-x-3 z-50">
                     {technique.script.steps.map((_, idx) => (
                         <div
                             key={idx}
