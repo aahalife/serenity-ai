@@ -94,12 +94,44 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
         };
     }, [currentStepIndex, technique, isMuted]);
 
+    // Audio Background
+    useEffect(() => {
+        const audio = new Audio('/audio/work.mp3');
+        audio.loop = true;
+        audio.volume = 0.3;
+
+        if (!isMuted) {
+            audio.play().catch(e => console.log("Audio play failed", e));
+        }
+
+        return () => {
+            audio.pause();
+        };
+    }, [isMuted]);
+
+    const saveWin = () => {
+        if (!technique) return;
+
+        const newWin = {
+            id: Date.now().toString(),
+            date: new Date().toLocaleDateString(),
+            stressfulThought: technique.title,
+            turnaround: "Completed Stress Relief Session",
+            emotionBefore: "Stressed",
+            emotionAfter: "Relieved"
+        };
+
+        const existingWins = JSON.parse(localStorage.getItem("wins") || "[]");
+        localStorage.setItem("wins", JSON.stringify([newWin, ...existingWins]));
+    };
+
     const handleNext = () => {
         if (!technique) return;
         if (currentStepIndex < technique.script.steps.length) {
             setCurrentStepIndex(prev => prev + 1);
             setUserInput(''); // Reset input for next step
         } else {
+            saveWin();
             router.push('/stress-relief');
         }
     };
@@ -119,7 +151,7 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
     const currentVideo = videos[(currentStepIndex + 1) % videos.length];
 
     return (
-        <div className="fixed inset-0 z-50 bg-black text-white overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black text-white overflow-hidden flex flex-col items-center justify-center">
             {/* Video Background */}
             <div className="absolute inset-0 z-0">
                 <video
@@ -128,7 +160,7 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover opacity-60 transition-opacity duration-1000"
+                    className="w-full h-full object-cover opacity-50 transition-opacity duration-1000"
                 >
                     <source src={currentVideo} type="video/mp4" />
                 </video>
@@ -145,29 +177,29 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                 </button>
             </div>
 
-            {/* Main Content */}
-            <div className="relative z-10 h-full flex flex-col items-center justify-center p-6 md:p-12 max-w-4xl mx-auto">
+            {/* Main Content - Centered Overlay */}
+            <div className="relative z-10 w-full max-w-4xl mx-auto px-4 md:px-8 flex flex-col items-center justify-center min-h-screen py-20">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentStepIndex}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -30 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="w-full"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.05 }}
+                        transition={{ duration: 0.5, ease: "easeOut" }}
+                        className="w-full flex flex-col items-center"
                     >
                         {isIntro && (
-                            <div className="text-center space-y-8">
-                                <h1 className="text-5xl md:text-7xl font-bold font-montage tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
+                            <div className="text-center space-y-8 max-w-3xl">
+                                <h1 className="text-5xl md:text-7xl font-bold font-montage tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 drop-shadow-lg">
                                     {technique.title}
                                 </h1>
-                                <p className="text-xl md:text-2xl text-white/80 font-petrona max-w-2xl mx-auto leading-relaxed">
+                                <p className="text-xl md:text-2xl text-white/90 font-petrona leading-relaxed drop-shadow-md">
                                     {technique.script.opening}
                                 </p>
                                 <div className="pt-12">
                                     <button
                                         onClick={handleNext}
-                                        className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-medium text-black bg-white rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+                                        className="group relative inline-flex items-center justify-center px-10 py-5 text-lg font-medium text-black bg-white rounded-full overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)]"
                                     >
                                         <span className="relative z-10 flex items-center gap-2">
                                             Begin Session <ArrowRight size={20} />
@@ -178,27 +210,27 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                         )}
 
                         {currentStep && (
-                            <div className="w-full max-w-2xl mx-auto">
+                            <div className="w-full max-w-2xl">
                                 <div className="mb-8 text-center">
-                                    <h2 className="text-3xl md:text-4xl font-bold font-montage mb-4">{currentStep.title}</h2>
-                                    <p className="text-xl text-white/80 font-petrona leading-relaxed">{currentStep.tts_text}</p>
+                                    <h2 className="text-3xl md:text-5xl font-bold font-montage mb-6 drop-shadow-lg">{currentStep.title}</h2>
+                                    <p className="text-xl md:text-2xl text-white/90 font-petrona leading-relaxed drop-shadow-md">{currentStep.tts_text}</p>
                                 </div>
 
-                                <LiquidGlass className="p-1">
-                                    <div className="p-6 md:p-8 space-y-6">
+                                <LiquidGlass className="p-1 backdrop-blur-xl bg-black/20">
+                                    <div className="p-6 md:p-10 space-y-8">
                                         {currentStep.ui_type === 'text_input' && (
                                             <textarea
                                                 value={userInput}
                                                 onChange={(e) => setUserInput(e.target.value)}
                                                 placeholder="Type your thoughts here..."
-                                                className="w-full h-40 bg-white/5 border border-white/10 rounded-xl p-4 text-xl text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors font-petrona resize-none"
+                                                className="w-full h-48 bg-white/5 border border-white/20 rounded-xl p-6 text-xl text-white placeholder-white/40 focus:outline-none focus:border-white/50 transition-colors font-petrona resize-none shadow-inner"
                                                 autoFocus
                                             />
                                         )}
 
                                         {currentStep.ui_type === 'timer' && (
                                             <div className="flex justify-center py-8">
-                                                <div className="w-48 h-48 rounded-full border-4 border-white/10 flex items-center justify-center text-5xl font-mono text-white/90 relative">
+                                                <div className="w-56 h-56 rounded-full border-4 border-white/10 flex items-center justify-center text-6xl font-mono text-white/90 relative bg-white/5 backdrop-blur-sm">
                                                     <div
                                                         className="absolute inset-0 rounded-full border-4 border-t-blue-400 animate-spin"
                                                         style={{ animationDuration: `${currentStep.duration_sec || 60}s` }}
@@ -213,14 +245,14 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                                                 <motion.div
                                                     animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0.6, 0.3] }}
                                                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                                                    className="w-64 h-64 rounded-full bg-blue-400/20 blur-3xl absolute"
+                                                    className="w-72 h-72 rounded-full bg-blue-400/20 blur-3xl absolute"
                                                 />
                                                 <motion.div
                                                     animate={{ scale: [1, 1.1, 1] }}
                                                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-                                                    className="w-40 h-40 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 z-10 flex items-center justify-center"
+                                                    className="w-48 h-48 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 z-10 flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.1)]"
                                                 >
-                                                    <span className="text-white/50 font-montage">Breathe</span>
+                                                    <span className="text-white/60 font-montage text-xl">Breathe</span>
                                                 </motion.div>
                                             </div>
                                         )}
@@ -229,7 +261,7 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                                         <div className="flex justify-end pt-4">
                                             <button
                                                 onClick={handleNext}
-                                                className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white font-medium"
+                                                className="flex items-center gap-2 px-8 py-4 bg-white/10 hover:bg-white/20 rounded-full transition-all text-white font-medium border border-white/10 hover:border-white/30"
                                             >
                                                 Next Step <ArrowRight size={18} />
                                             </button>
@@ -240,22 +272,22 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
                         )}
 
                         {isClosing && (
-                            <div className="text-center space-y-8">
+                            <div className="text-center space-y-10 max-w-3xl">
                                 <motion.div
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
-                                    className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30 shadow-[0_0_30px_rgba(74,222,128,0.2)]"
+                                    className="w-28 h-28 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30 shadow-[0_0_50px_rgba(74,222,128,0.3)]"
                                 >
-                                    <Check size={48} className="text-green-400" />
+                                    <Check size={56} className="text-green-400" />
                                 </motion.div>
-                                <h2 className="text-5xl font-bold font-montage">Session Complete</h2>
-                                <p className="text-xl text-white/70 font-petrona max-w-lg mx-auto leading-relaxed">
+                                <h2 className="text-6xl font-bold font-montage drop-shadow-lg">Session Complete</h2>
+                                <p className="text-2xl text-white/80 font-petrona max-w-xl mx-auto leading-relaxed drop-shadow-md">
                                     {technique.script.closing}
                                 </p>
                                 <div className="pt-12">
                                     <button
                                         onClick={handleClose}
-                                        className="bg-white text-black px-10 py-4 rounded-full font-medium hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                                        className="bg-white text-black px-12 py-5 rounded-full text-lg font-medium hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.4)]"
                                     >
                                         Return to Center
                                     </button>
@@ -268,11 +300,11 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
 
             {/* Progress Indicator */}
             {!isIntro && !isClosing && (
-                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex space-x-2 z-50">
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex space-x-3 z-50">
                     {technique.script.steps.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${idx <= currentStepIndex ? 'w-8 bg-white' : 'w-2 bg-white/20'}`}
+                            className={`h-2 rounded-full transition-all duration-500 shadow-lg ${idx <= currentStepIndex ? 'w-10 bg-white' : 'w-2 bg-white/20'}`}
                         />
                     ))}
                 </div>

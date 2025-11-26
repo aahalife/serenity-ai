@@ -9,7 +9,7 @@ import { Search, ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import LiquidGlass from '@/components/LiquidGlass';
 
-type ViewState = 'HOME' | 'CATEGORY' | 'PHRASE_TECHNIQUES';
+type ViewState = 'HOME' | 'CATEGORY' | 'PHRASE_TECHNIQUES' | 'TECHNIQUES_LIST';
 
 export default function StressReliefPage() {
     const router = useRouter();
@@ -60,7 +60,7 @@ export default function StressReliefPage() {
         if (viewState === 'PHRASE_TECHNIQUES') {
             setViewState('CATEGORY');
             setSelectedPhrase(null);
-        } else if (viewState === 'CATEGORY') {
+        } else if (viewState === 'CATEGORY' || viewState === 'TECHNIQUES_LIST') {
             setViewState('HOME');
             setSelectedCategory(null);
         }
@@ -80,34 +80,55 @@ export default function StressReliefPage() {
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 pb-32">
             {/* Header */}
-            <header className="max-w-6xl mx-auto mb-8 md:mb-12">
-                <div className="flex items-center space-x-4 mb-4">
-                    {viewState !== 'HOME' && (
-                        <button
-                            onClick={handleBack}
-                            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-                        >
-                            <ArrowLeft size={24} />
-                        </button>
+            <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
+                <div className="flex-1">
+                    <div className="flex items-center space-x-4 mb-4">
+                        {viewState !== 'HOME' && viewState !== 'TECHNIQUES_LIST' && (
+                            <button
+                                onClick={handleBack}
+                                className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                            >
+                                <ArrowLeft size={24} />
+                            </button>
+                        )}
+                        <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 font-montage">
+                            {viewState === 'HOME' && "Stress Relief"}
+                            {viewState === 'TECHNIQUES_LIST' && "All Techniques"}
+                            {viewState === 'CATEGORY' && selectedCategory?.label}
+                            {viewState === 'PHRASE_TECHNIQUES' && "Suggested Techniques"}
+                        </h1>
+                    </div>
+
+                    {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
+                        <p className="text-lg md:text-xl text-white/60 max-w-2xl font-petrona">
+                            Identify what's weighing on you, and let's find a way through it.
+                        </p>
                     )}
-                    <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 font-montage">
-                        {viewState === 'HOME' && "Stress Relief"}
-                        {viewState === 'CATEGORY' && selectedCategory?.label}
-                        {viewState === 'PHRASE_TECHNIQUES' && "Suggested Techniques"}
-                    </h1>
                 </div>
 
-                {viewState === 'HOME' && (
-                    <p className="text-lg md:text-xl text-white/60 max-w-2xl font-petrona">
-                        Identify what's weighing on you, and let's find a way through it.
-                    </p>
+                {/* View Toggle */}
+                {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
+                    <div className="bg-white/5 p-1 rounded-full flex space-x-1 shrink-0">
+                        <button
+                            onClick={() => setViewState('HOME')}
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewState === 'HOME' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                        >
+                            Phrases
+                        </button>
+                        <button
+                            onClick={() => setViewState('TECHNIQUES_LIST')}
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewState === 'TECHNIQUES_LIST' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                        >
+                            Techniques
+                        </button>
+                    </div>
                 )}
             </header>
 
             {/* Search Bar (Only on Home) */}
             {viewState === 'HOME' && (
-                <div className="max-w-2xl mx-auto mb-12 md:mb-16 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={20} />
+                <div className="max-w-2xl mx-auto mb-12 md:mb-16 relative px-4">
+                    <Search className="absolute left-8 top-1/2 -translate-y-1/2 text-white/30" size={20} />
                     <input
                         type="text"
                         placeholder="I am feeling..."
@@ -118,7 +139,7 @@ export default function StressReliefPage() {
                 </div>
             )}
 
-            <main className="max-w-6xl mx-auto">
+            <main className="max-w-6xl mx-auto px-4 md:px-0">
                 <AnimatePresence mode="wait">
                     {viewState === 'HOME' && (
                         <motion.div
@@ -126,7 +147,7 @@ export default function StressReliefPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                            className="grid grid-cols-1 md:grid-cols-3 gap-8"
                         >
                             {categories.map(category => (
                                 <motion.div
@@ -137,15 +158,15 @@ export default function StressReliefPage() {
                                 >
                                     <LiquidGlass
                                         onClick={() => handleCategoryClick(category)}
-                                        className="h-full cursor-pointer min-h-[200px] flex flex-col justify-center items-center text-center p-6 group"
+                                        className="h-full cursor-pointer min-h-[200px] flex flex-col justify-center items-center text-center p-8 group"
                                     >
-                                        <h3 className="text-2xl font-bold text-white/90 mb-2 font-montage group-hover:text-blue-300 transition-colors">
+                                        <h3 className="text-2xl font-bold text-white/90 mb-3 font-montage group-hover:text-blue-300 transition-colors">
                                             {category.label}
                                         </h3>
-                                        <p className="text-sm text-white/60 font-petrona">
+                                        <p className="text-sm text-white/60 font-petrona leading-relaxed mb-4">
                                             {category.description}
                                         </p>
-                                        <div className="mt-4 text-xs text-white/40 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+                                        <div className="mt-auto text-xs text-white/40 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
                                             {category.phrase_count} Phrases
                                         </div>
                                     </LiquidGlass>
@@ -179,15 +200,15 @@ export default function StressReliefPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                         >
-                            <div className="mb-8 p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                                <div className="flex items-center space-x-3 mb-2">
+                            <div className="mb-10 p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md max-w-3xl mx-auto text-center">
+                                <div className="flex items-center justify-center space-x-3 mb-3">
                                     <Sparkles className="text-purple-400" size={20} />
                                     <span className="text-sm text-purple-300 uppercase tracking-wider font-bold">Selected Focus</span>
                                 </div>
-                                <p className="text-2xl font-montage text-white/90">"{selectedPhrase.text}"</p>
+                                <p className="text-3xl font-montage text-white/90">"{selectedPhrase.text}"</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {getSuggestedTechniques().map(tech => (
                                     <TechniqueTile
                                         key={tech.id}
@@ -196,6 +217,24 @@ export default function StressReliefPage() {
                                     />
                                 ))}
                             </div>
+                        </motion.div>
+                    )}
+
+                    {viewState === 'TECHNIQUES_LIST' && (
+                        <motion.div
+                            key="all-techniques"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        >
+                            {techniques.map(tech => (
+                                <TechniqueTile
+                                    key={tech.id}
+                                    technique={tech}
+                                    onClick={handleTechniqueClick}
+                                />
+                            ))}
                         </motion.div>
                     )}
                 </AnimatePresence>
