@@ -7,7 +7,10 @@ import { TechniqueTile } from '@/components/stress-relief/TechniqueTile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getUserStressProfile, getPersonalizedTechniques, StressProfile } from '@/lib/stress-relief/user-preferences';
 import LiquidGlass from '@/components/LiquidGlass';
+
+// ... imports
 
 type ViewState = 'HOME' | 'CATEGORY' | 'PHRASE_TECHNIQUES' | 'TECHNIQUES_LIST';
 
@@ -18,6 +21,7 @@ export default function StressReliefPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [phrases, setPhrases] = useState<Phrase[]>([]);
     const [techniques, setTechniques] = useState<Technique[]>([]);
+    const [userProfile, setUserProfile] = useState<StressProfile | null>(null);
 
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [selectedPhrase, setSelectedPhrase] = useState<Phrase | null>(null);
@@ -34,7 +38,14 @@ export default function StressReliefPage() {
 
                 setCategories(await catRes.json());
                 setPhrases(await phraseRes.json());
-                setTechniques(await techRes.json());
+
+                const allTechniques = await techRes.json();
+                const profile = getUserStressProfile();
+                setUserProfile(profile);
+
+                // Personalize technique order
+                const personalized = getPersonalizedTechniques(allTechniques, profile);
+                setTechniques(personalized);
             } catch (error) {
                 console.error('Failed to load data', error);
             }
@@ -109,30 +120,28 @@ export default function StressReliefPage() {
                 {/* View Toggle */}
                 {/* View Toggle */}
                 {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
-                    <div className="flex space-x-4 shrink-0">
-                        <LiquidGlass
+                    <div className="flex bg-white/5 p-1 rounded-full border border-white/10 backdrop-blur-md">
+                        <button
                             onClick={() => setViewState('HOME')}
-                            className={`rounded-full transition-all duration-300 ${viewState === 'HOME'
-                                    ? 'shadow-[0_0_20px_rgba(59,130,246,0.5)] border-blue-400/50'
-                                    : 'opacity-70 hover:opacity-100'
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${viewState === 'HOME'
+                                ? 'bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-400/30'
+                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                 }`}
                         >
-                            <div className={`px-8 py-3 text-base font-medium ${viewState === 'HOME' ? 'text-blue-100' : 'text-white/60'}`}>
-                                Phrases
-                            </div>
-                        </LiquidGlass>
+                            <Sparkles size={14} />
+                            Phrases
+                        </button>
 
-                        <LiquidGlass
+                        <button
                             onClick={() => setViewState('TECHNIQUES_LIST')}
-                            className={`rounded-full transition-all duration-300 ${viewState === 'TECHNIQUES_LIST'
-                                    ? 'shadow-[0_0_20px_rgba(168,85,247,0.5)] border-purple-400/50'
-                                    : 'opacity-70 hover:opacity-100'
+                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${viewState === 'TECHNIQUES_LIST'
+                                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] border border-purple-400/30'
+                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                 }`}
                         >
-                            <div className={`px-8 py-3 text-base font-medium ${viewState === 'TECHNIQUES_LIST' ? 'text-purple-100' : 'text-white/60'}`}>
-                                Techniques
-                            </div>
-                        </LiquidGlass>
+                            <div className="w-3 h-3 rounded-full border border-current opacity-70" />
+                            Techniques
+                        </button>
                     </div>
                 )}
             </header>

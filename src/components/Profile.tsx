@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Settings, Shield, Activity, Brain } from "lucide-react";
+import { getUserStressProfile, saveUserStressProfile, StressProfile } from "@/lib/stress-relief/user-preferences";
 import styles from "./Profile.module.css";
 
 export default function Profile() {
     const [profile, setProfile] = useState<any>(null);
+    const [stressProfile, setStressProfile] = useState<StressProfile>({ triggers: [], copingStyle: 'cognitive', intensity: 'medium' });
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
@@ -16,6 +18,8 @@ export default function Profile() {
             try {
                 const savedUserProfile = localStorage.getItem("userProfile");
                 const savedDeepProfile = localStorage.getItem("deepProfile");
+                const savedStressProfile = getUserStressProfile();
+                setStressProfile(savedStressProfile);
 
                 if (savedUserProfile) {
                     const basic = JSON.parse(savedUserProfile);
@@ -179,6 +183,70 @@ export default function Profile() {
                     <div className={styles.settingRow}>
                         <span>Notifications</span>
                         <div className={styles.toggle}>Off</div>
+                    </div>
+                </motion.div>
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    <div className={styles.cardHeader}>
+                        <Activity className={styles.icon} />
+                        <h2>Stress Relief Preferences</h2>
+                    </div>
+
+                    <div className={styles.settingRow}>
+                        <span>Coping Style</span>
+                        <select
+                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-400"
+                            value={stressProfile.copingStyle}
+                            onChange={(e) => {
+                                const newProfile = { ...stressProfile, copingStyle: e.target.value as any };
+                                setStressProfile(newProfile);
+                                saveUserStressProfile(newProfile);
+                            }}
+                        >
+                            <option value="cognitive">Cognitive (Thinking)</option>
+                            <option value="somatic">Somatic (Body)</option>
+                            <option value="creative">Creative (Expressive)</option>
+                            <option value="structured">Structured (Planning)</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.settingRow}>
+                        <span>Intensity Preference</span>
+                        <select
+                            className="bg-white/5 border border-white/10 rounded px-2 py-1 text-sm text-white focus:outline-none focus:border-blue-400"
+                            value={stressProfile.intensity}
+                            onChange={(e) => {
+                                const newProfile = { ...stressProfile, intensity: e.target.value as any };
+                                setStressProfile(newProfile);
+                                saveUserStressProfile(newProfile);
+                            }}
+                        >
+                            <option value="low">Low (Gentle)</option>
+                            <option value="medium">Medium (Balanced)</option>
+                            <option value="high">High (Intense)</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.settingRow}>
+                        <div className="flex flex-col w-full">
+                            <span className="mb-2">Triggers (comma separated)</span>
+                            <input
+                                type="text"
+                                placeholder="e.g. deadlines, public speaking, noise"
+                                className={styles.input}
+                                value={stressProfile.triggers.join(", ")}
+                                onChange={(e) => {
+                                    const triggers = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+                                    const newProfile = { ...stressProfile, triggers };
+                                    setStressProfile(newProfile);
+                                    saveUserStressProfile(newProfile);
+                                }}
+                            />
+                        </div>
                     </div>
                 </motion.div>
             </div>

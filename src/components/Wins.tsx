@@ -19,40 +19,57 @@ export default function Wins() {
     const [wins, setWins] = useState<Win[]>([]);
 
     useEffect(() => {
-        // In a real app, this would fetch from an API or database.
-        // For now, we'll use mock data or local storage if available.
-        const savedWins = localStorage.getItem("wins");
-        if (savedWins) {
-            setWins(JSON.parse(savedWins));
-        } else {
-            // Mock data for demonstration
-            setWins([
-                {
-                    id: "1",
-                    date: "Today",
-                    stressfulThought: "I'm not making progress fast enough.",
-                    turnaround: "I am making steady progress at my own pace.",
-                    emotionBefore: "Anxious",
-                    emotionAfter: "Calm"
-                },
-                {
-                    id: "2",
-                    date: "Yesterday",
-                    stressfulThought: "They don't appreciate my work.",
-                    turnaround: "I appreciate my own work and effort.",
-                    emotionBefore: "Resentful",
-                    emotionAfter: "Empowered"
+        const loadWins = () => {
+            const savedWins = localStorage.getItem("wins");
+            if (savedWins) {
+                try {
+                    setWins(JSON.parse(savedWins));
+                } catch (e) {
+                    console.error("Failed to parse wins", e);
                 }
-            ]);
-        }
+            } else {
+                // Mock data for demonstration if nothing saved
+                setWins([
+                    {
+                        id: "1",
+                        date: "Today",
+                        stressfulThought: "I'm not making progress fast enough.",
+                        turnaround: "I am making steady progress at my own pace.",
+                        emotionBefore: "Anxious",
+                        emotionAfter: "Calm"
+                    }
+                ]);
+            }
+        };
+
+        loadWins();
+
+        // Listen for storage updates (in case of multiple tabs or updates)
+        window.addEventListener('storage', loadWins);
+        return () => window.removeEventListener('storage', loadWins);
     }, []);
+
+    const clearWins = () => {
+        localStorage.removeItem("wins");
+        setWins([]);
+    };
 
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <div className={styles.titleWrapper}>
-                    <Trophy size={32} className={styles.icon} />
-                    <h1 className={`${styles.title} font-montage`}>Your Wins</h1>
+                <div className="flex justify-between items-start w-full">
+                    <div className={styles.titleWrapper}>
+                        <Trophy size={32} className={styles.icon} />
+                        <h1 className={`${styles.title} font-montage`}>Your Wins</h1>
+                    </div>
+                    {wins.length > 0 && (
+                        <button
+                            onClick={clearWins}
+                            className="text-xs text-white/30 hover:text-white/60 transition-colors px-3 py-1 rounded-full border border-white/10 hover:bg-white/5"
+                        >
+                            Clear History
+                        </button>
+                    )}
                 </div>
                 <p className={styles.subtitle}>Transforming stress into strength, one thought at a time.</p>
             </header>
