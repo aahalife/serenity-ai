@@ -1,0 +1,264 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2867
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \{\
+  "meta": \{\
+    "version": "2.0",\
+    "description": "Mapping of phrases \uc0\u8594  categories \u8594  techniques for the Stress Relief page, tuned for men 35\'9645 and 'strong pillar' women who resist direct emotional disclosure.",\
+    "tone_guidelines": \{\
+      "before_opening_up": "casual, light, normal, non-therapeutic",\
+      "after_opening_up": "steady, warm, grounded, respectful",\
+      "avoid_terms": ["anxiety", "depression", "rumination", "coping mechanism", "mental health"],\
+      "preferred_terms": ["head-noise", "pressure", "what's weighing on you", "battery drain", "tough moment"]\
+    \}\
+  \},\
+\
+  "categories": [\
+    \{\
+      "id": "work_pressure",\
+      "label": "Work Pressure & Expectations",\
+      "description": "Deadlines, long days, constant demands, feeling stretched."\
+    \},\
+    \{\
+      "id": "performance",\
+      "label": "Performance & Presentations",\
+      "description": "Speaking up, being evaluated, new roles, big moments."\
+    \},\
+    \{\
+      "id": "work_relationships",\
+      "label": "Work Dynamics & People Stuff",\
+      "description": "Conflicts, misunderstandings, unclear expectations."\
+    \},\
+    \{\
+      "id": "career_identity",\
+      "label": "Career Direction & Identity",\
+      "description": "Growth, new roles, plateaus, feeling stuck."\
+    \},\
+    \{\
+      "id": "imposter",\
+      "label": "Inner Critic & Self-Doubt",\
+      "description": "Feeling not enough, harsh self-talk, invisible wins."\
+    \},\
+    \{\
+      "id": "parenting",\
+      "label": "Parenting & Family Stuff",\
+      "description": "Kids, routines, fatigue, trying to hold it all together."\
+    \},\
+    \{\
+      "id": "partner",\
+      "label": "Relationship Tension",\
+      "description": "Distance, repeated patterns, communication challenges."\
+    \},\
+    \{\
+      "id": "sandwich",\
+      "label": "Kids + Parents Pulling You Apart",\
+      "description": "Carrying both sides, guilt, emotional load."\
+    \},\
+    \{\
+      "id": "overthinking",\
+      "label": "Overthinking & Head-Noise",\
+      "description": "Loops, spirals, \'91what ifs\'92, replaying conversations."\
+    \},\
+    \{\
+      "id": "somatic",\
+      "label": "Body Tension & Sleep Issues",\
+      "description": "Shoulder tightness, wired-but-tired, restless sleep."\
+    \},\
+    \{\
+      "id": "procrastination",\
+      "label": "Procrastination & Perfection Pressure",\
+      "description": "Putting things off, needing it perfect, stuck energy."\
+    \},\
+    \{\
+      "id": "low_mood",\
+      "label": "Low Energy & Motivation",\
+      "description": "Feeling flat, worn out, or like nothing really lands."\
+    \},\
+    \{\
+      "id": "avoidance",\
+      "label": "Avoiding Conversations & Feelings",\
+      "description": "Shutting down, numbing, scrolling, avoiding conflict."\
+    \}\
+  ],\
+\
+  "techniques": \{\
+    "T1": \{\
+      "id": "T1",\
+      "title": "Task Microplanning (Tiny Wins)",\
+      "short": "Break tough tasks into tiny, doable steps",\
+      "time_min": 5\
+    \},\
+    "T2": \{\
+      "id": "T2",\
+      "title": "Time Management Matrix",\
+      "short": "Sort tasks by urgency and importance",\
+      "time_min": 10\
+    \},\
+    "T3": \{\
+      "id": "T3",\
+      "title": "Grounding & Breathing Reset",\
+      "short": "Quick 5-4-3-2-1 + slow breath reset",\
+      "time_min": 3\
+    \},\
+    "T4": \{\
+      "id": "T4",\
+      "title": "Progressive Muscle Release",\
+      "short": "Tense \uc0\u8594  relax body reset",\
+      "time_min": 12\
+    \},\
+    "T5": \{\
+      "id": "T5",\
+      "title": "Future Pacing (Mental Rehearsal)",\
+      "short": "Practice calmer outcomes in your mind",\
+      "time_min": 7\
+    \},\
+    "T6": \{\
+      "id": "T6",\
+      "title": "Anchoring (Your Calm Switch)",\
+      "short": "Build a subtle gesture that brings calm",\
+      "time_min": 5\
+    \},\
+    "T7": \{\
+      "id": "T7",\
+      "title": "Role-play (Tough Moments Practice)",\
+      "short": "Practice conversations or moments safely",\
+      "time_min": 12\
+    \},\
+    "T8": \{\
+      "id": "T8",\
+      "title": "Swish Pattern (Change the Mental Movie)",\
+      "short": "Swap out a worst-case image for a better one",\
+      "time_min": 6\
+    \},\
+    "T9": \{\
+      "id": "T9",\
+      "title": "Reframing (Different Angles)",\
+      "short": "See the situation from several viewpoints",\
+      "time_min": 8\
+    \},\
+    "T10": \{\
+      "id": "T10",\
+      "title": "Worry Time (Contain the Spirals)",\
+      "short": "Schedule worry so it doesn\'92t run your day",\
+      "time_min": 12\
+    \},\
+    "T11": \{\
+      "id": "T11",\
+      "title": "Scheduled Micro Self-Care",\
+      "short": "Protect tiny pockets of reset time",\
+      "time_min": 5\
+    \},\
+    "T12": \{\
+      "id": "T12",\
+      "title": "Problem-Solving (1 Tiny Step)",\
+      "short": "Turn spinning problems into action",\
+      "time_min": 10\
+    \},\
+    "T13": \{\
+      "id": "T13",\
+      "title": "Evidence Cards (Win Tracking)",\
+      "short": "Collect receipts of things you\'92ve handled",\
+      "time_min": 6\
+    \}\
+  \},\
+\
+  "phrases": [\
+    \{\
+      "text": "I have way too much on my plate",\
+      "category": "work_pressure",\
+      "techniques": ["T1", "T2", "T11"]\
+    \},\
+    \{\
+      "text": "I\'92m always behind, no matter what I do",\
+      "category": "work_pressure",\
+      "techniques": ["T1", "T2"]\
+    \},\
+    \{\
+      "text": "Work follows me home \'97 I can\'92t switch off",\
+      "category": "work_pressure",\
+      "techniques": ["T3", "T10", "T11"]\
+    \},\
+    \{\
+      "text": "No matter how much I do, it never feels like enough",\
+      "category": "work_pressure",\
+      "techniques": ["T13", "T9"]\
+    \},\
+\
+    \{\
+      "text": "I worry people at work don\'92t really see what I do",\
+      "category": "work_relationships",\
+      "techniques": ["T13", "T9", "T12"]\
+    \},\
+\
+    \{\
+      "text": "Big presentations make my mind go blank",\
+      "category": "performance",\
+      "techniques": ["T7", "T3", "T6"]\
+    \},\
+\
+    \{\
+      "text": "I feel like I\'92m winging it in this new role",\
+      "category": "career_identity",\
+      "techniques": ["T5", "T7", "T13"]\
+    \},\
+\
+    \{\
+      "text": "We keep having the same argument at home",\
+      "category": "partner",\
+      "techniques": ["T9", "T13", "T12"]\
+    \},\
+\
+    \{\
+      "text": "Things at home feel off lately",\
+      "category": "partner",\
+      "techniques": ["T9", "T11"]\
+    \},\
+\
+    \{\
+      "text": "Parenting is draining everything out of me",\
+      "category": "parenting",\
+      "techniques": ["T12", "T3"]\
+    \},\
+\
+    \{\
+      "text": "I\'92m pulled between my kids and my parents",\
+      "category": "sandwich",\
+      "techniques": ["T2", "T11", "T12"]\
+    \},\
+\
+    \{\
+      "text": "My brain won\'92t shut up \'97 it keeps looping",\
+      "category": "overthinking",\
+      "techniques": ["T3", "T10", "T11"]\
+    \},\
+\
+    \{\
+      "text": "My shoulders are tight all the time",\
+      "category": "somatic",\
+      "techniques": ["T4", "T3"]\
+    \},\
+\
+    \{\
+      "text": "I can\'92t start things unless I know they\'92ll be perfect",\
+      "category": "procrastination",\
+      "techniques": ["T1", "T12", "T13"]\
+    \},\
+\
+    \{\
+      "text": "I feel flat and nothing really lands lately",\
+      "category": "low_mood",\
+      "techniques": ["T11", "T13", "T1"]\
+    \},\
+\
+    \{\
+      "text": "I shut down to avoid conflict or heavy stuff",\
+      "category": "avoidance",\
+      "techniques": ["T13", "T7", "T9"]\
+    \}\
+  ]\
+\}\
+}

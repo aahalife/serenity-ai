@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { motion } from "framer-motion";
@@ -49,6 +49,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
         { name: "Breathe", href: "/breathing", icon: Wind },
         { name: "Journal", href: "/journal", icon: BookOpen },
         { name: "The Work", href: "/the-work", icon: Activity },
+        { name: "Stress Relief", href: "/stress-relief", icon: Sparkles },
         { name: "Wins", href: "/wins", icon: Trophy },
         { name: "Chat", href: "/chat", icon: MessageCircle },
         { name: "Profile", href: "/profile", icon: User }, // Explicit Profile link
