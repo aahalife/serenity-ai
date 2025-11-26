@@ -107,21 +107,28 @@ export default function StressReliefPage() {
                 </div>
 
                 {/* View Toggle */}
+                {/* View Toggle */}
                 {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
-                    <div className="bg-white/5 p-1 rounded-full flex space-x-1 shrink-0">
+                    <LiquidGlass className="p-1.5 rounded-full flex space-x-2 shrink-0 bg-white/5">
                         <button
                             onClick={() => setViewState('HOME')}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewState === 'HOME' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                            className={`px-8 py-3 rounded-full text-base font-medium transition-all duration-300 ${viewState === 'HOME'
+                                    ? 'bg-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)] backdrop-blur-md'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                                }`}
                         >
                             Phrases
                         </button>
                         <button
                             onClick={() => setViewState('TECHNIQUES_LIST')}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${viewState === 'TECHNIQUES_LIST' ? 'bg-white/10 text-white shadow-lg' : 'text-white/40 hover:text-white/80'}`}
+                            className={`px-8 py-3 rounded-full text-base font-medium transition-all duration-300 ${viewState === 'TECHNIQUES_LIST'
+                                    ? 'bg-white/20 text-white shadow-[0_0_20px_rgba(255,255,255,0.2)] backdrop-blur-md'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                                }`}
                         >
                             Techniques
                         </button>
-                    </div>
+                    </LiquidGlass>
                 )}
             </header>
 

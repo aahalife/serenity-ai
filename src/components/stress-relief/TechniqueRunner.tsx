@@ -95,18 +95,30 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
     }, [currentStepIndex, technique, isMuted]);
 
     // Audio Background
-    useEffect(() => {
-        const audio = new Audio('/audio/work.mp3');
-        audio.loop = true;
-        audio.volume = 0.3;
+    const bgAudioRef = useRef<HTMLAudioElement | null>(null);
 
-        if (!isMuted) {
-            audio.play().catch(e => console.log("Audio play failed", e));
-        }
+    useEffect(() => {
+        // Initialize audio once
+        bgAudioRef.current = new Audio('/audio/work.mp3');
+        bgAudioRef.current.loop = true;
+        bgAudioRef.current.volume = 0.3;
 
         return () => {
-            audio.pause();
+            if (bgAudioRef.current) {
+                bgAudioRef.current.pause();
+                bgAudioRef.current = null;
+            }
         };
+    }, []);
+
+    useEffect(() => {
+        if (bgAudioRef.current) {
+            if (isMuted) {
+                bgAudioRef.current.pause();
+            } else {
+                bgAudioRef.current.play().catch(e => console.log("Audio play failed", e));
+            }
+        }
     }, [isMuted]);
 
     const saveWin = () => {
@@ -155,15 +167,13 @@ export const TechniqueRunner: React.FC<TechniqueRunnerProps> = ({ techniqueId })
             {/* Video Background */}
             <div className="absolute inset-0 z-0">
                 <video
-                    key={currentVideo} // Force reload on change
+                    src={currentVideo} // Changed from key to src to avoid unmounting
                     autoPlay
                     muted
                     loop
                     playsInline
                     className="w-full h-full object-cover opacity-50 transition-opacity duration-1000"
-                >
-                    <source src={currentVideo} type="video/mp4" />
-                </video>
+                />
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
             </div>
 
