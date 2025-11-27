@@ -37,16 +37,34 @@ export class AgentOrchestrator {
     static async processRequest(query: string, userProfile: any, token?: string): Promise<OrchestratorResponse> {
         const intent = this.classifyIntent(query);
 
+        // 0. Retrieve Context from Memori
+        let memoryContext = "";
+        try {
+            // Call local Python service (or deployed)
+            // In dev, we might need to point to localhost:8000 or skip if not running
+            // For Vercel, it would be /api/memory/context
+            const memRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/memory/context`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userProfile?.email || 'anonymous', query })
+            });
+            if (memRes.ok) {
+                const memData = await memRes.json();
+                if (memData.context && memData.context.length > 0) {
+                    memoryContext = `\nRelevant Memory:\n${memData.context.join('\n')}`;
+                }
+            }
+        } catch (e) {
+            console.warn("Memory service unavailable", e);
+        }
+
         // 1. External Chat Integration
         if (intent === 'CASUAL_CHAT' && token) {
             try {
-                const extResponse = await externalApi.chat(query, token);
-                // Assuming extResponse has a 'response' field or similar. 
-                // The API docs didn't specify the exact response schema, so I'll assume it returns a message.
-                // If the API returns a complex object, we'd parse it here.
+                const extResponse = await externalApi.chat(query + memoryContext, token); // Inject memory
                 return {
                     agentName: 'Serenity Guide',
-                    response: JSON.stringify(extResponse), // Placeholder until we know exact format
+                    response: JSON.stringify(extResponse),
                     actions: []
                 };
             } catch (e) {
@@ -55,12 +73,12 @@ export class AgentOrchestrator {
         }
 
         // 2. Behavioral Agent ("Why")
-        // In a real system, this would be an LLM call.
-        // Here we simulate the "Why" analysis.
         const lowerQuery = query.toLowerCase();
         let agentName = 'Orchestrator';
         let response = "I'm listening.";
         let actions: AgentAction[] = [];
+
+        // ... logic continues ...
 
         // Stress Logic
         if (lowerQuery.includes('stress') || lowerQuery.includes('panic')) {
