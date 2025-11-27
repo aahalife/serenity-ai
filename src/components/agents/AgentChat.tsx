@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Check, X, Clock } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Check, X, Clock, Play, ExternalLink, Music, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from '@/components/LiquidGlass';
+import { externalApi } from '@/lib/external-api';
+import Link from 'next/link';
 
 interface Message {
     id: string;
@@ -16,10 +18,11 @@ interface Message {
 
 interface AgentAction {
     id: string;
-    type: string;
+    type: 'internal_feature' | 'composio_tool' | 'music' | 'response';
     title: string;
     description: string;
     priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+    data?: any;
 }
 
 export default function AgentChat() {
@@ -34,6 +37,8 @@ export default function AgentChat() {
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [authToken, setAuthToken] = useState<string | null>(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -43,6 +48,40 @@ export default function AgentChat() {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    // Load token from local storage
+    useEffect(() => {
+        const token = localStorage.getItem('external_api_token');
+        if (token) setAuthToken(token);
+    }, []);
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        // For demo purposes, we'll just simulate a login or use a hardcoded one if the user provides one
+        // In a real app, we'd have a form.
+        // For now, let's just register a dummy user to get a token if needed, or ask user.
+        // Since I can't ask user for real creds easily, I'll implement a simple "Connect" that tries to register a random user
+        try {
+            const randomUser = {
+                email: `user${Date.now()}@example.com`,
+                password: 'password123',
+                name: 'Test User',
+                age: 30,
+                gender_identity: 'Non-binary',
+                location: 'US',
+                stress_level: '5'
+            };
+            await externalApi.register(randomUser);
+            const data = await externalApi.login(randomUser.email, randomUser.password);
+            setAuthToken(data.access_token);
+            localStorage.setItem('external_api_token', data.access_token);
+            setShowAuthModal(false);
+            alert("Connected to Serenity Guide!");
+        } catch (err) {
+            console.error("Auth failed", err);
+            alert("Failed to connect. Please try again.");
+        }
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -62,15 +101,27 @@ export default function AgentChat() {
             const res = await fetch('/api/agents/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ query: userMsg.content })
+                body: JSON.stringify({
+                    query: userMsg.content,
+                    token: authToken
+                })
             });
 
             const data = await res.json();
 
+            // Parse response if it's a stringified JSON from external API
+            let content = data.response;
+            try {
+                const parsed = JSON.parse(data.response);
+                if (parsed.response) content = parsed.response; // Adjust based on actual API structure
+            } catch (e) {
+                // Not JSON, keep as is
+            }
+
             const botMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: data.response,
+                content: content,
                 timestamp: new Date(),
                 agentName: data.agentName || 'Orchestrator',
                 actions: data.actions
@@ -85,22 +136,44 @@ export default function AgentChat() {
     };
 
     return (
-        <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto bg-black/20 backdrop-blur-xl rounded-3xl border border-white/10 overflow-hidden">
+        <div className="relative flex flex-col h-[700px] w-full max-w-5xl mx-auto rounded-3xl overflow-hidden shadow-2xl">
+            {/* Video Background */}
+            <div className="absolute inset-0 z-0">
+                <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover opacity-60"
+                >
+                    <source src="/videos/chatbkg2.m4v" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+            </div>
+
             {/* Header */}
-            <div className="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+            <div className="relative z-10 p-4 border-b border-white/10 bg-white/5 flex items-center justify-between backdrop-blur-md">
                 <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-full bg-blue-500/20 text-blue-300">
+                    <div className="p-2 rounded-full bg-blue-500/20 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
                         <Sparkles size={20} />
                     </div>
                     <div>
-                        <h3 className="font-montage text-lg text-white">Team Chat</h3>
+                        <h3 className="font-montage text-lg text-white">Team Sync</h3>
                         <p className="text-xs text-white/40">Orchestrator • Sleep • Stress • Balance</p>
                     </div>
                 </div>
+                {!authToken && (
+                    <button
+                        onClick={() => setShowAuthModal(true)}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-bold text-white transition-all border border-white/10"
+                    >
+                        Connect Guide
+                    </button>
+                )}
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="relative z-10 flex-1 overflow-y-auto p-6 space-y-8">
                 {messages.map((msg) => (
                     <motion.div
                         key={msg.id}
@@ -108,18 +181,19 @@ export default function AgentChat() {
                         animate={{ opacity: 1, y: 0 }}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                        <div className={`flex max-w-[80%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-4`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-white/10' : 'bg-blue-500/20'}`}>
-                                {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
+                        <div className={`flex max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-4`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'user' ? 'bg-white/10 backdrop-blur-md border border-white/20' : 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 backdrop-blur-md border border-white/20'
+                                }`}>
+                                {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                             </div>
 
                             <div className="flex flex-col gap-2">
                                 {msg.role === 'assistant' && (
-                                    <span className="text-xs text-blue-300 font-bold uppercase tracking-wider">{msg.agentName}</span>
+                                    <span className="text-xs text-blue-300 font-bold uppercase tracking-wider ml-1">{msg.agentName}</span>
                                 )}
-                                <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.role === 'user'
-                                        ? 'bg-white text-black rounded-tr-none'
-                                        : 'bg-white/5 text-white/90 border border-white/10 rounded-tl-none'
+                                <div className={`p-5 rounded-2xl text-sm leading-relaxed shadow-lg backdrop-blur-md ${msg.role === 'user'
+                                        ? 'bg-white/90 text-black rounded-tr-none'
+                                        : 'bg-black/40 text-white/90 border border-white/10 rounded-tl-none'
                                     }`}>
                                     {msg.content}
                                 </div>
@@ -128,26 +202,51 @@ export default function AgentChat() {
                                 {msg.actions && msg.actions.length > 0 && (
                                     <div className="flex flex-col gap-3 mt-2">
                                         {msg.actions.map(action => (
-                                            <LiquidGlass key={action.id} className="p-4 border border-white/10 bg-white/5 !rounded-xl">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded border ${action.priority === 'CRITICAL' ? 'border-red-500/50 text-red-300 bg-red-500/10' :
-                                                                action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
-                                                                    'border-blue-500/50 text-blue-300 bg-blue-500/10'
-                                                            }`}>
-                                                            {action.priority}
-                                                        </span>
-                                                        <h4 className="font-bold text-white text-sm">{action.title}</h4>
+                                            <LiquidGlass key={action.id} className="p-0 overflow-hidden !rounded-xl border border-white/10 bg-white/5">
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded border font-bold tracking-wider ${action.priority === 'CRITICAL' ? 'border-red-500/50 text-red-300 bg-red-500/10' :
+                                                                    action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
+                                                                        'border-blue-500/50 text-blue-300 bg-blue-500/10'
+                                                                }`}>
+                                                                {action.priority}
+                                                            </span>
+                                                            <h4 className="font-bold text-white text-sm">{action.title}</h4>
+                                                        </div>
+                                                        {action.type === 'music' && <Music size={16} className="text-white/40" />}
+                                                        {action.type === 'internal_feature' && <Activity size={16} className="text-white/40" />}
                                                     </div>
-                                                </div>
-                                                <p className="text-xs text-white/60 mb-4">{action.description}</p>
-                                                <div className="flex gap-2">
-                                                    <button className="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
-                                                        <Check size={14} /> Confirm
-                                                    </button>
-                                                    <button className="flex-1 py-2 bg-transparent border border-white/10 hover:bg-white/5 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
-                                                        <Clock size={14} /> Later
-                                                    </button>
+                                                    <p className="text-xs text-white/60 mb-4">{action.description}</p>
+
+                                                    {/* Action Buttons */}
+                                                    <div className="flex gap-2">
+                                                        {action.type === 'internal_feature' && action.data?.url && (
+                                                            <Link href={action.data.url} className="flex-1">
+                                                                <button className="w-full py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-lg text-xs font-bold text-blue-100 transition-colors flex items-center justify-center gap-2">
+                                                                    <Play size={14} /> Start Session
+                                                                </button>
+                                                            </Link>
+                                                        )}
+                                                        {action.type === 'music' && action.data?.spotifyId && (
+                                                            <div className="w-full">
+                                                                <iframe
+                                                                    src={`https://open.spotify.com/embed/playlist/${action.data.spotifyId}?utm_source=generator`}
+                                                                    width="100%"
+                                                                    height="80"
+                                                                    frameBorder="0"
+                                                                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                                                    loading="lazy"
+                                                                    className="rounded-lg"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        {action.type === 'composio_tool' && (
+                                                            <button className="flex-1 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg text-xs font-bold text-green-100 transition-colors flex items-center justify-center gap-2">
+                                                                <Check size={14} /> Approve & Execute
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </LiquidGlass>
                                         ))}
@@ -159,7 +258,7 @@ export default function AgentChat() {
                 ))}
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="flex items-center gap-2 p-4 bg-white/5 rounded-2xl rounded-tl-none border border-white/10 ml-12">
+                        <div className="flex items-center gap-2 p-4 bg-black/40 rounded-2xl rounded-tl-none border border-white/10 ml-14 backdrop-blur-md">
                             <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" />
                             <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-75" />
                             <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce delay-150" />
@@ -170,7 +269,7 @@ export default function AgentChat() {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-white/10 bg-white/5">
+            <div className="relative z-10 p-4 border-t border-white/10 bg-black/40 backdrop-blur-md">
                 <div className="relative">
                     <input
                         type="text"
@@ -178,7 +277,7 @@ export default function AgentChat() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="Tell your team how you're feeling..."
-                        className="w-full bg-black/20 border border-white/10 rounded-xl py-4 pl-4 pr-12 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-all font-petrona"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-4 pr-12 text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-all font-petrona"
                     />
                     <button
                         onClick={handleSend}
@@ -189,6 +288,32 @@ export default function AgentChat() {
                     </button>
                 </div>
             </div>
+
+            {/* Auth Modal */}
+            {showAuthModal && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <LiquidGlass className="p-8 max-w-md w-full mx-4">
+                        <h2 className="text-2xl font-bold text-white mb-4 font-montage">Connect Serenity Guide</h2>
+                        <p className="text-white/60 mb-6 text-sm">
+                            Connect to the advanced behavioral health engine to get personalized guidance and deep profile insights.
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={handleLogin}
+                                className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-bold transition-colors"
+                            >
+                                Connect Now
+                            </button>
+                            <button
+                                onClick={() => setShowAuthModal(false)}
+                                className="flex-1 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-bold transition-colors"
+                            >
+                                Later
+                            </button>
+                        </div>
+                    </LiquidGlass>
+                </div>
+            )}
         </div>
     );
 }
