@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Check, X, Edit2, Play, Music, Activity, Link as LinkIcon } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Check, X, Edit2, Play, Music, Activity, Link as LinkIcon, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from '@/components/LiquidGlass';
 import { externalApi } from '@/lib/external-api';
 import Link from 'next/link';
+import { useVoice } from '@/hooks/useVoice';
+import { useAudio } from '@/hooks/useAudio';
 
 interface Message {
     id: string;
@@ -41,6 +43,44 @@ export default function AgentChat() {
     const [authToken, setAuthToken] = useState<string | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Voice & Audio Hooks
+    const { play, duck, unduck } = useAudio();
+    const { isListening, isSpeaking, startListening, stopListening, speak } = useVoice({
+        onSpeechEnd: async (audioBlob) => {
+            // Process voice input
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "recording.webm");
+
+            try {
+                const sttRes = await fetch("/api/stt", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (sttRes.ok) {
+                    const { text } = await sttRes.json();
+                    if (text && text.trim()) {
+                        // Check for voice commands first
+                        const handled = handleVoiceCommand(text);
+                        if (!handled) {
+                            // If not a command, send as message
+                            handleSend(text);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Voice processing failed", e);
+            }
+        },
+        onSpeakStart: () => duck(0, 0.1),
+        onSpeakEnd: () => unduck(0.5)
+    });
+
+    // Play background audio on mount
+    useEffect(() => {
+        play("/audio/agentchatbkg.mp3", { volume: 0.3, loop: true, fadeInDuration: 2000 });
+    }, [play]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -82,13 +122,39 @@ export default function AgentChat() {
         }
     };
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    const handleVoiceCommand = (text: string): boolean => {
+        const lowerText = text.toLowerCase();
+
+        // Find the last message with pending actions
+        const lastActionMsg = [...messages].reverse().find(m => m.actions && m.actions.some(a => a.status === 'pending'));
+
+        if (lastActionMsg && lastActionMsg.actions) {
+            const pendingAction = lastActionMsg.actions.find(a => a.status === 'pending');
+            if (pendingAction) {
+                if (lowerText.includes('approve') || lowerText.includes('yes') || lowerText.includes('confirm') || lowerText.includes('do it')) {
+                    handleAction(lastActionMsg.id, pendingAction.id, 'approve');
+                    speak("Action approved.");
+                    return true;
+                }
+                if (lowerText.includes('reject') || lowerText.includes('no') || lowerText.includes('cancel') || lowerText.includes('stop')) {
+                    handleAction(lastActionMsg.id, pendingAction.id, 'reject');
+                    speak("Action cancelled.");
+                    return true;
+                }
+                // Refine logic could be added here
+            }
+        }
+        return false;
+    };
+
+    const handleSend = async (textOverride?: string) => {
+        const textToSend = textOverride || input;
+        if (!textToSend.trim()) return;
 
         const userMsg: Message = {
             id: Date.now().toString(),
             role: 'user',
-            content: input,
+            content: textToSend,
             timestamp: new Date()
         };
 
@@ -127,6 +193,12 @@ export default function AgentChat() {
             };
 
             setMessages(prev => [...prev, botMsg]);
+
+            // Speak response if using voice
+            if (textOverride) { // Assume voice if override is present (simplification)
+                speak(content);
+            }
+
         } catch (error) {
             console.error('Chat error:', error);
         } finally {
@@ -177,8 +249,10 @@ export default function AgentChat() {
                 <div className="flex flex-col items-center text-center gap-1">
                     <h3 className="font-montage text-2xl text-white tracking-wide drop-shadow-lg">Team Sync</h3>
                     <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.5)]"></span>
-                        <p className="text-xs text-white/60 uppercase tracking-widest font-medium">Orchestrator Active</p>
+                        <span className={`w-2 h-2 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-green-400'} shadow-[0_0_10px_rgba(74,222,128,0.5)]`}></span>
+                        <p className="text-xs text-white/60 uppercase tracking-widest font-medium">
+                            {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Orchestrator Active"}
+                        </p>
                     </div>
                 </div>
 
@@ -207,8 +281,8 @@ export default function AgentChat() {
                         </span>
 
                         <div className={`max-w-[85%] md:max-w-[75%] px-6 py-4 rounded-[24px] text-sm leading-relaxed shadow-lg backdrop-blur-xl border ${msg.role === 'user'
-                                ? 'bg-gradient-to-br from-blue-500/30 to-blue-600/10 border-blue-500/20 text-white rounded-br-sm'
-                                : 'bg-white/10 border-white/10 text-white/90 rounded-bl-sm'
+                            ? 'bg-gradient-to-br from-blue-500/30 to-blue-600/10 border-blue-500/20 text-white rounded-br-sm'
+                            : 'bg-white/10 border-white/10 text-white/90 rounded-bl-sm'
                             }`}>
                             {msg.content}
                         </div>
@@ -222,8 +296,8 @@ export default function AgentChat() {
                                             <div className="flex justify-between items-start mb-3">
                                                 <div className="flex items-center gap-2">
                                                     <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold tracking-wider uppercase ${action.priority === 'CRITICAL' ? 'border-red-500/50 text-red-300 bg-red-500/10' :
-                                                            action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
-                                                                'border-blue-500/50 text-blue-300 bg-blue-500/10'
+                                                        action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
+                                                            'border-blue-500/50 text-blue-300 bg-blue-500/10'
                                                         }`}>
                                                         {action.priority}
                                                     </span>
@@ -308,17 +382,26 @@ export default function AgentChat() {
             {/* Input Area */}
             <div className="relative z-20 p-6 pb-10 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex justify-center">
                 <LiquidGlass className="w-full max-w-3xl !rounded-[50px] p-1.5 border border-white/20 bg-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                    <div className="flex items-center gap-2 pl-4 pr-1.5">
+                    <div className="flex items-center gap-2 pl-2 pr-1.5">
+                        <button
+                            onClick={isListening ? stopListening : startListening}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening
+                                    ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                }`}
+                        >
+                            <Mic size={18} />
+                        </button>
                         <input
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                            placeholder="Tell your team how you're feeling..."
+                            placeholder={isListening ? "Listening..." : "Tell your team how you're feeling..."}
                             className="flex-1 bg-transparent border-none text-white placeholder-white/40 focus:outline-none font-petrona text-base py-3"
                         />
                         <button
-                            onClick={handleSend}
+                            onClick={() => handleSend()}
                             disabled={!input.trim() || isLoading}
                             className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center"
                         >

@@ -5,10 +5,11 @@ import { Category, Phrase, Technique } from '@/lib/stress-relief/types';
 import { PhraseTile } from '@/components/stress-relief/PhraseTile';
 import { TechniqueTile } from '@/components/stress-relief/TechniqueTile';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowLeft, Sparkles } from 'lucide-react';
+import { Search, ArrowLeft, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getUserStressProfile, getPersonalizedTechniques, StressProfile } from '@/lib/stress-relief/user-preferences';
 import LiquidGlass from '@/components/LiquidGlass';
+import { useAudio } from '@/hooks/useAudio';
 
 // ... imports
 
@@ -26,6 +27,12 @@ export default function StressReliefPage() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [selectedPhrase, setSelectedPhrase] = useState<Phrase | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    const { play, toggleMute, isMuted } = useAudio();
+
+    useEffect(() => {
+        play('/audio/water3d.mp3', { volume: 0.2, loop: true, fadeInDuration: 2000 });
+    }, [play]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -117,33 +124,43 @@ export default function StressReliefPage() {
                     )}
                 </div>
 
-                {/* View Toggle */}
-                {/* View Toggle */}
-                {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
-                    <div className="flex bg-white/5 p-1 rounded-full border border-white/10 backdrop-blur-md">
-                        <button
-                            onClick={() => setViewState('HOME')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'HOME'
-                                ? 'bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-400/30'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                                }`}
-                        >
-                            <Sparkles size={14} />
-                            Phrases
-                        </button>
+                <div className="flex items-center gap-4">
+                    {/* Audio Toggle */}
+                    <button
+                        onClick={toggleMute}
+                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all backdrop-blur-md border border-white/10"
+                        title={isMuted ? "Unmute Ambient Sound" : "Mute Ambient Sound"}
+                    >
+                        {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </button>
 
-                        <button
-                            onClick={() => setViewState('TECHNIQUES_LIST')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'TECHNIQUES_LIST'
-                                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] border border-purple-400/30'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-                                }`}
-                        >
-                            <div className="w-3 h-3 rounded-full border border-current opacity-70" />
-                            Techniques
-                        </button>
-                    </div>
-                )}
+                    {/* View Toggle */}
+                    {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
+                        <div className="flex bg-white/5 p-1 rounded-full border border-white/10 backdrop-blur-md">
+                            <button
+                                onClick={() => setViewState('HOME')}
+                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'HOME'
+                                    ? 'bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-400/30'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                                    }`}
+                            >
+                                <Sparkles size={14} />
+                                Phrases
+                            </button>
+
+                            <button
+                                onClick={() => setViewState('TECHNIQUES_LIST')}
+                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'TECHNIQUES_LIST'
+                                    ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] border border-purple-400/30'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                                    }`}
+                            >
+                                <div className="w-3 h-3 rounded-full border border-current opacity-70" />
+                                Techniques
+                            </button>
+                        </div>
+                    )}
+                </div>
             </header>
 
             {/* Search Bar (Only on Home) */}
