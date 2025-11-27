@@ -120,12 +120,12 @@ export default function StressReliefPage() {
                 {/* View Toggle */}
                 {/* View Toggle */}
                 {(viewState === 'HOME' || viewState === 'TECHNIQUES_LIST') && (
-                    <div className="flex bg-white/5 p-1 rounded-full border border-white/10 backdrop-blur-md">
+                    <div className="flex bg-white/5 p-1.5 rounded-full border border-white/10 backdrop-blur-md">
                         <button
                             onClick={() => setViewState('HOME')}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${viewState === 'HOME'
-                                ? 'bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-400/30'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'HOME'
+                                    ? 'bg-blue-500/20 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)] border border-blue-400/30'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                 }`}
                         >
                             <Sparkles size={14} />
@@ -134,9 +134,9 @@ export default function StressReliefPage() {
 
                         <button
                             onClick={() => setViewState('TECHNIQUES_LIST')}
-                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${viewState === 'TECHNIQUES_LIST'
-                                ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] border border-purple-400/30'
-                                : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                            className={`px-8 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${viewState === 'TECHNIQUES_LIST'
+                                    ? 'bg-purple-500/20 text-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] border border-purple-400/30'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                 }`}
                         >
                             <div className="w-3 h-3 rounded-full border border-current opacity-70" />
