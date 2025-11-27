@@ -381,13 +381,13 @@ export default function AgentChat() {
 
             {/* Input Area */}
             <div className="relative z-20 p-6 pb-10 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex justify-center">
-                <LiquidGlass className="w-full max-w-3xl !rounded-[50px] p-1.5 border border-white/20 bg-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                <div className="w-full max-w-3xl rounded-[50px] p-1.5 border border-white/20 bg-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
                     <div className="flex items-center gap-2 pl-2 pr-1.5">
                         <button
                             onClick={isListening ? stopListening : startListening}
                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening
-                                    ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                                    : 'bg-white/10 text-white hover:bg-white/20'
+                                ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                                : 'bg-white/10 text-white hover:bg-white/20'
                                 }`}
                         >
                             <Mic size={18} />
@@ -408,7 +408,7 @@ export default function AgentChat() {
                             <Send size={18} />
                         </button>
                     </div>
-                </LiquidGlass>
+                </div>
             </div>
 
             {/* Auth Modal */}

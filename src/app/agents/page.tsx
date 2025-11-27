@@ -136,8 +136,13 @@ export default function AgentsPage() {
                             <LiquidGlass className="p-6 border border-white/10 bg-white/5">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/1024px-Google_Calendar_icon_%282020%29.svg.png" alt="GCal" className="w-6 h-6" />
+                                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden">
+                                            <img
+                                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/1024px-Google_Calendar_icon_%282020%29.svg.png"
+                                                alt="GCal"
+                                                className="w-6 h-6 object-contain"
+                                                style={{ width: '24px', height: '24px' }}
+                                            />
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-white">Google Calendar</h3>
@@ -147,7 +152,10 @@ export default function AgentsPage() {
                                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                                 </div>
                                 <p className="text-sm text-white/70 mb-4">Allows agents to view and schedule events on your behalf.</p>
-                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors">
+                                <button
+                                    onClick={() => alert("Configuration coming soon!")}
+                                    className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
+                                >
                                     Configure
                                 </button>
                             </LiquidGlass>
@@ -166,7 +174,10 @@ export default function AgentsPage() {
                                     <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                                 </div>
                                 <p className="text-sm text-white/70 mb-4">Enables music playback for stress relief and focus sessions.</p>
-                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors">
+                                <button
+                                    onClick={() => alert("Configuration coming soon!")}
+                                    className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
+                                >
                                     Configure
                                 </button>
                             </LiquidGlass>
