@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useVoice } from '@/hooks/useVoice';
 import { useAudio } from '@/hooks/useAudio';
 
-interface Message {
+interface AgentMessage {
     id: string;
     role: 'user' | 'assistant';
     content: string;
@@ -33,7 +33,7 @@ interface AgentAction {
 }
 
 export default function AgentChat() {
-    const [messages, setMessages] = useState<Message[]>([
+    const [messages, setMessages] = useState<AgentMessage[]>([
         {
             id: '1',
             role: 'assistant',
@@ -157,7 +157,7 @@ export default function AgentChat() {
         const textToSend = textOverride || input;
         if (!textToSend.trim()) return;
 
-        const userMsg: Message = {
+        const userMsg: AgentMessage = {
             id: Date.now().toString(),
             role: 'user',
             content: textToSend,
@@ -203,7 +203,7 @@ export default function AgentChat() {
                 // Not JSON, keep as is
             }
 
-            const botMsg: Message = {
+            const botMsg: AgentMessage = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
                 content: content,
