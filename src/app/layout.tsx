@@ -66,7 +66,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} antialiased`}>
                 <Providers>
                     <Layout>{children}</Layout>

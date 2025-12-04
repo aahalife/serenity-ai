@@ -25,3 +25,32 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to generate auth URL" }, { status: 500 });
     }
 }
+
+export async function GET(req: Request) {
+    try {
+        const session = await getServerSession(authOptions);
+        const { searchParams } = new URL(req.url);
+        const appName = searchParams.get('appName');
+
+        if (!appName) {
+            return NextResponse.json({ error: "appName is required" }, { status: 400 });
+        }
+
+        const entityId = session?.user?.email || "default_user";
+
+        const connection = await composioToolset.connectedAccounts.initiate({
+            appName: appName,
+            entityId: entityId,
+            redirectUri: `${process.env.NEXTAUTH_URL}/profile`,
+        });
+
+        if (connection.redirectUrl) {
+            return NextResponse.redirect(connection.redirectUrl);
+        }
+
+        return NextResponse.json({ error: "No redirect URL returned" }, { status: 500 });
+    } catch (error) {
+        console.error("Auth GET Error:", error);
+        return NextResponse.json({ error: "Failed to generate auth URL" }, { status: 500 });
+    }
+}

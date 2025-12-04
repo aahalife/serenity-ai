@@ -36,17 +36,57 @@ export const externalApi = {
         return res.json(); // Returns { access_token, token_type }
     },
 
-    async chat(message: string, token: string) {
+    async chat(message: string, token: string, context?: { userProfile?: any, agenda?: any }) {
+        const payload: any = {
+            message,
+            message_type: 'text'
+        };
+
+        if (context) {
+            if (context.userProfile) payload.user_details = context.userProfile;
+            if (context.agenda) payload.agenda = context.agenda;
+        }
+
         const res = await fetch(`${API_BASE_URL}/chat/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ message, message_type: 'text' })
+            body: JSON.stringify(payload)
         });
+
         if (!res.ok) throw new Error('Chat failed');
-        return res.json();
+
+        // Handle Streamed Response
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let fullResponse = '';
+
+        if (reader) {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataContent = line.slice(6);
+                        try {
+                            // Check if it's the metadata JSON
+                            const json = JSON.parse(dataContent);
+                            if (json.ai_message_id) continue; // Skip metadata
+                        } catch (e) {
+                            // It's text content
+                            fullResponse += dataContent;
+                        }
+                    }
+                }
+            }
+        }
+
+        return { response: fullResponse };
     },
 
     async getDetails(token: string) {
@@ -57,6 +97,11 @@ export const externalApi = {
             }
         });
         if (!res.ok) throw new Error('Failed to get details');
-        return res.json();
+        const data = await res.json();
+        return data.user_profile || data; // Return the deep profile string if available
+    },
+
+    formatGoalMessage(goal: string) {
+        return `Goal is not medication adherence. Instead, it is ${goal}`;
     }
 };

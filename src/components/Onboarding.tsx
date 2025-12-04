@@ -31,7 +31,14 @@ const questions = [
 export default function Onboarding() {
     const router = useRouter();
     const [step, setStep] = useState(0);
-    const [name, setName] = useState("");
+    const [formData, setFormData] = useState({
+        name: "",
+        age: "",
+        gender: "",
+        location: "",
+        occupation: "",
+        family: ""
+    });
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const { play, stop } = useAudio();
     const [videoState, setVideoState] = useState<"splash" | "journal">("splash");
@@ -56,25 +63,26 @@ export default function Onboarding() {
     };
 
     const handleNext = () => {
-        if (step === 0 && !name.trim()) return;
+        if (step === 0 && !formData.name.trim()) return;
+        if (step === 1 && (!formData.age || !formData.location)) return;
         setStep((prev) => prev + 1);
     };
 
     const finishOnboarding = async () => {
-        localStorage.setItem("userProfile", JSON.stringify({ name }));
+        localStorage.setItem("userProfile", JSON.stringify(formData));
         localStorage.setItem("onboardingAnswers", JSON.stringify(answers));
 
         try {
             const signals = {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                 userAgent: navigator.userAgent,
-                location: "Unknown" // Could use Geolocation API if permission granted
+                location: formData.location // Use provided location
             };
 
             const response = await fetch("/api/inference/profile", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, answers, signals })
+                body: JSON.stringify({ ...formData, answers, signals })
             });
 
             if (response.ok) {
@@ -92,7 +100,7 @@ export default function Onboarding() {
     const handleOptionSelect = (questionId: number, option: string) => {
         setAnswers((prev) => ({ ...prev, [questionId]: option }));
         setTimeout(() => {
-            if (step < questions.length) {
+            if (step < questions.length + 1) { // +1 for the extra form step
                 setStep((prev) => prev + 1);
             } else {
                 finishOnboarding();
@@ -153,19 +161,19 @@ export default function Onboarding() {
                         <div className={styles.header}>
                             <h1 className={styles.title}>Welcome to Serenity</h1>
                             <p className={styles.subtitle}>
-                                {step === 0
-                                    ? "Let's get to know you better. What should we call you?"
-                                    : "Help us personalize your experience."}
+                                {step === 0 ? "Let's get to know you. What should we call you?" :
+                                    step === 1 ? "Tell us a bit more about yourself." :
+                                        "Help us personalize your experience."}
                             </p>
                         </div>
 
                         <LiquidGlass className={styles.card}>
-                            {step === 0 ? (
+                            {step === 0 && (
                                 <div className={styles.stepContent}>
                                     <input
                                         type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Your Name"
                                         className={styles.input}
                                         onKeyDown={(e) => e.key === "Enter" && handleNext()}
@@ -175,14 +183,61 @@ export default function Onboarding() {
                                         Continue <ChevronRight size={20} />
                                     </button>
                                 </div>
-                            ) : (
+                            )}
+
+                            {step === 1 && (
                                 <div className={styles.stepContent}>
-                                    <h2 className={styles.question}>{questions[step - 1].text}</h2>
+                                    <div className="grid grid-cols-2 gap-4 w-full">
+                                        <input
+                                            type="number"
+                                            value={formData.age}
+                                            onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                                            placeholder="Age"
+                                            className={styles.input}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.gender}
+                                            onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+                                            placeholder="Gender Identity"
+                                            className={styles.input}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.location}
+                                            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                            placeholder="Location (City, Country)"
+                                            className={styles.input}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.occupation}
+                                            onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                                            placeholder="Occupation"
+                                            className={styles.input}
+                                        />
+                                        <input
+                                            type="text"
+                                            value={formData.family}
+                                            onChange={(e) => setFormData({ ...formData, family: e.target.value })}
+                                            placeholder="Family (e.g., Spouse, 2 Kids)"
+                                            className={`${styles.input} col-span-2`}
+                                        />
+                                    </div>
+                                    <button onClick={handleNext} className={styles.primaryButton}>
+                                        Continue <ChevronRight size={20} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {step > 1 && (
+                                <div className={styles.stepContent}>
+                                    <h2 className={styles.question}>{questions[step - 2].text}</h2>
                                     <div className={styles.options}>
-                                        {questions[step - 1].options.map((option) => (
+                                        {questions[step - 2].options.map((option) => (
                                             <button
                                                 key={option}
-                                                onClick={() => handleOptionSelect(questions[step - 1].id, option)}
+                                                onClick={() => handleOptionSelect(questions[step - 2].id, option)}
                                                 className={styles.optionButton}
                                             >
                                                 {option}

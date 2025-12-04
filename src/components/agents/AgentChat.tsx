@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Check, X, Edit2, Play, Music, Activity, Link as LinkIcon, Mic } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import LiquidGlass from '@/components/LiquidGlass';
+import styles from './AgentChat.module.css';
 import { externalApi } from '@/lib/external-api';
 import Link from 'next/link';
 import { useVoice } from '@/hooks/useVoice';
@@ -148,6 +149,8 @@ export default function AgentChat() {
     };
 
     const handleSend = async (textOverride?: string) => {
+        if (isListening) stopListening();
+
         const textToSend = textOverride || input;
         if (!textToSend.trim()) return;
 
@@ -163,12 +166,26 @@ export default function AgentChat() {
         setIsLoading(true);
 
         try {
+            const userProfile = localStorage.getItem("userProfile") ? JSON.parse(localStorage.getItem("userProfile")!) : {};
+            const deepProfile = localStorage.getItem("deepProfile") ? JSON.parse(localStorage.getItem("deepProfile")!) : {};
+
+            // Merge profiles
+            const fullProfile = { ...userProfile, ...deepProfile };
+
+            // Mock Agenda (In real app, fetch from GCal/Composio)
+            const agenda = [
+                { title: "Team Sync", time: "10:00 AM" },
+                { title: "Focus Time", time: "2:00 PM" }
+            ];
+
             const res = await fetch('/api/agents/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     query: userMsg.content,
-                    token: authToken
+                    token: authToken,
+                    userProfile: fullProfile,
+                    agenda: agenda
                 })
             });
 
@@ -189,7 +206,9 @@ export default function AgentChat() {
                 content: content,
                 timestamp: new Date(),
                 agentName: data.agentName || 'Orchestrator',
-                actions: data.actions?.map((a: any) => ({ ...a, status: 'pending' }))
+                actions: data.actions?.map((a: any) => ({ ...a, status: 'pending' })),
+                reasoning: data.reasoning,
+                plan: data.plan
             };
 
             setMessages(prev => [...prev, botMsg]);
@@ -229,166 +248,176 @@ export default function AgentChat() {
     };
 
     return (
-        <div className="relative flex flex-col h-screen w-full overflow-hidden bg-black">
-            {/* Video Background */}
-            <div className="absolute inset-0 z-0">
+        <div className={styles.container}>
+            <div className={styles.videoBackground}>
                 <video
                     autoPlay
                     muted
                     loop
                     playsInline
-                    className="w-full h-full object-cover"
+                    className={styles.video}
                 >
                     <source src="/videos/chatbkg2.m4v" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-[#0a0a0f]/20 z-10"></div>
+                <div className={styles.glassOverlay}></div>
             </div>
 
-            {/* Header */}
-            <div className="relative z-20 p-6 flex justify-center items-center">
-                <div className="flex flex-col items-center text-center gap-1">
-                    <h3 className="font-montage text-2xl text-white tracking-wide drop-shadow-lg">Team Sync</h3>
-                    <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${isListening ? 'bg-red-500 animate-pulse' : 'bg-green-400'} shadow-[0_0_10px_rgba(74,222,128,0.5)]`}></span>
-                        <p className="text-xs text-white/60 uppercase tracking-widest font-medium">
-                            {isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Orchestrator Active"}
+            <div className={styles.headerWrapper}>
+                <div className={styles.headerContent}>
+                    <div className={styles.headerInfo}>
+                        <h3 className="font-montage">Team Sync</h3>
+                        <p className={isListening ? styles.statusListening : ''}>
+                            {isLoading ? "Thinking..." : isListening ? "Listening..." : isSpeaking ? "Speaking..." : "Orchestrator Active"}
                         </p>
                     </div>
-                </div>
 
-                {!authToken && (
-                    <button
-                        onClick={() => setShowAuthModal(true)}
-                        className="absolute right-6 top-6 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-xs font-bold text-white transition-all border border-white/10 uppercase tracking-wider backdrop-blur-md"
-                    >
-                        Connect Guide
-                    </button>
-                )}
+                    {!authToken && (
+                        <button
+                            onClick={() => setShowAuthModal(true)}
+                            className={styles.connectButton}
+                        >
+                            Connect Guide
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* Messages */}
-            <div className="relative z-10 flex-1 overflow-y-auto px-4 md:px-[15%] py-8 space-y-6 scrollbar-hide">
-                {messages.map((msg) => (
-                    <motion.div
-                        key={msg.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} gap-2`}
-                    >
-                        {/* Sender Name */}
-                        <span className={`text-[10px] font-bold uppercase tracking-wider text-white/40 px-2 ${msg.role === 'user' ? 'mr-2' : 'ml-2'}`}>
-                            {msg.role === 'user' ? 'You' : msg.agentName}
-                        </span>
-
-                        <div className={`max-w-[85%] md:max-w-[75%] px-6 py-4 rounded-[24px] text-sm leading-relaxed shadow-lg backdrop-blur-xl border ${msg.role === 'user'
-                            ? 'bg-gradient-to-br from-blue-500/30 to-blue-600/10 border-blue-500/20 text-white rounded-br-sm'
-                            : 'bg-white/10 border-white/10 text-white/90 rounded-bl-sm'
-                            }`}>
+            <div className={styles.messages}>
+                <AnimatePresence>
+                    {messages.map((msg) => (
+                        <motion.div
+                            key={msg.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`}
+                        >
                             {msg.content}
-                        </div>
 
-                        {/* Actions */}
-                        {msg.actions && msg.actions.length > 0 && (
-                            <div className="flex flex-col gap-3 mt-2 w-full max-w-[320px]">
-                                {msg.actions.map(action => (
-                                    <LiquidGlass key={action.id} className={`p-0 overflow-hidden !rounded-2xl border border-white/10 bg-white/5 transition-all hover:bg-white/10 ${action.status === 'approved' ? 'border-green-500/30 bg-green-500/5' : ''}`}>
-                                        <div className="p-4">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold tracking-wider uppercase ${action.priority === 'CRITICAL' ? 'border-red-500/50 text-red-300 bg-red-500/10' :
-                                                        action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
-                                                            'border-blue-500/50 text-blue-300 bg-blue-500/10'
-                                                        }`}>
-                                                        {action.priority}
-                                                    </span>
-                                                </div>
-                                                {action.type === 'music' && <Music size={14} className="text-white/40" />}
-                                                {action.type === 'internal_feature' && <Activity size={14} className="text-white/40" />}
-                                                {action.type === 'composio_tool' && <LinkIcon size={14} className="text-white/40" />}
-                                            </div>
-
-                                            <h4 className="font-bold text-white text-sm mb-1">{action.title}</h4>
-                                            <p className="text-xs text-white/60 mb-4 leading-relaxed">{action.description}</p>
-
-                                            {/* Action Buttons */}
-                                            {action.status === 'pending' ? (
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleAction(msg.id, action.id, 'approve')}
-                                                        className="flex-1 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-[10px] font-bold text-green-100 transition-all flex items-center justify-center gap-1.5 group"
-                                                    >
-                                                        <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/40 transition-colors">
-                                                            <Check size={10} />
-                                                        </div>
-                                                        Approve
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAction(msg.id, action.id, 'refine')}
-                                                        className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold text-white transition-all flex items-center justify-center gap-1.5 group"
-                                                    >
-                                                        <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                                                            <Edit2 size={10} />
-                                                        </div>
-                                                        Refine
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAction(msg.id, action.id, 'reject')}
-                                                        className="w-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-200 transition-all"
-                                                        title="Cancel"
-                                                    >
-                                                        <X size={14} />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2 text-xs text-white/50 italic bg-black/20 p-2 rounded-lg">
-                                                    {action.status === 'approved' && <><Check size={12} className="text-green-400" /> Approved & Executing...</>}
-                                                    {action.status === 'rejected' && <><X size={12} className="text-red-400" /> Cancelled</>}
-                                                </div>
-                                            )}
-
-                                            {/* Execution View (Mock) */}
-                                            {action.status === 'approved' && action.type === 'music' && action.data?.spotifyId && (
-                                                <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-                                                    <iframe
-                                                        src={`https://open.spotify.com/embed/playlist/${action.data.spotifyId}?utm_source=generator`}
-                                                        width="100%"
-                                                        height="80"
-                                                        frameBorder="0"
-                                                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                                                        loading="lazy"
-                                                        className="rounded-xl shadow-lg"
-                                                    />
-                                                </div>
-                                            )}
+                            {/* Reasoning & Plan Block */}
+                            {(msg.reasoning || msg.plan) && (
+                                <div className="mt-4 mb-2 p-4 rounded-2xl bg-white/5 border border-white/10 text-sm">
+                                    {msg.reasoning && (
+                                        <div className="mb-3">
+                                            <h4 className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-1 flex items-center gap-2">
+                                                <Sparkles size={10} /> Reasoning
+                                            </h4>
+                                            <p className="text-white/80 leading-relaxed">{msg.reasoning}</p>
                                         </div>
-                                    </LiquidGlass>
-                                ))}
-                            </div>
-                        )}
-                    </motion.div>
-                ))}
+                                    )}
+                                    {msg.plan && (
+                                        <div>
+                                            <h4 className="text-xs font-bold text-purple-300 uppercase tracking-wider mb-1 flex items-center gap-2">
+                                                <LinkIcon size={10} /> Plan
+                                            </h4>
+                                            <div className="text-white/80 leading-relaxed whitespace-pre-wrap font-mono text-xs bg-black/20 p-2 rounded-lg">
+                                                {msg.plan}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Actions */}
+                            {msg.actions && msg.actions.length > 0 && (
+                                <div className="flex flex-col gap-3 mt-4 w-full">
+                                    {msg.actions.map(action => (
+                                        <LiquidGlass key={action.id} className={`p-0 overflow-hidden !rounded-2xl border border-white/10 bg-white/5 transition-all hover:bg-white/10 ${action.status === 'approved' ? 'border-green-500/30 bg-green-500/5' : ''}`}>
+                                            <div className="p-4">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold tracking-wider uppercase ${action.priority === 'CRITICAL' ? 'border-red-500/50 text-red-300 bg-red-500/10' :
+                                                            action.priority === 'HIGH' ? 'border-orange-500/50 text-orange-300 bg-orange-500/10' :
+                                                                'border-blue-500/50 text-blue-300 bg-blue-500/10'
+                                                            }`}>
+                                                            {action.priority}
+                                                        </span>
+                                                    </div>
+                                                    {action.type === 'music' && <Music size={14} className="text-white/40" />}
+                                                    {action.type === 'internal_feature' && <Activity size={14} className="text-white/40" />}
+                                                    {action.type === 'composio_tool' && <LinkIcon size={14} className="text-white/40" />}
+                                                </div>
+
+                                                <h4 className="font-bold text-white text-sm mb-1">{action.title}</h4>
+                                                <p className="text-xs text-white/60 mb-4 leading-relaxed">{action.description}</p>
+
+                                                {/* Action Buttons */}
+                                                {action.status === 'pending' ? (
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleAction(msg.id, action.id, 'approve')}
+                                                            className="flex-1 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-xl text-[10px] font-bold text-green-100 transition-all flex items-center justify-center gap-1.5 group"
+                                                        >
+                                                            <div className="w-4 h-4 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/40 transition-colors">
+                                                                <Check size={10} />
+                                                            </div>
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleAction(msg.id, action.id, 'refine')}
+                                                            className="flex-1 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] font-bold text-white transition-all flex items-center justify-center gap-1.5 group"
+                                                        >
+                                                            <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                                                                <Edit2 size={10} />
+                                                            </div>
+                                                            Refine
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleAction(msg.id, action.id, 'reject')}
+                                                            className="w-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl text-red-200 transition-all"
+                                                            title="Cancel"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 text-xs text-white/50 italic bg-black/20 p-2 rounded-lg">
+                                                        {action.status === 'approved' && <><Check size={12} className="text-green-400" /> Approved & Executing...</>}
+                                                        {action.status === 'rejected' && <><X size={12} className="text-red-400" /> Cancelled</>}
+                                                    </div>
+                                                )}
+
+                                                {/* Execution View (Mock) */}
+                                                {action.status === 'approved' && action.type === 'music' && action.data?.spotifyId && (
+                                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+                                                        <iframe
+                                                            src={`https://open.spotify.com/embed/playlist/${action.data.spotifyId}?utm_source=generator`}
+                                                            width="100%"
+                                                            height="80"
+                                                            frameBorder="0"
+                                                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                                            loading="lazy"
+                                                            className="rounded-xl shadow-lg"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </LiquidGlass>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
                 {isLoading && (
-                    <div className="flex justify-start">
-                        <div className="flex items-center gap-2 px-6 py-4 bg-white/10 rounded-[24px] rounded-bl-sm border border-white/10 backdrop-blur-md">
-                            <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" />
-                            <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce delay-75" />
-                            <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce delay-150" />
-                        </div>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className={`${styles.message} ${styles.aiMessage}`}
+                    >
+                        <span className="typing-dots">...</span>
+                    </motion.div>
                 )}
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="relative z-20 p-6 pb-10 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex justify-center">
-                <div className="w-full max-w-3xl rounded-[50px] p-1.5 border border-white/20 bg-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-                    <div className="flex items-center gap-2 pl-2 pr-1.5">
+            <div className={styles.inputWrapper}>
+                <LiquidGlass className={styles.liquidInput}>
+                    <div className={styles.inputArea}>
                         <button
                             onClick={isListening ? stopListening : startListening}
-                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening
-                                ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                                : 'bg-white/10 text-white hover:bg-white/20'
-                                }`}
+                            className={`${styles.sendButton} ${isListening ? styles.listening : ""}`}
+                            style={{ background: isListening ? "var(--accent)" : "var(--surface-hover)", color: isListening ? "white" : "var(--foreground)" }}
+                            title={isListening ? "Stop Listening" : "Start Listening"}
                         >
                             <Mic size={18} />
                         </button>
@@ -398,17 +427,17 @@ export default function AgentChat() {
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                             placeholder={isListening ? "Listening..." : "Tell your team how you're feeling..."}
-                            className="flex-1 bg-transparent border-none text-white placeholder-white/40 focus:outline-none font-petrona text-base py-3"
+                            className={styles.input}
                         />
                         <button
                             onClick={() => handleSend()}
+                            className={styles.sendButton}
                             disabled={!input.trim() || isLoading}
-                            className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-400 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] flex items-center justify-center"
                         >
                             <Send size={18} />
                         </button>
                     </div>
-                </div>
+                </LiquidGlass>
             </div>
 
             {/* Auth Modal */}

@@ -1,3 +1,4 @@
+import { anthropic } from './anthropic';
 import { externalApi } from './external-api';
 
 export type AgentType = 'ORCHESTRATOR' | 'BEHAVIORAL' | 'SLEEP' | 'STRESS' | 'BALANCE' | 'EXTERNAL_CHAT';
@@ -15,75 +16,43 @@ export interface OrchestratorResponse {
     agentName: string;
     response: string;
     actions: AgentAction[];
+    reasoning?: string;
+    plan?: string;
     needsMoreInfo?: boolean;
 }
 
 export class AgentOrchestrator {
-    // Simple keyword-based classifier for now (can be upgraded to LLM)
-    static classifyIntent(query: string): 'AGENT_ACTION' | 'CASUAL_CHAT' {
-        const actionKeywords = [
-            'stress', 'anxious', 'panic', 'sleep', 'tired', 'insomnia',
-            'work', 'deadline', 'schedule', 'calendar', 'plan', 'remind',
-            'overwhelmed', 'break', 'breathe', 'music'
-        ];
-
-        const lowerQuery = query.toLowerCase();
-        if (actionKeywords.some(k => lowerQuery.includes(k))) {
-            return 'AGENT_ACTION';
-        }
-        return 'CASUAL_CHAT';
+    // Pure Agentic Mode: Everything is an agent action request
+    static classifyIntent(query: string): 'AGENT_ACTION' {
+        return 'AGENT_ACTION';
     }
 
-    static async processRequest(query: string, userProfile: any, token?: string): Promise<OrchestratorResponse> {
+    static async processRequest(query: string, userProfile: any, token?: string, agenda?: any): Promise<OrchestratorResponse> {
         const intent = this.classifyIntent(query);
 
-        // 0. Retrieve Context from Memori
+        // 0. Retrieve Context from Supermemory
         let memoryContext = "";
         try {
-            // Call local Python service (or deployed)
-            // In dev, we might need to point to localhost:8000 or skip if not running
-            // For Vercel, it would be /api/memory/context
-            const memRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/memory/context`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userProfile?.email || 'anonymous', query })
-            });
-            if (memRes.ok) {
-                const memData = await memRes.json();
-                if (memData.context && memData.context.length > 0) {
-                    memoryContext = `\nRelevant Memory:\n${memData.context.join('\n')}`;
-                }
+            const memories = await supermemory.query(query, 3);
+            if (memories && memories.length > 0) {
+                // Format memories (assuming they have 'content' field)
+                const memoryText = memories.map((m: any) => m.content).join('\n- ');
+                memoryContext = `\nRelevant Memory:\n- ${memoryText}`;
             }
         } catch (e) {
-            console.warn("Memory service unavailable", e);
+            console.warn("Supermemory service unavailable", e);
         }
 
-        // 1. External Chat Integration
-        if (intent === 'CASUAL_CHAT' && token) {
-            try {
-                const extResponse = await externalApi.chat(query + memoryContext, token); // Inject memory
-                return {
-                    agentName: 'Serenity Guide',
-                    response: JSON.stringify(extResponse),
-                    actions: []
-                };
-            } catch (e) {
-                console.error("External API failed, falling back to local", e);
-            }
-        }
-
-        // 2. Behavioral Agent ("Why")
+        // 1. Behavioral Agent ("Why") - Analyze request for tools
         const lowerQuery = query.toLowerCase();
         let agentName = 'Orchestrator';
-        let response = "I'm listening.";
+        let response = "I'm analyzing your request...";
         let actions: AgentAction[] = [];
-
-        // ... logic continues ...
 
         // Stress Logic
         if (lowerQuery.includes('stress') || lowerQuery.includes('panic')) {
             agentName = 'Stress Manager';
-            response = "I hear that you're stressed. Let's take immediate action to calm your nervous system.";
+            response = "I've detected high stress. I recommend immediate intervention.";
 
             // Internal Feature: Box Breathing
             actions.push({
@@ -105,15 +74,13 @@ export class AgentOrchestrator {
                 data: { url: '/stress-relief' }
             });
 
-            // Music
-            actions.push({
-                id: 'music-1',
-                type: 'music',
-                title: 'Calming Playlist',
-                description: 'Playing 40Hz binaural beats.',
-                priority: 'MEDIUM',
-                data: { spotifyId: '37i9dQZF1DWZqd5JICZI0u' } // Example playlist
-            });
+            return {
+                agentName,
+                response,
+                actions,
+                reasoning: "User indicates stress/panic. Immediate physiological regulation is required.",
+                plan: "1. Guide user through Box Breathing.\n2. Offer personalized stress relief tools."
+            };
         }
         // Sleep Logic
         else if (lowerQuery.includes('sleep') || lowerQuery.includes('tired')) {
@@ -129,6 +96,14 @@ export class AgentOrchestrator {
                 priority: 'HIGH',
                 data: { tool: 'google_calendar_create_event', params: { summary: 'Wind Down', start: '22:00' } }
             });
+
+            return {
+                agentName,
+                response,
+                actions,
+                reasoning: "User mentions sleep issues/fatigue. Schedule adjustment needed.",
+                plan: "1. Block 'Wind Down' time in calendar to ensure rest."
+            };
         }
         // Work/Balance Logic
         else if (lowerQuery.includes('work') || lowerQuery.includes('plan')) {
@@ -143,12 +118,22 @@ export class AgentOrchestrator {
                 priority: 'MEDIUM',
                 data: { tool: 'todo_list_create' }
             });
+
+            return {
+                agentName,
+                response,
+                actions,
+                reasoning: "User is planning work. Task decomposition is helpful.",
+                plan: "1. Create a structured task list."
+            };
         }
 
         return {
             agentName,
-            response,
-            actions
+            response: "I'm ready to help with tasks. Try asking me to schedule something or manage stress.",
+            actions,
+            reasoning: "No specific intent detected.",
+            plan: "Waiting for user instruction."
         };
     }
 }

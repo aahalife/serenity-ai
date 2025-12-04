@@ -6,7 +6,9 @@ export async function GET(
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params;
+    console.log(`[TechniqueAPI] Fetching ID: ${id}`);
     const technique = TECHNIQUES.find(t => t.id === id);
+    console.log(`[TechniqueAPI] Found: ${technique ? technique.id : 'None'}`);
 
     if (!technique) {
         return NextResponse.json({ error: 'Technique not found' }, { status: 404 });

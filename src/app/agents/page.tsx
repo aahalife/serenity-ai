@@ -132,55 +132,78 @@ export default function AgentsPage() {
                     )}
 
                     {viewState === 'SERVICES' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4">
-                            <LiquidGlass className="p-6 border border-white/10 bg-white/5">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center overflow-hidden">
-                                            <img
-                                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Google_Calendar_icon_%282020%29.svg/1024px-Google_Calendar_icon_%282020%29.svg.png"
-                                                alt="GCal"
-                                                className="w-6 h-6 object-contain"
-                                                style={{ width: '24px', height: '24px' }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-white">Google Calendar</h3>
-                                            <p className="text-xs text-white/50">Via Composio</p>
-                                        </div>
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+                            <LiquidGlass className="p-8 border border-white/10 bg-white/5">
+                                <div className="flex items-start gap-4 mb-6">
+                                    <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10">
+                                        <Zap size={24} className="text-blue-300" />
                                     </div>
-                                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                                    <div>
+                                        <h2 className="text-xl font-bold text-white mb-1">Agent Action List</h2>
+                                        <p className="text-white/60 text-sm">Describe what you need help with, and we'll connect the right tools.</p>
+                                    </div>
                                 </div>
-                                <p className="text-sm text-white/70 mb-4">Allows agents to view and schedule events on your behalf.</p>
-                                <button
-                                    onClick={() => alert("Configuration coming soon!")}
-                                    className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
-                                >
-                                    Configure
-                                </button>
+
+                                <div className="space-y-4">
+                                    <textarea
+                                        placeholder="E.g., I need to schedule meetings from my email, track my sleep data from Oura, and post updates to Slack when I finish a task..."
+                                        className="w-full h-32 bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
+                                    />
+                                    <div className="flex justify-end">
+                                        <button className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
+                                            <Sparkles size={16} /> Analyze Needs
+                                        </button>
+                                    </div>
+                                </div>
                             </LiquidGlass>
 
-                            <LiquidGlass className="p-6 border border-white/10 bg-white/5">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-[#1DB954] flex items-center justify-center">
-                                            <Music className="text-black" size={24} />
+                            {/* Suggested Integrations (Mock Output) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <LiquidGlass className="p-5 border border-white/10 bg-white/5 flex flex-col justify-between h-full">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7e/Gmail_icon_%282020%29.svg" alt="Gmail" className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-bold text-white">Gmail</h3>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-white">Spotify</h3>
-                                            <p className="text-xs text-white/50">Direct Integration</p>
-                                        </div>
+                                        <p className="text-xs text-white/60 mb-4">Required to read emails and schedule meetings as requested.</p>
                                     </div>
-                                    <div className="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                                </div>
-                                <p className="text-sm text-white/70 mb-4">Enables music playback for stress relief and focus sessions.</p>
-                                <button
-                                    onClick={() => alert("Configuration coming soon!")}
-                                    className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-bold text-white transition-colors"
-                                >
-                                    Configure
-                                </button>
-                            </LiquidGlass>
+                                    <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-white transition-all border border-white/10">
+                                        Connect Gmail
+                                    </button>
+                                </LiquidGlass>
+
+                                <LiquidGlass className="p-5 border border-white/10 bg-white/5 flex flex-col justify-between h-full">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-black flex items-center justify-center border border-white/10">
+                                                <div className="w-6 h-6 rounded-full border-2 border-white"></div>
+                                            </div>
+                                            <h3 className="font-bold text-white">Oura Ring</h3>
+                                        </div>
+                                        <p className="text-xs text-white/60 mb-4">Required to track sleep data for the Sleep Guardian agent.</p>
+                                    </div>
+                                    <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-white transition-all border border-white/10">
+                                        Connect Oura
+                                    </button>
+                                </LiquidGlass>
+
+                                <LiquidGlass className="p-5 border border-white/10 bg-white/5 flex flex-col justify-between h-full">
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-lg bg-[#4A154B] flex items-center justify-center">
+                                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Slack_icon_2019.svg" alt="Slack" className="w-6 h-6" />
+                                            </div>
+                                            <h3 className="font-bold text-white">Slack</h3>
+                                        </div>
+                                        <p className="text-xs text-white/60 mb-4">Required to post updates when tasks are completed.</p>
+                                    </div>
+                                    <button className="w-full py-2 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold text-white transition-all border border-white/10">
+                                        Connect Slack
+                                    </button>
+                                </LiquidGlass>
+                            </div>
                         </div>
                     )}
                 </div>

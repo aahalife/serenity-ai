@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LiquidGlass from "./LiquidGlass";
 import HumeDebugModal from "./HumeDebugModal";
 import { Activity } from "lucide-react";
+import { externalApi } from "@/lib/external-api";
 
 interface Message {
     id: string;
@@ -187,58 +188,76 @@ export default function ChatInterface() {
         };
 
         setMessages((prev) => [...prev, newMessage]);
-        if (!isVoice) { // Only clear input if it's not a voice input
+        if (!isVoice) {
             setInputValue("");
         }
         setIsTyping(true);
 
         try {
-            // Retrieve profile and flow state
+            // Retrieve token and profiles
+            const token = localStorage.getItem("external_api_token");
             const savedDeepProfile = localStorage.getItem("deepProfile");
             const savedUserProfile = localStorage.getItem("userProfile");
-            const savedFlowState = localStorage.getItem("flowState");
+            const userGoal = localStorage.getItem("userGoal") || "General Wellness";
+
+            if (!token) {
+                // Fallback or prompt login (simplified for now)
+                console.warn("No external API token found");
+                const aiResponse: Message = {
+                    id: (Date.now() + 1).toString(),
+                    text: "Please connect your account to chat.",
+                    sender: "ai",
+                    timestamp: new Date(),
+                };
+                setMessages((prev) => [...prev, aiResponse]);
+                setIsTyping(false);
+                return;
+            }
 
             const profile = {
                 ...JSON.parse(savedUserProfile || "{}"),
                 ...JSON.parse(savedDeepProfile || "{}"),
-                currentState: JSON.parse(savedFlowState || "{}")
             };
 
-            // Construct rich context for LLM
-            const llmPayload = {
-                message: textToSend,
-                history: messages.map(m => ({ role: m.sender === "user" ? "user" : "model", parts: [{ text: m.text }] })),
-                profile: {
-                    ...profile,
-                    currentEmotions: emotions, // Pass real-time emotions
-                    location: Intl.DateTimeFormat().resolvedOptions().timeZone, // Simple location proxy
-                },
-                isVoice // Pass voice flag
-            };
+            // Inject Goal Context if it's the first message or periodically
+            // For now, we prepend it to the message if it's the start of a session, 
+            // but the API expects 'message' string. 
+            // The user said: "pass this string as part of first chat... 'Goal is not medication adherence...'"
+            // We'll check if messages length is 0 or 1 (just added).
+            let finalMessage = textToSend;
+            if (messages.length <= 1) {
+                finalMessage = `${externalApi.formatGoalMessage(userGoal)}\n\nUser Message: ${textToSend}`;
+            }
 
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(llmPayload),
-            });
+            // Call External API
+            const data = await externalApi.chat(finalMessage, token, { userProfile: profile });
 
-            const data = await response.json();
-            console.log("Chat API Response:", data);
+            // Parse response (assuming it returns { response: string } or similar)
+            // The externalApi.chat returns json. Let's assume data.response holds the text.
+            // If the API returns a different structure, we need to adjust.
+            // Based on previous `AgentChat` usage, it seemed to return `response`.
 
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: data.response || "I'm listening...",
+                text: data.response || data.message || "I'm listening...", // Fallback
                 sender: "ai",
                 timestamp: new Date(),
             };
 
             setMessages((prev) => [...prev, aiResponse]);
-            // Only speak if it was a voice interaction OR if call mode is active
+
             if (isVoice || isCallMode) {
                 speak(aiResponse.text);
             }
         } catch (error) {
             console.error("Chat Error:", error);
+            const errorResponse: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "I'm having trouble connecting. Please try again.",
+                sender: "ai",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorResponse]);
         } finally {
             setIsTyping(false);
         }

@@ -70,18 +70,150 @@ export default function Profile() {
                     </div>
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Name</span>
-                        <span className={styles.value}>{profile.name || "User"}</span>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={profile.name || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, name: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
                     </div>
                     <div className={styles.infoRow}>
-                        <span className={styles.label}>Joined</span>
-                        <span className={styles.value}>{new Date().toLocaleDateString()}</span>
+                        <span className={styles.label}>Age</span>
+                        <input
+                            type="number"
+                            className={styles.input}
+                            value={profile.age || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, age: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
                     </div>
-                    {profile.identity && (
-                        <div className={styles.infoRow}>
-                            <span className={styles.label}>Archetype</span>
-                            <span className={styles.value}>{profile.identity}</span>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Gender</span>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={profile.gender || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, gender: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Location</span>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={profile.location || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, location: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Occupation</span>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={profile.occupation || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, occupation: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Family</span>
+                        <input
+                            type="text"
+                            className={styles.input}
+                            value={profile.family || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, family: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                </motion.div>
+
+                <motion.div
+                    className={styles.card}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                >
+                    <div className={styles.cardHeader}>
+                        <div className="p-2 rounded-full bg-purple-500/20 text-purple-300">
+                            <User className={styles.icon} />
                         </div>
-                    )}
+                        <h2>Family Circle</h2>
+                    </div>
+
+                    <div className={styles.infoRow}>
+                        <span className={styles.label}>Family Code</span>
+                        <div className="flex items-center gap-2">
+                            <code className="bg-white/10 px-3 py-1 rounded text-sm font-mono text-blue-300">
+                                {profile.familyCode || "FAM-" + Math.random().toString(36).substr(2, 6).toUpperCase()}
+                            </code>
+                            <span className="text-xs text-white/40">(Share this)</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6">
+                        <h3 className="text-sm font-bold text-white/80 mb-3">Members</h3>
+                        <div className="space-y-3">
+                            {/* Current User */}
+                            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-300 text-xs font-bold">
+                                    You
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-white">{profile.name || "You"}</p>
+                                    <p className="text-xs text-white/50">{profile.family || "Member"}</p>
+                                </div>
+                            </div>
+
+                            {/* Mock Family Members (only if family code is set/simulated) */}
+                            {profile.familyCode && (
+                                <>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 text-xs font-bold">
+                                            JS
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-white">Jane Smith</p>
+                                            <p className="text-xs text-white/50">Wife • Deep Profile: Conscientious</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
+                                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-300 text-xs font-bold">
+                                            TS
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-white">Timmy Smith</p>
+                                            <p className="text-xs text-white/50">Son • Deep Profile: Energetic</p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {!profile.familyCode && (
+                                <p className="text-xs text-white/40 italic">Register others with your code to see them here.</p>
+                            )}
+                        </div>
+                    </div>
                 </motion.div>
 
                 <motion.div
