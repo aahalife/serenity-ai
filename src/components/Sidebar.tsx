@@ -47,6 +47,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
     const navItems = [
         { name: "Dashboard", href: "/", icon: Home },
         { name: "Breathe", href: "/breathing", icon: Wind },
+        { name: "Cool Breathe", href: "/cool-breathing", icon: Globe },
         { name: "Journal", href: "/journal", icon: BookOpen },
         { name: "The Work", href: "/the-work", icon: Activity },
         { name: "Stress Relief", href: "/stress-relief", icon: Sparkles },

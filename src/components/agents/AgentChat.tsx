@@ -20,6 +20,7 @@ interface Message {
     reasoning?: string;
     plan?: string;
 }
+// Force update for build system
 
 interface AgentAction {
     id: string;
