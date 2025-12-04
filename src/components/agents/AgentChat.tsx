@@ -17,6 +17,8 @@ interface Message {
     timestamp: Date;
     agentName?: string;
     actions?: AgentAction[];
+    reasoning?: string;
+    plan?: string;
 }
 
 interface AgentAction {
