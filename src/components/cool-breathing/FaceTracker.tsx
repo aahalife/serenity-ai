@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import Webcam from 'react-webcam';
+import { Camera, CameraOff } from 'lucide-react';
 
 interface FaceTrackerProps {
     onBreathChange: (value: number) => void;
+    isEnabled: boolean;
+    onToggle: () => void;
 }
 
 declare global {
@@ -14,14 +17,26 @@ declare global {
     }
 }
 
-export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
+export default function FaceTracker({ onBreathChange, isEnabled, onToggle }: FaceTrackerProps) {
     const webcamRef = useRef<Webcam>(null);
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [scriptsLoaded, setScriptsLoaded] = useState(false);
+    const faceMeshRef = useRef<any>(null);
+    const cameraRef = useRef<any>(null);
 
+    // Load MediaPipe scripts
     useEffect(() => {
-        // Dynamically load MediaPipe scripts from CDN
+        if (scriptsLoaded) return;
+
         const loadScripts = async () => {
+            // Check if already loaded
+            if (window.FaceMesh && window.Camera) {
+                setScriptsLoaded(true);
+                setIsLoading(false);
+                return;
+            }
+
             // Load Face Mesh
             const faceMeshScript = document.createElement('script');
             faceMeshScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
@@ -34,7 +49,6 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
             cameraScript.crossOrigin = 'anonymous';
             document.head.appendChild(cameraScript);
 
-            // Wait for scripts to load
             await new Promise<void>((resolve) => {
                 let loadedCount = 0;
                 const checkLoaded = () => {
@@ -45,14 +59,16 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
                 cameraScript.onload = checkLoaded;
             });
 
+            setScriptsLoaded(true);
             setIsLoading(false);
         };
 
         loadScripts();
-    }, []);
+    }, [scriptsLoaded]);
 
+    // Initialize FaceMesh when enabled
     useEffect(() => {
-        if (isLoading || !webcamRef.current?.video) return;
+        if (!isEnabled || !scriptsLoaded || !webcamRef.current?.video) return;
 
         const initFaceMesh = async () => {
             const faceMesh = new window.FaceMesh({
@@ -60,6 +76,7 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
                     return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
                 },
             });
+            faceMeshRef.current = faceMesh;
 
             faceMesh.setOptions({
                 maxNumFaces: 1,
@@ -72,8 +89,7 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
                 if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                     const landmarks = results.multiFaceLandmarks[0];
 
-                    // Calculate mouth openness
-                    // Upper lip bottom: 13, Lower lip top: 14
+                    // Calculate mouth openness (landmarks 13 & 14)
                     const upperLip = landmarks[13];
                     const lowerLip = landmarks[14];
 
@@ -83,7 +99,6 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
                         Math.pow(upperLip.z - lowerLip.z, 2)
                     );
 
-                    // Normalize (Closed ~0.01, Open ~0.1)
                     let normalized = (distance - 0.01) * 15;
                     normalized = Math.max(0, Math.min(1, normalized));
 
@@ -93,38 +108,71 @@ export default function FaceTracker({ onBreathChange }: FaceTrackerProps) {
 
             const camera = new window.Camera(webcamRef.current!.video, {
                 onFrame: async () => {
-                    if (webcamRef.current?.video) {
-                        await faceMesh.send({ image: webcamRef.current.video });
+                    if (webcamRef.current?.video && faceMeshRef.current) {
+                        await faceMeshRef.current.send({ image: webcamRef.current.video });
                     }
                 },
                 width: 640,
                 height: 480,
             });
+            cameraRef.current = camera;
             camera.start();
             setIsCameraReady(true);
         };
 
         initFaceMesh();
-    }, [isLoading, onBreathChange]);
+
+        return () => {
+            if (cameraRef.current) {
+                cameraRef.current.stop();
+                cameraRef.current = null;
+            }
+        };
+    }, [isEnabled, scriptsLoaded, onBreathChange]);
+
+    // Stop camera when disabled
+    useEffect(() => {
+        if (!isEnabled && cameraRef.current) {
+            cameraRef.current.stop();
+            cameraRef.current = null;
+            setIsCameraReady(false);
+        }
+    }, [isEnabled]);
 
     return (
-        <div className="absolute top-4 right-16 z-50 w-32 h-24 rounded-xl overflow-hidden border border-white/20 shadow-lg opacity-80 hover:opacity-100 transition-opacity">
-            <Webcam
-                ref={webcamRef}
-                audio={false}
-                width={128}
-                height={96}
-                screenshotFormat="image/jpeg"
-                videoConstraints={{
-                    width: 640,
-                    height: 480,
-                    facingMode: "user"
-                }}
-                className="w-full h-full object-cover transform scale-x-[-1]"
-            />
-            {(!isCameraReady || isLoading) && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white">
-                    {isLoading ? 'Loading...' : 'Starting...'}
+        <div className="flex items-center gap-2">
+            <button
+                onClick={onToggle}
+                disabled={isLoading}
+                className={`p-3 rounded-full backdrop-blur-md transition-all ${isEnabled
+                        ? 'bg-blue-500/30 text-blue-300 border border-blue-400/50'
+                        : 'bg-white/10 text-white/60 border border-white/20 hover:bg-white/20'
+                    }`}
+                title={isEnabled ? 'Disable Face Tracking' : 'Enable Face Tracking'}
+            >
+                {isEnabled ? <Camera size={20} /> : <CameraOff size={20} />}
+            </button>
+
+            {isEnabled && (
+                <div className="w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-lg overflow-hidden border border-white/20 shadow-lg">
+                    <Webcam
+                        ref={webcamRef}
+                        audio={false}
+                        width={112}
+                        height={80}
+                        screenshotFormat="image/jpeg"
+                        videoConstraints={{
+                            width: { ideal: 640 },
+                            height: { ideal: 480 },
+                            facingMode: "user"
+                        }}
+                        className="w-full h-full object-cover transform scale-x-[-1]"
+                    />
+                    {(!isCameraReady || isLoading) && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[10px] text-white">
+                            {isLoading ? 'Loading...' : 'Starting...'}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
