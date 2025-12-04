@@ -23,11 +23,27 @@ export default function Profile() {
 
                 if (savedUserProfile) {
                     const basic = JSON.parse(savedUserProfile);
-                    const deep = savedDeepProfile ? JSON.parse(savedDeepProfile) : {};
+                    let deep = {};
+                    let deepText = "";
+
+                    if (savedDeepProfile) {
+                        try {
+                            deep = JSON.parse(savedDeepProfile);
+                            // If it's a string wrapped in quotes from JSON.stringify
+                            if (typeof deep === 'string') {
+                                deepText = deep;
+                                deep = {};
+                            }
+                        } catch (e) {
+                            // It's a raw string
+                            deepText = savedDeepProfile;
+                        }
+                    }
 
                     setProfile({
                         ...basic,
                         ...deep,
+                        deepProfileText: deepText,
                         ocean: deep.traits || deep.ocean || {} // Handle both formats
                     });
                 } else {
@@ -239,6 +255,10 @@ export default function Profile() {
                                     </div>
                                 </div>
                             ))
+                        ) : profile.deepProfileText ? (
+                            <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
+                                {profile.deepProfileText}
+                            </div>
                         ) : (
                             <p className={styles.emptyState}>Complete onboarding to generate your deep profile.</p>
                         )}

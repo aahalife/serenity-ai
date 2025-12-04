@@ -233,10 +233,11 @@ export default function AgentChat() {
                 actions: msg.actions.map(a => {
                     if (a.id !== actionId) return a;
                     if (type === 'approve') {
-                        // If it's a composio tool, we might need to trigger auth flow here
+                        // If it's a composio tool, trigger auth flow
                         if (a.type === 'composio_tool') {
-                            // Mocking the connection flow
-                            alert(`Connecting to ${a.data?.tool || 'Service'}... (Mock)`);
+                            const toolName = a.data?.tool || 'google_calendar'; // Default or extract from data
+                            // Open auth in new tab or redirect
+                            window.open(`/api/integrations/auth?appName=${toolName}`, '_blank');
                         }
                         return { ...a, status: 'approved' };
                     }
