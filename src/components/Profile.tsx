@@ -44,7 +44,7 @@ export default function Profile() {
                         ...basic,
                         ...deep,
                         deepProfileText: deepText,
-                        ocean: deep.traits || deep.ocean || {} // Handle both formats
+                        ocean: (deep as any).traits || (deep as any).ocean || {} // Handle both formats
                     });
                 } else {
                     // Set default empty profile if nothing found
