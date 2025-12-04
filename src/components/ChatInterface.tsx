@@ -239,7 +239,7 @@ export default function ChatInterface() {
 
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: data.response || "I'm listening...", // Fallback
+                text: data.response || "I'm listening...", // Fallback (Fixed build error)
                 sender: "ai",
                 timestamp: new Date(),
             };
