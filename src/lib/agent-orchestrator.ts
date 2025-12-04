@@ -1,5 +1,6 @@
 import { anthropic } from './anthropic';
 import { externalApi } from './external-api';
+import { supermemory } from './supermemory';
 
 export type AgentType = 'ORCHESTRATOR' | 'BEHAVIORAL' | 'SLEEP' | 'STRESS' | 'BALANCE' | 'EXTERNAL_CHAT';
 
