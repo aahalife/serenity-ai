@@ -305,17 +305,30 @@ export default function Profile() {
                     </div>
                     <div className={styles.oceanGrid}>
                         {profile.ocean && typeof profile.ocean === 'object' && Object.entries(profile.ocean).length > 0 ? (
-                            Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
-                                <div key={trait} className={styles.trait}>
-                                    <span className={styles.traitName}>{trait}</span>
-                                    <div className={styles.traitBar}>
-                                        <div
-                                            className={styles.traitFill}
-                                            style={{ width: `${(typeof score === 'number' ? score : 0.5) * 100}%` }}
-                                        />
+                            <>
+                                {Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
+                                    <div key={trait} className={styles.trait}>
+                                        <span className={styles.traitName}>{trait}</span>
+                                        <div className={styles.traitBar}>
+                                            <div
+                                                className={styles.traitFill}
+                                                style={{ width: `${(typeof score === 'number' ? score : 0.5) * 100}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                                {/* Display Goal if available */}
+                                {profile.behaviour_change && profile.behaviour_change.goals && (
+                                    <div className="col-span-2 mt-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                        <h4 className="text-sm font-bold text-blue-300 mb-1">Current Goal</h4>
+                                        <p className="text-sm text-white/90">
+                                            {Array.isArray(profile.behaviour_change.goals)
+                                                ? profile.behaviour_change.goals.join(", ")
+                                                : profile.behaviour_change.goals}
+                                        </p>
+                                    </div>
+                                )}
+                            </>
                         ) : profile.deepProfileText ? (
                             <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
                                 {profile.deepProfileText}

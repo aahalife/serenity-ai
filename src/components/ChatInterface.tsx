@@ -270,15 +270,19 @@ export default function ChatInterface() {
                 ...JSON.parse(savedDeepProfile || "{}"),
             };
 
-            // Inject Goal Context if it's the first message or periodically
-            let finalMessage = textToSend;
-            if (messages.length <= 1) {
-                finalMessage = `${externalApi.formatGoalMessage(userGoal)}\n\nUser Message: ${textToSend}`;
-            }
+            // Inject Goal Context
+            const behaviourChange = {
+                goals: [userGoal], // API expects array of strings or null
+                target_behavior: null,
+                magnitude: null,
+                frequency: null
+            };
 
             // Call External API
-            // Note: If externalApi.chat fails with invalid token, we catch it below.
-            const data = await externalApi.chat(finalMessage, token, { userProfile: profile });
+            const data = await externalApi.chat(textToSend, token, {
+                userProfile: profile,
+                behaviour_change: behaviourChange
+            });
 
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),

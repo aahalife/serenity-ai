@@ -36,7 +36,7 @@ export const externalApi = {
         return res.json(); // Returns { access_token, token_type }
     },
 
-    async chat(message: string, token: string, context?: { userProfile?: any, agenda?: any }) {
+    async chat(message: string, token: string, context?: { userProfile?: any, agenda?: any, behaviour_change?: any }) {
         const payload: any = {
             message,
             message_type: 'text'
@@ -45,6 +45,7 @@ export const externalApi = {
         if (context) {
             if (context.userProfile) payload.user_details = context.userProfile;
             if (context.agenda) payload.agenda = context.agenda;
+            if (context.behaviour_change) payload.behaviour_change = context.behaviour_change;
         }
 
         const res = await fetch(`${API_BASE_URL}/chat/`, {
