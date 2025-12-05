@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useCallback } from 'react';
-import Scene from '../../components/zenparticles/Scene';
-import Controls from '../../components/zenparticles/Controls';
-import HandController from '../../components/zenparticles/HandController';
-import AudioPlayer from '../../components/zenparticles/AudioPlayer';
+import dynamic from 'next/dynamic';
+
+const Scene = dynamic(() => import('../../components/zenparticles/Scene'), { ssr: false });
+const Controls = dynamic(() => import('../../components/zenparticles/Controls'), { ssr: false });
+const HandController = dynamic(() => import('../../components/zenparticles/HandController'), { ssr: false });
+const AudioPlayer = dynamic(() => import('../../components/zenparticles/AudioPlayer'), { ssr: false });
 import { ParticleState, ShapeType, HandStatus, SavedShape } from '../../components/zenparticles/types';
 
 export default function SqueezeItPage() {
