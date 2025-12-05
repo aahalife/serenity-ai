@@ -94,7 +94,7 @@ export default function Profile() {
 
                             // Check if it's the empty object or valid
                             if (Object.keys(deepData).length === 0) {
-                                deepData = null; // Treat empty object as null to trigger fallback
+                                deepData = null; // Treat empty object as null
                             }
                         }
                     }
@@ -102,34 +102,7 @@ export default function Profile() {
                     console.warn("Failed to fetch latest deep profile from chat API", err);
                 }
 
-                // Fallback: Call Inference API if chat API failed or returned empty
-                if (!deepData) {
-                    console.log("Deep profile missing, attempting inference...");
-                    try {
-                        const inferenceRes = await fetch('/api/inference/profile', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                name: currentProfile.name,
-                                age: currentProfile.age,
-                                gender: currentProfile.gender,
-                                location: currentProfile.location,
-                                occupation: currentProfile.occupation,
-                                family: currentProfile.family
-                            })
-                        });
-
-                        if (inferenceRes.ok) {
-                            const inferenceData = await inferenceRes.json();
-                            if (inferenceData.profile) {
-                                deepData = inferenceData.profile;
-                                console.log("Inferred profile successfully");
-                            }
-                        }
-                    } catch (infErr) {
-                        console.error("Inference failed", infErr);
-                    }
-                }
+                // If no API data, try localStorage only (removed auto-inference)
 
                 // Final Merge
                 if (deepData) {
@@ -141,10 +114,15 @@ export default function Profile() {
                         ocean: deepData.traits || deepData.ocean || {} // Keep backward compat if needed
                     };
                 } else if (savedDeepProfile) {
-                    // Last resort: local storage
+                    // Fallback: Use saved localStorage data
                     try {
                         const saved = JSON.parse(savedDeepProfile);
-                        currentProfile = { ...currentProfile, ...saved };
+                        currentProfile = {
+                            ...currentProfile,
+                            ...saved,
+                            deepProfileText: JSON.stringify(saved, null, 2),
+                            ocean: saved.traits || saved.ocean || {}
+                        };
                     } catch (e) {
                         console.error("Failed to parse saved profile", e);
                     }
