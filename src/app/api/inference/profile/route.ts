@@ -222,6 +222,12 @@ Remember: This profile represents statistical probabilities and common patterns,
 export async function POST(req: Request) {
   try {
     // const session = await getServerSession(authOptions); // Unused and potentially causing 500s if auth not configured
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY is missing in environment variables");
+      return NextResponse.json({ error: "Server configuration error: Missing API Key" }, { status: 500 });
+    }
+
     const body = await req.json();
     const { name, age, gender, location, occupation, family } = body;
 
