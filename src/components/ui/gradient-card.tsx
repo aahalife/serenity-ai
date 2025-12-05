@@ -98,16 +98,16 @@ export const GradientCard: React.FC<GradientCardProps> = ({
 
             {/* Purple/blue glow effect */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-2/3 z-20"
+                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
                 style={{
                     background: `
-            radial-gradient(ellipse at bottom right, rgba(172, 92, 255, 0.4) -10%, rgba(79, 70, 229, 0) 70%),
-            radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.4) -10%, rgba(79, 70, 229, 0) 70%)
+            radial-gradient(ellipse at bottom right, rgba(172, 92, 255, 0.8) -10%, rgba(79, 70, 229, 0) 60%),
+            radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.8) -10%, rgba(79, 70, 229, 0) 60%)
           `,
-                    filter: "blur(40px)",
+                    filter: "blur(30px)",
                 }}
                 animate={{
-                    opacity: isHovered ? 0.9 : 0.7,
+                    opacity: isHovered ? 1 : 0.9,
                 }}
                 transition={{
                     duration: 0.4,
@@ -115,22 +115,21 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                 }}
             />
 
-            {/* Central purple glow */}
+            {/* Central purple glow - More visible */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-2/3 z-20"
+                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
                 style={{
-                    background: `radial-gradient(circle at bottom center, rgba(161, 58, 229, 0.5) -20%, rgba(79, 70, 229, 0) 60%)`,
-                    filter: "blur(45px)",
+                    background: `radial-gradient(ellipse at bottom center, rgba(161, 58, 229, 0.9) -30%, rgba(79, 70, 229, 0.3) 40%, transparent 70%)`,
+                    filter: "blur(35px)",
                 }}
                 animate={{
-                    opacity: isHovered ? 0.85 : 0.65,
+                    opacity: isHovered ? 1 : 0.85,
                 }}
                 transition={{
                     duration: 0.4,
                     ease: "easeOut"
                 }}
             />
-
             {/* Enhanced bottom border glow */}
             <motion.div
                 className="absolute bottom-0 left-0 right-0 h-[2px] z-25"
@@ -151,7 +150,8 @@ export const GradientCard: React.FC<GradientCardProps> = ({
 
             {/* Card content */}
             <motion.div
-                className="relative p-8 z-40"
+                className="relative z-40"
+                style={{ padding: '2rem' }}
                 animate={{
                     z: 2
                 }}
