@@ -111,6 +111,31 @@ export default function Profile() {
                         />
                     </div>
                     <div className={styles.infoRow}>
+                        <span className={styles.label}>Birthday</span>
+                        <input
+                            type="date"
+                            className={styles.input}
+                            value={profile.birthday || ""}
+                            onChange={(e) => {
+                                const newProfile = { ...profile, birthday: e.target.value };
+                                setProfile(newProfile);
+                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                            }}
+                        />
+                    </div>
+                    {profile.birthday && (
+                        <div className={styles.infoRow}>
+                            <span className={styles.label}>Zodiac</span>
+                            <div className="flex items-center gap-2 text-white/80">
+                                {(() => {
+                                    const { getZodiacSign } = require('@/utils/zodiac');
+                                    const z = getZodiacSign(profile.birthday);
+                                    return <span className="font-bold text-purple-300">{z.symbol} {z.name}</span>;
+                                })()}
+                            </div>
+                        </div>
+                    )}
+                    <div className={styles.infoRow}>
                         <span className={styles.label}>Gender</span>
                         <input
                             type="text"

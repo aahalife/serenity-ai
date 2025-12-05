@@ -1,27 +1,79 @@
 "use client";
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
 
 interface BreathingCanvasProps {
     breathValue: number; // 0 to 1
-    shape: 'sphere' | 'heart' | 'flower' | 'saturn';
+    shape: 'sphere' | 'heart' | 'flower' | 'saturn' | 'zodiac';
     color: string;
+    zodiacSymbol?: string;
 }
 
-function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
+function Particles({ breathValue, shape, color, zodiacSymbol }: BreathingCanvasProps) {
     const pointsRef = useRef<THREE.Points>(null);
     const count = 3000;
+
+    // Helper to generate positions from text
+    const generateTextPositions = (text: string, count: number): Float32Array => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return new Float32Array(count * 3);
+
+        canvas.width = 200;
+        canvas.height = 200;
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.font = '150px Arial'; // Use a standard font for symbols
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 100, 100);
+
+        const imageData = ctx.getImageData(0, 0, 200, 200);
+        const data = imageData.data;
+        const validPixels: number[] = [];
+
+        for (let i = 0; i < data.length; i += 4) {
+            if (data[i] > 128) { // If pixel is bright enough
+                validPixels.push(i / 4);
+            }
+        }
+
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) {
+            if (validPixels.length === 0) {
+                positions[i * 3] = (Math.random() - 0.5) * 4;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 4;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 4;
+                continue;
+            }
+
+            const pixelIndex = validPixels[Math.floor(Math.random() * validPixels.length)];
+            const x = (pixelIndex % 200) - 100;
+            const y = 100 - Math.floor(pixelIndex / 200); // Flip Y
+
+            // Normalize to roughly -2 to 2 range
+            positions[i * 3] = x * 0.03 + (Math.random() - 0.5) * 0.1;
+            positions[i * 3 + 1] = y * 0.03 + (Math.random() - 0.5) * 0.1;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.5; // Add some depth
+        }
+        return positions;
+    };
 
     const positions = useMemo(() => {
         const sphere = new Float32Array(count * 3);
         const heart = new Float32Array(count * 3);
         const flower = new Float32Array(count * 3);
         const saturn = new Float32Array(count * 3);
+        // Zodiac shape will be generated dynamically if symbol changes, 
+        // but useMemo runs once. We need a way to update it.
+        // For now, let's generate a default one or handle it in useEffect/useMemo with dependency.
 
         for (let i = 0; i < count; i++) {
+            // Sphere
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos((Math.random() * 2) - 1);
             const r = 2 + Math.random() * 0.5;
@@ -29,6 +81,7 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
             sphere[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
             sphere[i * 3 + 2] = r * Math.cos(phi);
 
+            // Heart
             const t = Math.random() * Math.PI * 2;
             const x = 16 * Math.pow(Math.sin(t), 3);
             const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
@@ -36,6 +89,7 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
             heart[i * 3 + 1] = (y * 0.15) + (Math.random() - 0.5) * 0.5;
             heart[i * 3 + 2] = (Math.random() - 0.5) * 2;
 
+            // Flower
             const k = 4;
             const thetaFlower = Math.random() * Math.PI * 2;
             const rFlower = Math.cos(k * thetaFlower) * 2 + Math.random() * 0.5;
@@ -43,6 +97,7 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
             flower[i * 3 + 1] = rFlower * Math.sin(thetaFlower);
             flower[i * 3 + 2] = (Math.random() - 0.5) * 1;
 
+            // Saturn
             if (i < count * 0.7) {
                 const rSaturn = 1.5 + Math.random() * 0.2;
                 saturn[i * 3] = rSaturn * Math.sin(phi) * Math.cos(theta);
@@ -59,27 +114,39 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
         return { sphere, heart, flower, saturn };
     }, []);
 
+    // Generate zodiac positions when symbol changes
+    const zodiacPositions = useMemo(() => {
+        if (!zodiacSymbol) return new Float32Array(count * 3);
+        return generateTextPositions(zodiacSymbol, count);
+    }, [zodiacSymbol]);
+
     const currentPositions = useMemo(() => new Float32Array(count * 3), []);
 
     useFrame((state) => {
         if (!pointsRef.current) return;
 
         const time = state.clock.getElapsedTime();
-        const targetPositions = positions[shape];
+
+        // Determine target positions
+        let targetPositions = positions[shape as keyof typeof positions];
+        if (shape === 'zodiac') {
+            targetPositions = zodiacPositions;
+        }
+        // Fallback to sphere if undefined
+        if (!targetPositions) targetPositions = positions.sphere;
+
         // Smoothly interpolate breath value
-        // Use a ref to store the smoothed value
         if (!pointsRef.current.userData.smoothedBreath) {
             pointsRef.current.userData.smoothedBreath = 0;
         }
 
-        // Lerp factor: lower = smoother/slower, higher = more responsive
         const lerpFactor = 0.05;
         pointsRef.current.userData.smoothedBreath += (breathValue - pointsRef.current.userData.smoothedBreath) * lerpFactor;
 
         const smoothedBreath = pointsRef.current.userData.smoothedBreath;
         const scale = 1 + smoothedBreath * 1.5;
 
-        // Restore particle position updates
+        // Update particle positions
         for (let i = 0; i < count * 3; i++) {
             currentPositions[i] += (targetPositions[i] - currentPositions[i]) * 0.05;
         }

@@ -223,6 +223,13 @@ export default function Onboarding() {
                                             placeholder="Family (e.g., Spouse, 2 Kids)"
                                             className={`${styles.input} col-span-2`}
                                         />
+                                        <input
+                                            type="date"
+                                            value={(formData as any).birthday || ""}
+                                            onChange={(e) => setFormData({ ...formData, birthday: e.target.value } as any)}
+                                            placeholder="Birthday"
+                                            className={`${styles.input} col-span-2`}
+                                        />
                                     </div>
                                     <button onClick={handleNext} className={styles.primaryButton}>
                                         Continue <ChevronRight size={20} />
