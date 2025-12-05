@@ -97,7 +97,27 @@ export default function FaceTracker({ onBreathChange, isEnabled, onToggle }: Fac
                     let normalized = (distance - 0.01) * 15;
                     normalized = Math.max(0, Math.min(1, normalized));
 
-                    onBreathChange(normalized);
+                    // Smooth the output to prevent jitter
+                    // Use a static property on the ref or a separate ref if needed, 
+                    // but since we are inside a callback, we need a persistent value.
+                    // Let's use a property on the faceMeshRef for convenience or just a closure variable if it persists? 
+                    // Actually, let's use a new ref outside.
+
+                    // (I will add the ref in the component body first, but since I can't edit multiple chunks easily without multi_replace, 
+                    // I'll assume I can add a property to faceMeshRef.current or similar, OR just trust the canvas smoothing.
+                    // But user specifically asked for smooth motion even if face is sudden.
+                    // The canvas smoothing (lerp 0.05) is quite strong, so it might be enough.
+                    // However, let's add a bit of pre-smoothing here for robustness.)
+
+                    if (typeof (faceMeshRef.current as any).smoothedValue === 'undefined') {
+                        (faceMeshRef.current as any).smoothedValue = 0;
+                    }
+
+                    const smoothingFactor = 0.2;
+                    (faceMeshRef.current as any).smoothedValue =
+                        (faceMeshRef.current as any).smoothedValue * (1 - smoothingFactor) + normalized * smoothingFactor;
+
+                    onBreathChange((faceMeshRef.current as any).smoothedValue);
                 }
             });
 

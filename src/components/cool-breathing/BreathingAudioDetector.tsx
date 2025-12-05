@@ -67,8 +67,10 @@ export default function BreathingAudioDetector({ onBreathChange, isEnabled, onTo
                 }
                 const avg = sum / dataArray.length;
 
-                // Normalize to 0-1 range (typical speaking is 50-150)
-                const normalized = Math.min(1, avg / 100);
+                // Normalize to 0-1 range (increased sensitivity: typical breathing is quiet)
+                // Lower divisor from 100 to 30 to pick up subtle sounds
+                const sensitivity = 30;
+                const normalized = Math.min(1, avg / sensitivity);
                 setVolume(normalized);
 
                 // Smooth the volume for breath detection
@@ -77,27 +79,19 @@ export default function BreathingAudioDetector({ onBreathChange, isEnabled, onTo
                 // Detect breath phase based on volume changes
                 const volumeDelta = smoothedVolumeRef.current - prevVolumeRef.current;
 
-                // Breathing typically causes gradual volume changes
-                // Inhale: volume increases (air flow in)
-                // Exhale: volume increases more (air flow out is louder)
-                // Hold: volume stays low
+                // Simple logic: 
+                // Rising volume = Inhale/Exhale active
+                // Falling volume = End of breath
+                // We map volume directly to expansion for a 1:1 feel
 
-                if (smoothedVolumeRef.current > 0.1) {
-                    if (volumeDelta > 0.001) {
-                        breathPhaseRef.current = 'inhale';
-                    } else if (volumeDelta < -0.001) {
-                        breathPhaseRef.current = 'exhale';
-                    }
-                } else {
-                    breathPhaseRef.current = 'hold';
-                }
+                // Threshold to ignore background noise
+                const noiseGate = 0.05;
 
-                // Map breath phase to output value
                 let breathValue = 0;
-                if (breathPhaseRef.current === 'inhale') {
-                    breathValue = Math.min(1, smoothedVolumeRef.current * 2);
-                } else if (breathPhaseRef.current === 'exhale') {
-                    breathValue = Math.max(0, 1 - smoothedVolumeRef.current * 2);
+                if (smoothedVolumeRef.current > noiseGate) {
+                    // Map volume directly to breath value for responsiveness
+                    // Amplify the signal
+                    breathValue = Math.min(1, (smoothedVolumeRef.current - noiseGate) * 2);
                 }
 
                 onBreathChange(breathValue);
@@ -148,8 +142,8 @@ export default function BreathingAudioDetector({ onBreathChange, isEnabled, onTo
                 onClick={onToggle}
                 disabled={isInitializing}
                 className={`p-3 rounded-full backdrop-blur-md transition-all ${isEnabled
-                        ? 'bg-green-500/30 text-green-300 border border-green-400/50'
-                        : 'bg-white/10 text-white/60 border border-white/20 hover:bg-white/20'
+                    ? 'bg-green-500/30 text-green-300 border border-green-400/50'
+                    : 'bg-white/10 text-white/60 border border-white/20 hover:bg-white/20'
                     }`}
                 title={isEnabled ? 'Disable Mic Breathing' : 'Enable Mic Breathing'}
             >

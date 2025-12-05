@@ -66,14 +66,18 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
 
         const time = state.clock.getElapsedTime();
         const targetPositions = positions[shape];
-        const scale = 1 + breathValue * 1.5;
-
-        for (let i = 0; i < count * 3; i++) {
-            currentPositions[i] += (targetPositions[i] - currentPositions[i]) * 0.05;
+        // Smoothly interpolate breath value
+        // Use a ref to store the smoothed value
+        if (!pointsRef.current.userData.smoothedBreath) {
+            pointsRef.current.userData.smoothedBreath = 0;
         }
 
-        const geometry = pointsRef.current.geometry;
-        geometry.attributes.position.needsUpdate = true;
+        // Lerp factor: lower = smoother/slower, higher = more responsive
+        const lerpFactor = 0.05;
+        pointsRef.current.userData.smoothedBreath += (breathValue - pointsRef.current.userData.smoothedBreath) * lerpFactor;
+
+        const smoothedBreath = pointsRef.current.userData.smoothedBreath;
+        const scale = 1 + smoothedBreath * 1.5;
 
         pointsRef.current.scale.set(scale, scale, scale);
         pointsRef.current.rotation.y = time * 0.1;
