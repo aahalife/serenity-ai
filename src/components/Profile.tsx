@@ -12,9 +12,11 @@ export default function Profile() {
     const [isMounted, setIsMounted] = useState(false);
 
     const [isGenerating, setIsGenerating] = useState(false);
+    const [generationError, setGenerationError] = useState<string | null>(null);
 
     const handleGenerateProfile = async () => {
         setIsGenerating(true);
+        setGenerationError(null);
         try {
             console.log("Manually triggering profile inference...");
             const inferenceRes = await fetch('/api/inference/profile', {
@@ -44,12 +46,17 @@ export default function Profile() {
                         deepProfileText: JSON.stringify(deepData, null, 2),
                         ocean: deepData.traits || deepData.ocean || {}
                     }));
+                } else {
+                    setGenerationError("Analysis returned empty. Please check your details and try again.");
                 }
             } else {
-                console.error("Inference API returned error", await inferenceRes.text());
+                const errorText = await inferenceRes.text();
+                console.error("Inference API returned error", errorText);
+                setGenerationError("Failed to generate profile. Please try again.");
             }
         } catch (error) {
             console.error("Manual generation failed", error);
+            setGenerationError("Network error. Please try again.");
         } finally {
             setIsGenerating(false);
         }
@@ -305,6 +312,9 @@ export default function Profile() {
                         ) : (
                             <div className="flex flex-col items-center justify-center py-10 text-center">
                                 <p className="text-white/60 mb-4">Complete your profile details to generate a deep analysis.</p>
+                                {generationError && (
+                                    <p className="text-red-400 text-sm mb-4 bg-red-500/10 px-3 py-2 rounded">{generationError}</p>
+                                )}
                                 <button
                                     className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     onClick={handleGenerateProfile}
