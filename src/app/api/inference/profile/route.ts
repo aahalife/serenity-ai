@@ -1,7 +1,5 @@
-import { model } from "@/lib/gemini";
+import { anthropic } from "@/lib/anthropic";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 
 const NEW_PROFILE_PROMPT = `You are tasked with creating a comprehensive user profile based on limited input parameters. You will receive the user's name, age, gender, location, occupation, and family details. From these basic inputs, carefully infer additional profile details ONLY where you have high confidence based on statistical patterns, cultural norms, or logical deductions.
 
@@ -221,17 +219,15 @@ Remember: This profile represents statistical probabilities and common patterns,
 
 export async function POST(req: Request) {
   try {
-    // const session = await getServerSession(authOptions); // Unused and potentially causing 500s if auth not configured
-
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("GEMINI_API_KEY is missing in environment variables");
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.error("ANTHROPIC_API_KEY is missing in environment variables");
       return NextResponse.json({ error: "Server configuration error: Missing API Key" }, { status: 500 });
     }
 
     const body = await req.json();
     const { name, age, gender, location, occupation, family } = body;
 
-    console.log("Profile Inference Request:", { name, age, gender, location, occupation });
+    console.log("Profile Inference Request (Claude):", { name, age, gender, location, occupation });
 
     const prompt = NEW_PROFILE_PROMPT
       .replace("{{NAME}}", name || "User")
@@ -241,11 +237,23 @@ export async function POST(req: Request) {
       .replace("{{OCCUPATION}}", occupation || "Unknown")
       .replace("{{FAMILY}}", family || "Unknown");
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-5-20250929",
+      max_tokens: 4000,
+      temperature: 0.7,
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    });
 
-    console.log("Gemini Raw Response:", text.substring(0, 200) + "...");
+    // Extract text from the response content
+    const textBlock = message.content.find(block => block.type === 'text');
+    const text = textBlock ? textBlock.text : '';
+
+    console.log("Claude Raw Response:", text.substring(0, 200) + "...");
 
     // Robust JSON extraction
     let jsonString = text;
@@ -254,7 +262,7 @@ export async function POST(req: Request) {
       jsonString = jsonMatch[0];
     }
 
-    // Clean up markdown code blocks if they exist inside the matched block or if match failed
+    // Clean up markdown code blocks
     jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
 
     let profile;
