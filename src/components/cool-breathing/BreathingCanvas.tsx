@@ -130,7 +130,7 @@ function Particles({ breathValue, shape, color, zodiacSymbol }: BreathingCanvasP
         // Determine target positions
         let targetPositions = positions[shape as keyof typeof positions];
         if (shape === 'zodiac') {
-            targetPositions = zodiacPositions;
+            targetPositions = zodiacPositions as any;
         }
         // Fallback to sphere if undefined
         if (!targetPositions) targetPositions = positions.sphere;

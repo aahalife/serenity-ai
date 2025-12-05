@@ -14,42 +14,70 @@ export default function Profile() {
     useEffect(() => {
         setIsMounted(true);
         // Move all localStorage logic inside useEffect to avoid hydration mismatch
-        const loadProfile = () => {
+        const loadProfile = async () => {
             try {
                 const savedUserProfile = localStorage.getItem("userProfile");
                 const savedDeepProfile = localStorage.getItem("deepProfile");
                 const savedStressProfile = getUserStressProfile();
                 setStressProfile(savedStressProfile);
 
+                let currentProfile = {};
+
                 if (savedUserProfile) {
                     const basic = JSON.parse(savedUserProfile);
-                    let deep = {};
-                    let deepText = "";
+                    currentProfile = { ...basic };
+                } else {
+                    currentProfile = { name: "User" };
+                }
 
-                    if (savedDeepProfile) {
-                        try {
-                            deep = JSON.parse(savedDeepProfile);
-                            // If it's a string wrapped in quotes from JSON.stringify
-                            if (typeof deep === 'string') {
-                                deepText = deep;
-                                deep = {};
-                            }
-                        } catch (e) {
-                            // It's a raw string
-                            deepText = savedDeepProfile;
+                // Try to fetch latest deep profile from API
+                try {
+                    const res = await fetch('/api/chat/details');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.user_profile) {
+                            // Merge and save
+                            const deepData = typeof data.user_profile === 'string'
+                                ? JSON.parse(data.user_profile)
+                                : data.user_profile;
+
+                            localStorage.setItem("deepProfile", JSON.stringify(deepData));
+
+                            currentProfile = {
+                                ...currentProfile,
+                                ...deepData,
+                                deepProfileText: typeof data.user_profile === 'string' ? data.user_profile : JSON.stringify(data.user_profile, null, 2),
+                                ocean: deepData.traits || deepData.ocean || {}
+                            };
                         }
                     }
+                } catch (err) {
+                    console.warn("Failed to fetch latest deep profile", err);
+                }
 
-                    setProfile({
-                        ...basic,
+                // Fallback to local storage if API didn't return new data or failed
+                if (!currentProfile.hasOwnProperty('ocean') && savedDeepProfile) {
+                    let deep = {};
+                    let deepText = "";
+                    try {
+                        deep = JSON.parse(savedDeepProfile);
+                        if (typeof deep === 'string') {
+                            deepText = deep;
+                            deep = {};
+                        }
+                    } catch (e) {
+                        deepText = savedDeepProfile;
+                    }
+                    currentProfile = {
+                        ...currentProfile,
                         ...deep,
                         deepProfileText: deepText,
-                        ocean: (deep as any).traits || (deep as any).ocean || {} // Handle both formats
-                    });
-                } else {
-                    // Set default empty profile if nothing found
-                    setProfile({ name: "User", ocean: {} });
+                        ocean: (deep as any).traits || (deep as any).ocean || {}
+                    };
                 }
+
+                setProfile(currentProfile);
+
             } catch (e) {
                 console.error("Failed to load profile data", e);
                 setProfile({ name: "User", ocean: {} });
@@ -205,9 +233,17 @@ export default function Profile() {
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Family Code</span>
                         <div className="flex items-center gap-2">
-                            <code className="bg-white/10 px-3 py-1 rounded text-sm font-mono text-blue-300">
-                                {profile.familyCode || "FAM-" + Math.random().toString(36).substr(2, 6).toUpperCase()}
-                            </code>
+                            <input
+                                type="text"
+                                className="bg-white/10 px-3 py-1 rounded text-sm font-mono text-blue-300 border border-white/10 focus:outline-none focus:border-blue-400 w-32"
+                                value={profile.familyCode || ""}
+                                placeholder="Enter Code"
+                                onChange={(e) => {
+                                    const newProfile = { ...profile, familyCode: e.target.value.toUpperCase() };
+                                    setProfile(newProfile);
+                                    localStorage.setItem("userProfile", JSON.stringify(newProfile));
+                                }}
+                            />
                             <span className="text-xs text-white/40">(Share this)</span>
                         </div>
                     </div>
@@ -336,7 +372,7 @@ export default function Profile() {
                         <span>Google People</span>
                         <button
                             className={styles.connectButton}
-                            onClick={() => window.location.href = "/api/integrations/auth?appName=google_people"}
+                            onClick={() => window.location.href = "/api/integrations/auth?appName=google-people"}
                         >
                             Connect
                         </button>

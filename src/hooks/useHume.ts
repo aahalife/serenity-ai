@@ -20,6 +20,7 @@ export function useHume(options: UseHumeOptions = {}) {
 
             if (!apiKey) {
                 console.error("Hume API Key is missing! Check NEXT_PUBLIC_HUME_API_KEY in .env");
+                alert("Hume API Key is missing. Voice analysis will not work.");
                 return;
             }
 

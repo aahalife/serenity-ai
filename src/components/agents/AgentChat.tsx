@@ -223,6 +223,14 @@ export default function AgentChat() {
 
         } catch (error) {
             console.error('Chat error:', error);
+            const errorMessage: AgentMessage = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: "I'm having trouble connecting to the server. Please check your internet connection or try again in a moment.",
+                timestamp: new Date(),
+                agentName: 'System'
+            };
+            setMessages(prev => [...prev, errorMessage]);
         } finally {
             setIsLoading(false);
         }
