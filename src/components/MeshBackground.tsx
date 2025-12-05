@@ -1,40 +1,66 @@
 "use client"
-import { MeshGradient } from "@paper-design/shaders-react"
 
 export default function MeshBackground() {
     return (
         <>
-            {/* SVG Filters */}
-            <svg className="absolute inset-0 w-0 h-0 pointer-events-none">
-                <defs>
-                    <filter id="glass-effect" x="-50%" y="-50%" width="200%" height="200%">
-                        <feTurbulence baseFrequency="0.005" numOctaves="1" result="noise" />
-                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.3" />
-                        <feColorMatrix
-                            type="matrix"
-                            values="1 0 0 0 0.02
-                      0 1 0 0 0.02
-                      0 0 1 0 0.05
-                      0 0 0 0.9 0"
-                            result="tint"
-                        />
-                    </filter>
-                </defs>
-            </svg>
-
-            {/* Primary Mesh Gradient */}
-            <MeshGradient
-                className="absolute inset-0 w-full h-full"
-                colors={["#000000", "#06b6d4", "#0891b2", "#164e63", "#f97316"]}
-                speed={0.3}
+            {/* Animated Gradient Background */}
+            <div
+                className="absolute inset-0 w-full h-full overflow-hidden"
+                style={{
+                    background: 'linear-gradient(-45deg, #000000, #0a1628, #164e63, #0891b2, #06b6d4)',
+                    backgroundSize: '400% 400%',
+                    animation: 'gradientShift 15s ease infinite'
+                }}
             />
 
-            {/* Secondary Overlay */}
-            <MeshGradient
-                className="absolute inset-0 w-full h-full opacity-60"
-                colors={["#000000", "#ffffff", "#06b6d4", "#f97316"]}
-                speed={0.2}
+            {/* Secondary animated layer for depth */}
+            <div
+                className="absolute inset-0 w-full h-full overflow-hidden opacity-40"
+                style={{
+                    background: 'radial-gradient(circle at 20% 50%, #06b6d4 0%, transparent 50%), radial-gradient(circle at 80% 80%, #f97316 0%, transparent 50%), radial-gradient(circle at 40% 20%, #0891b2 0%, transparent 50%)',
+                    backgroundSize: '200% 200%',
+                    animation: 'gradientMove 20s ease infinite'
+                }}
             />
+
+            {/* Subtle noise texture overlay */}
+            <div
+                className="absolute inset-0 w-full h-full opacity-5"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'repeat',
+                }}
+            />
+
+            {/* CSS Animations */}
+            <style jsx>{`
+        @keyframes gradientShift {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        @keyframes gradientMove {
+          0%, 100% {
+            background-position: 0% 0%;
+          }
+          25% {
+            background-position: 100% 0%;
+          }
+          50% {
+            background-position: 100% 100%;
+          }
+          75% {
+            background-position: 0% 100%;
+          }
+        }
+      `}</style>
         </>
     )
 }
