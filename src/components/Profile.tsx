@@ -11,6 +11,50 @@ export default function Profile() {
     const [stressProfile, setStressProfile] = useState<StressProfile>({ triggers: [], copingStyle: 'cognitive', intensity: 'medium' });
     const [isMounted, setIsMounted] = useState(false);
 
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    const handleGenerateProfile = async () => {
+        setIsGenerating(true);
+        try {
+            console.log("Manually triggering profile inference...");
+            const inferenceRes = await fetch('/api/inference/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: profile.name,
+                    age: profile.age,
+                    gender: profile.gender,
+                    location: profile.location,
+                    occupation: profile.occupation,
+                    family: profile.family
+                })
+            });
+
+            if (inferenceRes.ok) {
+                const inferenceData = await inferenceRes.json();
+                if (inferenceData.profile) {
+                    const deepData = inferenceData.profile;
+                    console.log("Inference successful", deepData);
+
+                    localStorage.setItem("deepProfile", JSON.stringify(deepData));
+
+                    setProfile((prev: any) => ({
+                        ...prev,
+                        ...deepData,
+                        deepProfileText: JSON.stringify(deepData, null, 2),
+                        ocean: deepData.traits || deepData.ocean || {}
+                    }));
+                }
+            } else {
+                console.error("Inference API returned error", await inferenceRes.text());
+            }
+        } catch (error) {
+            console.error("Manual generation failed", error);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     useEffect(() => {
         setIsMounted(true);
         const loadProfile = async () => {
@@ -262,10 +306,11 @@ export default function Profile() {
                             <div className="flex flex-col items-center justify-center py-10 text-center">
                                 <p className="text-white/60 mb-4">Complete your profile details to generate a deep analysis.</p>
                                 <button
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors"
-                                    onClick={() => window.location.reload()}
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={handleGenerateProfile}
+                                    disabled={isGenerating}
                                 >
-                                    Refresh / Generate
+                                    {isGenerating ? "Generating..." : "Generate Deep Profile"}
                                 </button>
                             </div>
                         )}
