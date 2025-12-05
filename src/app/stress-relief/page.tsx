@@ -191,7 +191,7 @@ export default function StressReliefPage() {
                             exit={{ opacity: 0, y: -20 }}
                             className="flex justify-center items-center"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl w-full">
                                 {categories.map(category => (
                                     <motion.div
                                         key={category.id}

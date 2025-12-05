@@ -43,7 +43,7 @@ export const GradientCard: React.FC<GradientCardProps> = ({
     return (
         <motion.div
             ref={cardRef}
-            className={`relative rounded-3xl overflow-hidden ${className}`}
+            className={`relative rounded-4xl overflow-hidden ${className}`}
             style={{
                 transformStyle: "preserve-3d",
                 backgroundColor: "#0e131f",
@@ -96,46 +96,46 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                 }}
             />
 
-            {/* Purple/blue glow effect - VERY VISIBLE */}
+            {/* Large smooth gradient area - 3D effect like reference */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1/3 z-20"
+                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
                 style={{
                     background: `
-            radial-gradient(ellipse at bottom right, rgba(172, 92, 255, 0.95) -10%, rgba(79, 70, 229, 0.3) 50%),
-            radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.95) -10%, rgba(79, 70, 229, 0.3) 50%)
+            radial-gradient(ellipse 140% 100% at bottom left, rgba(56, 189, 248, 0.7) 0%, rgba(34, 211, 238, 0.4) 25%, transparent 60%),
+            radial-gradient(ellipse 140% 100% at bottom right, rgba(168, 85, 247, 0.7) 0%, rgba(139, 92, 246, 0.4) 25%, transparent 60%)
           `,
-                    filter: "blur(25px)",
+                    filter: "blur(40px)",
                 }}
                 animate={{
                     opacity: isHovered ? 1 : 0.95,
                 }}
                 transition={{
-                    duration: 0.4,
+                    duration: 0.5,
                     ease: "easeOut"
                 }}
             />
 
-            {/* Central purple glow - VERY PROMINENT */}
+            {/* Softer center blend for depth */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1/3 z-20"
+                className="absolute bottom-0 left-0 right-0 h-2/5 z-19"
                 style={{
-                    background: `radial-gradient(ellipse at bottom center, rgba(161, 58, 229, 1) -40%, rgba(79, 70, 229, 0.5) 35%, transparent 65%)`,
-                    filter: "blur(30px)",
+                    background: `radial-gradient(ellipse 120% 100% at bottom center, rgba(147, 51, 234, 0.6) 0%, rgba(99, 102, 241, 0.3) 30%, transparent 70%)`,
+                    filter: "blur(50px)",
                 }}
                 animate={{
-                    opacity: isHovered ? 1 : 0.9,
+                    opacity: isHovered ? 0.9 : 0.85,
                 }}
                 transition={{
-                    duration: 0.4,
+                    duration: 0.5,
                     ease: "easeOut"
                 }}
             />
 
-            {/* Solid gradient band at very bottom - ALWAYS VISIBLE */}
+            {/* Bottom edge highlight for 3D pop */}
             <div
-                className="absolute bottom-0 left-0 right-0 h-24 z-20"
+                className="absolute bottom-0 left-0 right-0 h-32 z-21"
                 style={{
-                    background: 'linear-gradient(to top, rgba(161, 58, 229, 0.6), rgba(79, 70, 229, 0.4), transparent)',
+                    background: 'linear-gradient(to top, rgba(139, 92, 246, 0.5) 0%, rgba(99, 102, 241, 0.3) 40%, transparent 100%)',
                     pointerEvents: 'none'
                 }}
             />
