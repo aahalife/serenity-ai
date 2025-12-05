@@ -22,22 +22,29 @@ function Particles({ breathValue, shape, color, zodiacSymbol }: BreathingCanvasP
         const ctx = canvas.getContext('2d');
         if (!ctx) return new Float32Array(count * 3);
 
-        canvas.width = 200;
-        canvas.height = 200;
+        // Increase resolution for better sampling
+        const size = 500;
+        canvas.width = size;
+        canvas.height = size;
+
         ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillRect(0, 0, size, size);
+
         ctx.fillStyle = 'white';
-        ctx.font = '150px Arial'; // Use a standard font for symbols
+        // Use a font stack that supports emojis well
+        ctx.font = 'bold 300px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, 100, 100);
+        ctx.fillText(text, size / 2, size / 2);
 
-        const imageData = ctx.getImageData(0, 0, 200, 200);
+        const imageData = ctx.getImageData(0, 0, size, size);
         const data = imageData.data;
         const validPixels: number[] = [];
 
         for (let i = 0; i < data.length; i += 4) {
-            if (data[i] > 128) { // If pixel is bright enough
+            // Check for any non-black pixel (R, G, or B > 20)
+            // Emojis might be colored, so we can't just check for white.
+            if (data[i] > 20 || data[i + 1] > 20 || data[i + 2] > 20) {
                 validPixels.push(i / 4);
             }
         }
@@ -52,13 +59,15 @@ function Particles({ breathValue, shape, color, zodiacSymbol }: BreathingCanvasP
             }
 
             const pixelIndex = validPixels[Math.floor(Math.random() * validPixels.length)];
-            const x = (pixelIndex % 200) - 100;
-            const y = 100 - Math.floor(pixelIndex / 200); // Flip Y
+            const x = (pixelIndex % size) - (size / 2);
+            const y = (size / 2) - Math.floor(pixelIndex / size); // Flip Y
 
-            // Normalize to roughly -2 to 2 range
-            positions[i * 3] = x * 0.03 + (Math.random() - 0.5) * 0.1;
-            positions[i * 3 + 1] = y * 0.03 + (Math.random() - 0.5) * 0.1;
-            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.5; // Add some depth
+            // Normalize to roughly -2.5 to 2.5 range
+            // 500px -> 5 units
+            const scale = 5 / size;
+            positions[i * 3] = x * scale + (Math.random() - 0.5) * 0.05;
+            positions[i * 3 + 1] = y * scale + (Math.random() - 0.5) * 0.05;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 0.2; // Flatter shape
         }
         return positions;
     };

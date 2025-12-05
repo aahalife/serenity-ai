@@ -213,7 +213,8 @@ export default function CoolBreathingPage() {
 
     const startSession = () => {
         if (!isFaceEnabled && !isAudioEnabled) {
-            alert("Please enable camera or microphone for the interactive experience.");
+            // Instead of alert, just highlight the controls or show a message
+            setInstruction("Please tap the Camera or Mic icon to enable sensors first.");
             return;
         }
         setBreathingState('inhale');
@@ -276,8 +277,8 @@ export default function CoolBreathingPage() {
             {/* Dark overlay */}
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), transparent 40%, rgba(0,0,0,0.4))', pointerEvents: 'none', zIndex: 1 }} />
 
-            {/* Top Bar */}
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 10 }}>
+            {/* Top Bar - Z-Index 30 to be above overlay */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 30 }}>
                 <button
                     onClick={() => window.location.href = '/'}
                     style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}
@@ -308,8 +309,8 @@ export default function CoolBreathingPage() {
                 </button>
             </div>
 
-            {/* Detection Controls - Moved Down to avoid overlap */}
-            <div style={{ position: 'absolute', top: '40%', right: 16, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 12, zIndex: 10 }}>
+            {/* Detection Controls - Z-Index 30 */}
+            <div style={{ position: 'absolute', top: '40%', right: 16, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 12, zIndex: 30 }}>
                 <button
                     onClick={() => setIsFaceEnabled(!isFaceEnabled)}
                     style={{
