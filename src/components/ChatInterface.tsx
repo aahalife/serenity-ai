@@ -101,6 +101,58 @@ export default function ChatInterface() {
 
     const [isCallMode, setIsCallMode] = useState(false);
 
+    // Auto-sync with backend if logged in via NextAuth but no backend token
+    useEffect(() => {
+        const syncAuth = async () => {
+            // Check if we have a NextAuth session (we can't access it directly here easily without useSession, 
+            // but let's assume the user might have profile data in localStorage from Onboarding or we fetch it)
+
+            // Actually, better to use the profile data we already have.
+            const savedUserProfile = localStorage.getItem("userProfile");
+            const token = localStorage.getItem("external_api_token");
+
+            if (savedUserProfile && !token) {
+                try {
+                    const profile = JSON.parse(savedUserProfile);
+                    if (profile.email) {
+                        console.log("Syncing Google user with backend...");
+                        // Try to register/login
+                        // We use a dummy password for OAuth users or a specific endpoint if available.
+                        // For now, we'll use a consistent hash or ID as password for this "shadow" account.
+                        const shadowPassword = `google_oauth_${profile.email}_secret`;
+
+                        try {
+                            // Try login first
+                            const data = await externalApi.login(profile.email, shadowPassword);
+                            localStorage.setItem("external_api_token", data.access_token);
+                            console.log("Backend sync successful (login)");
+                        } catch (e) {
+                            // Login failed, try register
+                            console.log("Login failed, trying registration...");
+                            await externalApi.register({
+                                email: profile.email,
+                                password: shadowPassword,
+                                name: profile.name || "User",
+                                age: parseInt(profile.age) || 25,
+                                gender_identity: profile.gender || "Prefer not to say",
+                                location: profile.location || "Unknown",
+                                stress_level: "5"
+                            });
+                            // Login again
+                            const data = await externalApi.login(profile.email, shadowPassword);
+                            localStorage.setItem("external_api_token", data.access_token);
+                            console.log("Backend sync successful (register)");
+                        }
+                    }
+                } catch (err) {
+                    console.error("Backend sync failed", err);
+                }
+            }
+        };
+
+        syncAuth();
+    }, []);
+
     // Ensure AudioContext is resumed on first interaction
     const resumeAudioContext = async () => {
         try {
@@ -237,8 +289,63 @@ export default function ChatInterface() {
             if (isVoice || isCallMode) {
                 speak(aiResponse.text);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Chat Error:", error);
+
+            // Auto-Registration on 401
+            if (error.message && error.message.includes("401")) {
+                const savedUserProfile = localStorage.getItem("userProfile");
+                if (savedUserProfile) {
+                    try {
+                        const profile = JSON.parse(savedUserProfile);
+                        if (profile.email) {
+                            console.log("401 detected. Attempting auto-registration...");
+
+                            // 1. Register
+                            const shadowPassword = `google_oauth_${profile.email}_secret`;
+                            try {
+                                await externalApi.register({
+                                    email: profile.email,
+                                    password: shadowPassword,
+                                    name: profile.name || "User",
+                                    age: parseInt(profile.age) || 25, // Ensure int
+                                    gender_identity: profile.gender || "Prefer not to say",
+                                    location: profile.location || "Unknown",
+                                    stress_level: "5" // Default
+                                });
+                                console.log("Registration successful.");
+                            } catch (regError) {
+                                console.warn("Registration might have failed (user exists?), trying login...", regError);
+                            }
+
+                            // 2. Login
+                            const data = await externalApi.login(profile.email, shadowPassword);
+                            if (data && data.access_token) {
+                                localStorage.setItem("external_api_token", data.access_token);
+                                console.log("Login successful, retrying chat...");
+
+                                // 3. Retry Chat
+                                // We need to wait a bit or just let the user try again?
+                                // Better to retry automatically once.
+                                // But to avoid infinite loops, we should probably just notify user "Connected! Try again."
+                                // Or recursively call handleSend? Let's notify for safety.
+
+                                const successMsg: Message = {
+                                    id: (Date.now() + 1).toString(),
+                                    text: "Account connected successfully! Please send your message again.",
+                                    sender: "ai",
+                                    timestamp: new Date(),
+                                };
+                                setMessages((prev) => [...prev, successMsg]);
+                                return;
+                            }
+                        }
+                    } catch (authError) {
+                        console.error("Auto-registration failed", authError);
+                    }
+                }
+            }
+
             let errorMsg = "I'm having trouble connecting. Please try again.";
             if (error instanceof Error) {
                 errorMsg += ` (Details: ${error.message})`;
