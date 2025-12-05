@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { Volume2, VolumeX, Heart, Flower2, Globe, CircleDot } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Volume2, VolumeX, Heart, Flower2, Globe, CircleDot, X, Camera, CameraOff, Mic, MicOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Dynamic imports for components that use browser APIs
 const FaceTracker = dynamic(() => import('@/components/cool-breathing/FaceTracker'), { ssr: false });
@@ -26,7 +26,6 @@ export default function CoolBreathingPage() {
 
     // Combine breath values from both sources
     useEffect(() => {
-        // Take the max of both detection methods
         const combined = Math.max(faceBreathValue, audioBreathValue);
         setBreathValue(combined);
     }, [faceBreathValue, audioBreathValue]);
@@ -72,113 +71,216 @@ export default function CoolBreathingPage() {
     ];
 
     const colors = [
-        '#4f46e5', // Indigo
-        '#ec4899', // Pink
-        '#10b981', // Emerald
-        '#f59e0b', // Amber
-        '#ef4444', // Red
-        '#8b5cf6', // Violet
+        { hex: '#4f46e5', name: 'Indigo' },
+        { hex: '#ec4899', name: 'Pink' },
+        { hex: '#10b981', name: 'Emerald' },
+        { hex: '#f59e0b', name: 'Amber' },
+        { hex: '#ef4444', name: 'Red' },
+        { hex: '#8b5cf6', name: 'Violet' },
     ];
 
     return (
         <div className="relative w-full h-screen bg-black overflow-hidden">
-            {/* 3D Canvas */}
+            {/* Full-screen 3D Canvas Background */}
             <div className="absolute inset-0 z-0">
                 <BreathingCanvas breathValue={breathValue} shape={shape} color={color} />
             </div>
 
-            {/* UI Overlay */}
-            <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-4 sm:p-6 md:p-8">
+            {/* Dark overlay for readability */}
+            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/30 via-transparent to-black/50 pointer-events-none" />
 
-                {/* Header */}
-                <div className="flex justify-between items-start pointer-events-auto">
-                    <div className="max-w-[60%] sm:max-w-none">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white font-montage tracking-wider">
-                            Cool Breathing
-                        </h1>
-                        <p className="text-white/60 text-xs sm:text-sm mt-1 hidden sm:block">
-                            Inhale to expand. Exhale to contract.
-                        </p>
+            {/* Close Button */}
+            <button
+                onClick={() => window.location.href = '/'}
+                className="absolute top-6 left-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
+            >
+                <X size={20} className="text-white" />
+            </button>
+
+            {/* Header */}
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 text-center">
+                <motion.h1
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-4xl sm:text-5xl md:text-6xl font-bold text-white font-montage tracking-wider drop-shadow-2xl"
+                >
+                    Cool Breathing
+                </motion.h1>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="text-white/60 text-sm sm:text-base mt-2"
+                >
+                    Inhale to expand • Exhale to contract
+                </motion.p>
+            </div>
+
+            {/* Audio Control - Top Right */}
+            <button
+                onClick={toggleMute}
+                className="absolute top-6 right-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
+            >
+                {isMuted ? <VolumeX size={20} className="text-white" /> : <Volume2 size={20} className="text-white" />}
+            </button>
+
+            {/* Detection Controls Panel - Right Side */}
+            <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute top-1/2 -translate-y-1/2 right-6 z-20 flex flex-col gap-4"
+            >
+                {/* Camera Toggle */}
+                <div className="lg-wrap">
+                    <div className="lg-shadow" />
+                    <div className="lg-content">
+                        <div className="lg-inner !p-3">
+                            <button
+                                onClick={() => setIsFaceEnabled(!isFaceEnabled)}
+                                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${isFaceEnabled
+                                        ? 'bg-blue-500/30 text-blue-300'
+                                        : 'bg-white/5 text-white/60 hover:text-white'
+                                    }`}
+                                title={isFaceEnabled ? 'Disable Camera' : 'Enable Camera'}
+                            >
+                                {isFaceEnabled ? <Camera size={24} /> : <CameraOff size={24} />}
+                            </button>
+                        </div>
                     </div>
-
-                    {/* Audio Control */}
-                    <button
-                        onClick={toggleMute}
-                        className="p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md transition-all text-white"
-                    >
-                        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                    </button>
                 </div>
 
-                {/* Detection Controls - Top Right Area */}
-                <div className="absolute top-16 sm:top-20 right-4 sm:right-6 md:right-8 pointer-events-auto flex flex-col gap-3">
-                    <FaceTracker
-                        onBreathChange={setFaceBreathValue}
-                        isEnabled={isFaceEnabled}
-                        onToggle={() => setIsFaceEnabled(!isFaceEnabled)}
-                    />
+                {/* Mic Toggle */}
+                <div className="lg-wrap">
+                    <div className="lg-shadow" />
+                    <div className="lg-content">
+                        <div className="lg-inner !p-3">
+                            <button
+                                onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+                                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${isAudioEnabled
+                                        ? 'bg-green-500/30 text-green-300'
+                                        : 'bg-white/5 text-white/60 hover:text-white'
+                                    }`}
+                                title={isAudioEnabled ? 'Disable Mic' : 'Enable Mic'}
+                            >
+                                {isAudioEnabled ? <Mic size={24} /> : <MicOff size={24} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Breath Indicator */}
+                <div className="lg-wrap">
+                    <div className="lg-shadow" />
+                    <div className="lg-content">
+                        <div className="lg-inner !p-3 flex flex-col items-center gap-2">
+                            <div className="w-3 h-24 bg-white/10 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full"
+                                    style={{ originY: 1 }}
+                                    animate={{ height: `${breathValue * 100}%` }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            </div>
+                            <span className="text-white/40 text-[10px] uppercase tracking-wider">Breath</span>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Camera Preview - Shows when face tracking enabled */}
+            <AnimatePresence>
+                {isFaceEnabled && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute top-24 right-6 z-20"
+                    >
+                        <FaceTracker
+                            onBreathChange={setFaceBreathValue}
+                            isEnabled={isFaceEnabled}
+                            onToggle={() => setIsFaceEnabled(!isFaceEnabled)}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Audio Detector - Hidden but active */}
+            {isAudioEnabled && (
+                <div className="hidden">
                     <BreathingAudioDetector
                         onBreathChange={setAudioBreathValue}
                         isEnabled={isAudioEnabled}
                         onToggle={() => setIsAudioEnabled(!isAudioEnabled)}
                     />
                 </div>
+            )}
 
-                {/* Controls - Bottom */}
-                <div className="pointer-events-auto flex flex-col gap-4 sm:gap-6 items-center mb-4 sm:mb-8">
-
-                    {/* Instructions when no detection enabled */}
+            {/* Bottom Controls */}
+            <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-6"
+            >
+                {/* Instructions when no detection enabled */}
+                <AnimatePresence>
                     {!isFaceEnabled && !isAudioEnabled && (
-                        <div className="text-white/60 text-xs sm:text-sm text-center px-4 py-2 bg-black/30 rounded-lg backdrop-blur-md">
-                            Enable camera or mic (top right) to control with your breath
-                        </div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="text-white/60 text-sm text-center px-6 py-3 bg-black/30 rounded-2xl backdrop-blur-xl border border-white/10"
+                        >
+                            Enable camera or mic to control the animation with your breath
+                        </motion.div>
                     )}
+                </AnimatePresence>
 
-                    {/* Shape Selector */}
-                    <div className="flex gap-2 sm:gap-4 bg-black/30 backdrop-blur-md p-1.5 sm:p-2 rounded-xl sm:rounded-2xl border border-white/10">
-                        {shapes.map((s) => (
-                            <button
-                                key={s.id}
-                                onClick={() => setShape(s.id as any)}
-                                className={`p-2 sm:p-3 rounded-lg sm:rounded-xl transition-all flex flex-col items-center gap-0.5 sm:gap-1 min-w-[50px] sm:min-w-[70px] ${shape === s.id
-                                        ? 'bg-white/20 text-white shadow-lg scale-105'
-                                        : 'text-white/50 hover:text-white hover:bg-white/5'
-                                    }`}
-                            >
-                                <s.icon size={18} className="sm:w-5 sm:h-5" />
-                                <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-bold">{s.label}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Color Selector */}
-                    <div className="flex gap-2 sm:gap-3 bg-black/30 backdrop-blur-md p-2 sm:p-3 rounded-full border border-white/10">
-                        {colors.map((c) => (
-                            <button
-                                key={c}
-                                onClick={() => setColor(c)}
-                                className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full transition-all border-2 ${color === c
-                                        ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.5)]'
-                                        : 'border-transparent hover:scale-105'
-                                    }`}
-                                style={{ backgroundColor: c }}
-                            />
-                        ))}
+                {/* Shape Selector - Liquid Glass Style */}
+                <div className="lg-wrap">
+                    <div className="lg-shadow" />
+                    <div className="lg-content">
+                        <div className="lg-inner !p-2 flex gap-2">
+                            {shapes.map((s) => (
+                                <button
+                                    key={s.id}
+                                    onClick={() => setShape(s.id as any)}
+                                    className={`px-4 py-3 sm:px-6 sm:py-4 rounded-xl transition-all flex flex-col items-center gap-1 min-w-[70px] sm:min-w-[90px] ${shape === s.id
+                                            ? 'bg-white/20 text-white shadow-lg scale-105'
+                                            : 'text-white/50 hover:text-white hover:bg-white/5'
+                                        }`}
+                                >
+                                    <s.icon size={24} className="sm:w-7 sm:h-7" />
+                                    <span className="text-[10px] sm:text-xs uppercase tracking-wider font-medium">{s.label}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Breath Indicator */}
-            <div className="absolute bottom-20 sm:bottom-8 right-4 sm:right-8 z-10 pointer-events-none">
-                <div className="w-2 h-24 sm:h-32 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
-                    <motion.div
-                        className="w-full bg-white/80 bottom-0 absolute rounded-full"
-                        animate={{ height: `${breathValue * 100}%` }}
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
+                {/* Color Selector - Liquid Glass Style */}
+                <div className="lg-wrap">
+                    <div className="lg-shadow" />
+                    <div className="lg-content">
+                        <div className="lg-inner !p-3 flex gap-3 sm:gap-4">
+                            {colors.map((c) => (
+                                <button
+                                    key={c.hex}
+                                    onClick={() => setColor(c.hex)}
+                                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all border-2 ${color === c.hex
+                                            ? 'border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]'
+                                            : 'border-white/20 hover:scale-105 hover:border-white/40'
+                                        }`}
+                                    style={{ backgroundColor: c.hex }}
+                                    title={c.name}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <p className="text-white/40 text-[8px] sm:text-[10px] text-center mt-1">Breath</p>
-            </div>
+            </motion.div>
         </div>
     );
 }

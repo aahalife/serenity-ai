@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, CameraOff } from 'lucide-react';
 
 interface FaceTrackerProps {
     onBreathChange: (value: number) => void;
@@ -30,20 +29,17 @@ export default function FaceTracker({ onBreathChange, isEnabled, onToggle }: Fac
         if (scriptsLoaded) return;
 
         const loadScripts = async () => {
-            // Check if already loaded
             if (window.FaceMesh && window.Camera) {
                 setScriptsLoaded(true);
                 setIsLoading(false);
                 return;
             }
 
-            // Load Face Mesh
             const faceMeshScript = document.createElement('script');
             faceMeshScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js';
             faceMeshScript.crossOrigin = 'anonymous';
             document.head.appendChild(faceMeshScript);
 
-            // Load Camera Utils
             const cameraScript = document.createElement('script');
             cameraScript.src = 'https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js';
             cameraScript.crossOrigin = 'anonymous';
@@ -89,7 +85,6 @@ export default function FaceTracker({ onBreathChange, isEnabled, onToggle }: Fac
                 if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                     const landmarks = results.multiFaceLandmarks[0];
 
-                    // Calculate mouth openness (landmarks 13 & 14)
                     const upperLip = landmarks[13];
                     const lowerLip = landmarks[14];
 
@@ -139,42 +134,40 @@ export default function FaceTracker({ onBreathChange, isEnabled, onToggle }: Fac
         }
     }, [isEnabled]);
 
-    return (
-        <div className="flex items-center gap-2">
-            <button
-                onClick={onToggle}
-                disabled={isLoading}
-                className={`p-3 rounded-full backdrop-blur-md transition-all ${isEnabled
-                        ? 'bg-blue-500/30 text-blue-300 border border-blue-400/50'
-                        : 'bg-white/10 text-white/60 border border-white/20 hover:bg-white/20'
-                    }`}
-                title={isEnabled ? 'Disable Face Tracking' : 'Enable Face Tracking'}
-            >
-                {isEnabled ? <Camera size={20} /> : <CameraOff size={20} />}
-            </button>
+    if (!isEnabled) return null;
 
-            {isEnabled && (
-                <div className="w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-lg overflow-hidden border border-white/20 shadow-lg">
-                    <Webcam
-                        ref={webcamRef}
-                        audio={false}
-                        width={112}
-                        height={80}
-                        screenshotFormat="image/jpeg"
-                        videoConstraints={{
-                            width: { ideal: 640 },
-                            height: { ideal: 480 },
-                            facingMode: "user"
-                        }}
-                        className="w-full h-full object-cover transform scale-x-[-1]"
-                    />
-                    {(!isCameraReady || isLoading) && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[10px] text-white">
-                            {isLoading ? 'Loading...' : 'Starting...'}
-                        </div>
-                    )}
+    return (
+        <div className="lg-wrap">
+            <div className="lg-shadow" />
+            <div className="lg-content">
+                <div className="lg-inner !p-2">
+                    <div className="relative w-40 h-28 sm:w-48 sm:h-32 md:w-56 md:h-40 rounded-xl overflow-hidden">
+                        <Webcam
+                            ref={webcamRef}
+                            audio={false}
+                            width={224}
+                            height={160}
+                            screenshotFormat="image/jpeg"
+                            videoConstraints={{
+                                width: { ideal: 640 },
+                                height: { ideal: 480 },
+                                facingMode: "user"
+                            }}
+                            className="w-full h-full object-cover transform scale-x-[-1]"
+                        />
+                        {(!isCameraReady || isLoading) && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-xs text-white">
+                                {isLoading ? 'Loading AI...' : 'Starting...'}
+                            </div>
+                        )}
+                        {isCameraReady && (
+                            <div className="absolute bottom-2 left-2 px-2 py-1 bg-green-500/30 backdrop-blur-sm rounded-md text-[10px] text-green-300 border border-green-400/30">
+                                Face Tracking Active
+                            </div>
+                        )}
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
