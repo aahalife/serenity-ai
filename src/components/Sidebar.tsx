@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight, Sparkles, Brain, MessageSquare, Globe } from "lucide-react";
+import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight, Sparkles, Brain, MessageSquare, Globe, Hand } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { motion } from "framer-motion";
@@ -51,6 +51,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
         { name: "Journal", href: "/journal", icon: BookOpen },
         { name: "The Work", href: "/the-work", icon: Activity },
         { name: "Stress Relief", href: "/stress-relief", icon: Sparkles },
+        { name: "Squeeze It", href: "/squeeze-it", icon: Hand },
         { name: "Agents", href: "/agents", icon: Brain }, // New Agents link
         { name: "Agent Chat", href: "/agents/chat", icon: MessageSquare },
         { name: "Wins", href: "/wins", icon: Trophy },
