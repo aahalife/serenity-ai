@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { User, Settings, Shield, Activity, Brain } from "lucide-react";
 import { getUserStressProfile, saveUserStressProfile, StressProfile } from "@/lib/stress-relief/user-preferences";
+import MeshBackground from "@/components/MeshBackground";
 import styles from "./Profile.module.css";
 
 export default function Profile() {
@@ -193,6 +194,9 @@ export default function Profile() {
 
     return (
         <div className={styles.container}>
+            {/* Animated Background */}
+            <MeshBackground />
+
             <header className={styles.header}>
                 <h1 className={styles.title}>Your Profile</h1>
                 <p className={styles.subtitle}>Manage your journey and preferences.</p>

@@ -1,13 +1,18 @@
 .container {
+    position: relative;
     padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
     color: var(--foreground);
+    overflow-x: hidden;
+    min-height: 100vh;
 }
 
 .header {
+    position: relative;
     margin-bottom: 3rem;
     text-align: center;
+    z-index: 10;
 }
 
 .title {
@@ -35,9 +40,11 @@
 }
 
 .grid {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
+    z-index: 10;
 }
 
 .card {

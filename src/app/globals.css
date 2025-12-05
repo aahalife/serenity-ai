@@ -92,7 +92,7 @@ body {
     line-height: 1.6;
     color: var(--foreground);
     background: var(--background);
-    font-family: var(--font-petrona), serif;
+    font-family: var(--font-inter), sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
     position: relative;
