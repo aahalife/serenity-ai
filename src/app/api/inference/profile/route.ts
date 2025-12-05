@@ -220,28 +220,51 @@ Remember: This profile represents statistical probabilities and common patterns,
 `;
 
 export async function POST(req: Request) {
-    try {
-        const session = await getServerSession(authOptions);
-        const { name, age, gender, location, occupation, family } = await req.json();
+  try {
+    // const session = await getServerSession(authOptions); // Unused and potentially causing 500s if auth not configured
+    const body = await req.json();
+    const { name, age, gender, location, occupation, family } = body;
 
-        const prompt = NEW_PROFILE_PROMPT
-            .replace("{{NAME}}", name || "User")
-            .replace("{{AGE}}", age || "Unknown")
-            .replace("{{GENDER}}", gender || "Unknown")
-            .replace("{{LOCATION}}", location || "Unknown")
-            .replace("{{OCCUPATION}}", occupation || "Unknown")
-            .replace("{{FAMILY}}", family || "Unknown");
+    console.log("Profile Inference Request:", { name, age, gender, location, occupation });
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+    const prompt = NEW_PROFILE_PROMPT
+      .replace("{{NAME}}", name || "User")
+      .replace("{{AGE}}", age || "Unknown")
+      .replace("{{GENDER}}", gender || "Unknown")
+      .replace("{{LOCATION}}", location || "Unknown")
+      .replace("{{OCCUPATION}}", occupation || "Unknown")
+      .replace("{{FAMILY}}", family || "Unknown");
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        const profile = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-        return NextResponse.json({ profile });
-    } catch (error) {
-        console.error("Profile Inference Error:", error);
-        return NextResponse.json({ error: "Failed to infer profile" }, { status: 500 });
+    console.log("Gemini Raw Response:", text.substring(0, 200) + "...");
+
+    // Robust JSON extraction
+    let jsonString = text;
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[0];
     }
+
+    // Clean up markdown code blocks if they exist inside the matched block or if match failed
+    jsonString = jsonString.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    let profile;
+    try {
+      profile = JSON.parse(jsonString);
+    } catch (parseError) {
+      console.error("JSON Parse Error:", parseError, "Raw Text:", text);
+      return NextResponse.json({ error: "Failed to parse profile data" }, { status: 500 });
+    }
+
+    return NextResponse.json({ profile });
+  } catch (error: any) {
+    console.error("Profile Inference Error:", error);
+    return NextResponse.json({
+      error: "Failed to infer profile",
+      details: error.message
+    }, { status: 500 });
+  }
 }
