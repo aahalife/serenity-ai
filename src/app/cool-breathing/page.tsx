@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { Volume2, VolumeX, Heart, Flower2, Globe, CircleDot, X, Camera, CameraOff, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Dynamic imports for components that use browser APIs
 const FaceTracker = dynamic(() => import('@/components/cool-breathing/FaceTracker'), { ssr: false });
 const BreathingCanvas = dynamic(() => import('@/components/cool-breathing/BreathingCanvas'), { ssr: false });
 const BreathingAudioDetector = dynamic(() => import('@/components/cool-breathing/BreathingAudioDetector'), { ssr: false });
@@ -24,13 +23,11 @@ export default function CoolBreathingPage() {
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // Combine breath values from both sources
     useEffect(() => {
         const combined = Math.max(faceBreathValue, audioBreathValue);
         setBreathValue(combined);
     }, [faceBreathValue, audioBreathValue]);
 
-    // Audio playback
     useEffect(() => {
         audioRef.current = new Audio('/audio/coolBreathe2.mp3');
         audioRef.current.loop = true;
@@ -38,9 +35,7 @@ export default function CoolBreathingPage() {
 
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
-            playPromise.catch(() => {
-                setIsMuted(true);
-            });
+            playPromise.catch(() => setIsMuted(true));
         }
 
         return () => {
@@ -64,138 +59,101 @@ export default function CoolBreathingPage() {
     };
 
     const shapes = [
-        { id: 'sphere', icon: Globe, label: 'Sphere' },
-        { id: 'heart', icon: Heart, label: 'Heart' },
-        { id: 'flower', icon: Flower2, label: 'Flower' },
-        { id: 'saturn', icon: CircleDot, label: 'Saturn' },
+        { id: 'sphere', icon: Globe },
+        { id: 'heart', icon: Heart },
+        { id: 'flower', icon: Flower2 },
+        { id: 'saturn', icon: CircleDot },
     ];
 
-    const colors = [
-        { hex: '#4f46e5', name: 'Indigo' },
-        { hex: '#ec4899', name: 'Pink' },
-        { hex: '#10b981', name: 'Emerald' },
-        { hex: '#f59e0b', name: 'Amber' },
-        { hex: '#ef4444', name: 'Red' },
-        { hex: '#8b5cf6', name: 'Violet' },
-    ];
+    const colors = ['#4f46e5', '#ec4899', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
     return (
-        <div className="relative w-full h-screen bg-black overflow-hidden">
-            {/* Full-screen 3D Canvas Background */}
-            <div className="absolute inset-0 z-0">
-                <BreathingCanvas breathValue={breathValue} shape={shape} color={color} />
-            </div>
+        <div style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#000' }}>
+            {/* Full-screen 3D Canvas */}
+            <BreathingCanvas breathValue={breathValue} shape={shape} color={color} />
 
             {/* Dark overlay for readability */}
-            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/30 via-transparent to-black/50 pointer-events-none" />
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.2), transparent 40%, rgba(0,0,0,0.4))', pointerEvents: 'none', zIndex: 1 }} />
 
-            {/* Close Button */}
-            <button
-                onClick={() => window.location.href = '/'}
-                className="absolute top-6 left-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-            >
-                <X size={20} className="text-white" />
-            </button>
+            {/* Top Bar */}
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', zIndex: 10 }}>
+                {/* Close Button */}
+                <button
+                    onClick={() => window.location.href = '/'}
+                    style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}
+                >
+                    <X size={20} />
+                </button>
 
-            {/* Header */}
-            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 text-center">
-                <motion.h1
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-bold text-white font-montage tracking-wider drop-shadow-2xl"
+                {/* Title - Centered */}
+                <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', margin: 0, fontFamily: 'var(--font-montage)' }}>Cool Breathing</h1>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', margin: '4px 0 0 0' }}>Inhale to expand • Exhale to contract</p>
+                </div>
+
+                {/* Audio Button */}
+                <button
+                    onClick={toggleMute}
+                    style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white' }}
                 >
-                    Cool Breathing
-                </motion.h1>
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-white/60 text-sm sm:text-base mt-2"
-                >
-                    Inhale to expand • Exhale to contract
-                </motion.p>
+                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                </button>
             </div>
 
-            {/* Audio Control - Top Right */}
-            <button
-                onClick={toggleMute}
-                className="absolute top-6 right-6 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110"
-            >
-                {isMuted ? <VolumeX size={20} className="text-white" /> : <Volume2 size={20} className="text-white" />}
-            </button>
-
-            {/* Detection Controls Panel - Right Side */}
-            <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute top-1/2 -translate-y-1/2 right-6 z-20 flex flex-col gap-4"
-            >
+            {/* Detection Controls - Floating Right */}
+            <div style={{ position: 'absolute', top: '50%', right: 16, transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 12, zIndex: 10 }}>
                 {/* Camera Toggle */}
-                <div className="lg-wrap">
-                    <div className="lg-shadow" />
-                    <div className="lg-content">
-                        <div className="lg-inner !p-3">
-                            <button
-                                onClick={() => setIsFaceEnabled(!isFaceEnabled)}
-                                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${isFaceEnabled
-                                        ? 'bg-blue-500/30 text-blue-300'
-                                        : 'bg-white/5 text-white/60 hover:text-white'
-                                    }`}
-                                title={isFaceEnabled ? 'Disable Camera' : 'Enable Camera'}
-                            >
-                                {isFaceEnabled ? <Camera size={24} /> : <CameraOff size={24} />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <button
+                    onClick={() => setIsFaceEnabled(!isFaceEnabled)}
+                    style={{
+                        width: 50, height: 50, borderRadius: 12,
+                        background: isFaceEnabled ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)',
+                        backdropFilter: 'blur(12px)',
+                        border: `1px solid ${isFaceEnabled ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: isFaceEnabled ? '#93c5fd' : 'rgba(255,255,255,0.6)'
+                    }}
+                >
+                    {isFaceEnabled ? <Camera size={22} /> : <CameraOff size={22} />}
+                </button>
 
                 {/* Mic Toggle */}
-                <div className="lg-wrap">
-                    <div className="lg-shadow" />
-                    <div className="lg-content">
-                        <div className="lg-inner !p-3">
-                            <button
-                                onClick={() => setIsAudioEnabled(!isAudioEnabled)}
-                                className={`w-14 h-14 rounded-xl flex items-center justify-center transition-all ${isAudioEnabled
-                                        ? 'bg-green-500/30 text-green-300'
-                                        : 'bg-white/5 text-white/60 hover:text-white'
-                                    }`}
-                                title={isAudioEnabled ? 'Disable Mic' : 'Enable Mic'}
-                            >
-                                {isAudioEnabled ? <Mic size={24} /> : <MicOff size={24} />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <button
+                    onClick={() => setIsAudioEnabled(!isAudioEnabled)}
+                    style={{
+                        width: 50, height: 50, borderRadius: 12,
+                        background: isAudioEnabled ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)',
+                        backdropFilter: 'blur(12px)',
+                        border: `1px solid ${isAudioEnabled ? 'rgba(34,197,94,0.5)' : 'rgba(255,255,255,0.2)'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: isAudioEnabled ? '#86efac' : 'rgba(255,255,255,0.6)'
+                    }}
+                >
+                    {isAudioEnabled ? <Mic size={22} /> : <MicOff size={22} />}
+                </button>
 
-                {/* Breath Indicator */}
-                <div className="lg-wrap">
-                    <div className="lg-shadow" />
-                    <div className="lg-content">
-                        <div className="lg-inner !p-3 flex flex-col items-center gap-2">
-                            <div className="w-3 h-24 bg-white/10 rounded-full overflow-hidden">
-                                <motion.div
-                                    className="w-full bg-gradient-to-t from-blue-500 to-cyan-400 rounded-full"
-                                    style={{ originY: 1 }}
-                                    animate={{ height: `${breathValue * 100}%` }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                />
-                            </div>
-                            <span className="text-white/40 text-[10px] uppercase tracking-wider">Breath</span>
-                        </div>
+                {/* Breath Meter */}
+                <div style={{ width: 50, height: 100, borderRadius: 12, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', padding: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <div style={{ flex: 1, width: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                        <motion.div
+                            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, #3b82f6, #22d3ee)', borderRadius: 3 }}
+                            animate={{ height: `${breathValue * 100}%` }}
+                        />
                     </div>
+                    <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 1 }}>Breath</span>
                 </div>
-            </motion.div>
+            </div>
 
-            {/* Camera Preview - Shows when face tracking enabled */}
+            {/* Camera Preview - Top Right when enabled */}
             <AnimatePresence>
                 {isFaceEnabled && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute top-24 right-6 z-20"
+                        style={{ position: 'absolute', top: 70, right: 16, zIndex: 10 }}
                     >
                         <FaceTracker
                             onBreathChange={setFaceBreathValue}
@@ -208,7 +166,7 @@ export default function CoolBreathingPage() {
 
             {/* Audio Detector - Hidden but active */}
             {isAudioEnabled && (
-                <div className="hidden">
+                <div style={{ display: 'none' }}>
                     <BreathingAudioDetector
                         onBreathChange={setAudioBreathValue}
                         isEnabled={isAudioEnabled}
@@ -218,69 +176,55 @@ export default function CoolBreathingPage() {
             )}
 
             {/* Bottom Controls */}
-            <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-6"
-            >
-                {/* Instructions when no detection enabled */}
-                <AnimatePresence>
-                    {!isFaceEnabled && !isAudioEnabled && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="text-white/60 text-sm text-center px-6 py-3 bg-black/30 rounded-2xl backdrop-blur-xl border border-white/10"
+            <div style={{ position: 'absolute', bottom: 24, left: 16, right: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, zIndex: 10 }}>
+                {/* Instructions */}
+                {!isFaceEnabled && !isAudioEnabled && (
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'center', padding: '8px 16px', background: 'rgba(0,0,0,0.4)', borderRadius: 12, backdropFilter: 'blur(8px)' }}>
+                        Tap camera or mic to control with your breath
+                    </div>
+                )}
+
+                {/* Shape Selector */}
+                <div style={{ display: 'flex', gap: 8, padding: 8, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    {shapes.map((s) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setShape(s.id as any)}
+                            style={{
+                                width: 48, height: 48, borderRadius: 12,
+                                background: shape === s.id ? 'rgba(255,255,255,0.2)' : 'transparent',
+                                border: 'none',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer',
+                                color: shape === s.id ? 'white' : 'rgba(255,255,255,0.5)',
+                                transform: shape === s.id ? 'scale(1.1)' : 'scale(1)',
+                                transition: 'all 0.2s'
+                            }}
                         >
-                            Enable camera or mic to control the animation with your breath
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Shape Selector - Liquid Glass Style */}
-                <div className="lg-wrap">
-                    <div className="lg-shadow" />
-                    <div className="lg-content">
-                        <div className="lg-inner !p-2 flex gap-2">
-                            {shapes.map((s) => (
-                                <button
-                                    key={s.id}
-                                    onClick={() => setShape(s.id as any)}
-                                    className={`px-4 py-3 sm:px-6 sm:py-4 rounded-xl transition-all flex flex-col items-center gap-1 min-w-[70px] sm:min-w-[90px] ${shape === s.id
-                                            ? 'bg-white/20 text-white shadow-lg scale-105'
-                                            : 'text-white/50 hover:text-white hover:bg-white/5'
-                                        }`}
-                                >
-                                    <s.icon size={24} className="sm:w-7 sm:h-7" />
-                                    <span className="text-[10px] sm:text-xs uppercase tracking-wider font-medium">{s.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                            <s.icon size={24} />
+                        </button>
+                    ))}
                 </div>
 
-                {/* Color Selector - Liquid Glass Style */}
-                <div className="lg-wrap">
-                    <div className="lg-shadow" />
-                    <div className="lg-content">
-                        <div className="lg-inner !p-3 flex gap-3 sm:gap-4">
-                            {colors.map((c) => (
-                                <button
-                                    key={c.hex}
-                                    onClick={() => setColor(c.hex)}
-                                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all border-2 ${color === c.hex
-                                            ? 'border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.4)]'
-                                            : 'border-white/20 hover:scale-105 hover:border-white/40'
-                                        }`}
-                                    style={{ backgroundColor: c.hex }}
-                                    title={c.name}
-                                />
-                            ))}
-                        </div>
-                    </div>
+                {/* Color Selector */}
+                <div style={{ display: 'flex', gap: 10, padding: 10, background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.1)' }}>
+                    {colors.map((c) => (
+                        <button
+                            key={c}
+                            onClick={() => setColor(c)}
+                            style={{
+                                width: 32, height: 32, borderRadius: '50%',
+                                background: c,
+                                border: color === c ? '2px solid white' : '2px solid transparent',
+                                boxShadow: color === c ? '0 0 15px rgba(255,255,255,0.4)' : 'none',
+                                cursor: 'pointer',
+                                transform: color === c ? 'scale(1.15)' : 'scale(1)',
+                                transition: 'all 0.2s'
+                            }}
+                        />
+                    ))}
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }
