@@ -239,9 +239,13 @@ export default function ChatInterface() {
             }
         } catch (error) {
             console.error("Chat Error:", error);
+            let errorMsg = "I'm having trouble connecting. Please try again.";
+            if (error instanceof Error) {
+                errorMsg += ` (Details: ${error.message})`;
+            }
             const errorResponse: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "I'm having trouble connecting. Please try again.",
+                text: errorMsg,
                 sender: "ai",
                 timestamp: new Date(),
             };
@@ -282,6 +286,24 @@ export default function ChatInterface() {
                         </p>
                     </div>
                     <div className={styles.headerControls}>
+                        <button
+                            onClick={() => {
+                                if (confirm("Start a new session? This will clear current chat.")) {
+                                    setMessages([]);
+                                    localStorage.removeItem("chatHistory");
+                                    setMessages([{
+                                        id: Date.now().toString(),
+                                        text: "Session cleared. How can I help you now?",
+                                        sender: "ai",
+                                        timestamp: new Date(),
+                                    }]);
+                                }
+                            }}
+                            className={styles.debugButton}
+                            title="New Session"
+                        >
+                            <Zap size={18} />
+                        </button>
                         <button
                             onClick={() => setShowWhatsAppDebug(!showWhatsAppDebug)}
                             className={styles.debugButton}
