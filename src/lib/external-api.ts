@@ -101,6 +101,11 @@ export const externalApi = {
         return data.user_profile || data; // Return the deep profile string if available
     },
 
+    // Alias for consistency
+    async getProfile(token: string) {
+        return this.getDetails(token);
+    },
+
     formatGoalMessage(goal: string) {
         return `Goal is not medication adherence. Instead, it is ${goal}`;
     }
