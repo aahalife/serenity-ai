@@ -1,7 +1,0 @@
-{
-  "name": "ZenParticles",
-  "description": "A real-time interactive 3D particle system controlled by hand gestures and powered by Gemini API.",
-  "requestFramePermissions": [
-    "camera"
-  ]
-}
