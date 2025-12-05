@@ -16,6 +16,60 @@ export default function Profile() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generationError, setGenerationError] = useState<string | null>(null);
 
+    // Helper function to format profile data for human-readable display
+    const formatProfileValue = (value: any): string => {
+        if (!value) return '';
+
+        // If it's a simple string or number, return it
+        if (typeof value === 'string' || typeof value === 'number') {
+            return String(value);
+        }
+
+        // If it's an array, join with commas
+        if (Array.isArray(value)) {
+            return value.join(', ');
+        }
+
+        // If it's an object, extract the meaningful values
+        if (typeof value === 'object') {
+            // Common keys that contain the actual human-readable values
+            const meaningfulKeys = [
+                'typical_for_life_stage',
+                'typical_for_demographic',
+                'probable_format',
+                'probable_range',
+                'most_likely',
+                'description',
+                'value',
+                'details'
+            ];
+
+            // Try to find a meaningful value
+            for (const key of meaningfulKeys) {
+                if (value[key]) {
+                    return formatProfileValue(value[key]);
+                }
+            }
+
+            // If no meaningful key found, try to extract all non-meta values
+            const filtered = Object.entries(value)
+                .filter(([k, v]) => !k.includes('confidence') && !k.includes('notes') && v)
+                .map(([k, v]) => formatProfileValue(v))
+                .filter(Boolean);
+
+            return filtered.join('; ');
+        }
+
+        return String(value);
+    };
+
+    // Helper function to format key names for display
+    const formatKeyName = (key: string): string => {
+        return key
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, c => c.toUpperCase());
+    };
+
     const handleGenerateProfile = async () => {
         setIsGenerating(true);
         setGenerationError(null);
@@ -269,12 +323,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.professional_financial).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -292,12 +346,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.psychological_social).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -315,12 +369,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.lifestyle_preferences).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -338,12 +392,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.health_wellness).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -361,12 +415,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.future_aspirations).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -384,12 +438,12 @@ export default function Profile() {
                                 <div className="space-y-3">
                                     {Object.entries(profile.habits_behaviors).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
+                                        const formattedValue = formatProfileValue(value);
+                                        if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-2 last:border-0">
-                                                <span className="text-white/40 text-xs capitalize">{key.replace(/_/g, ' ')}</span>
-                                                <span className="text-white/90 text-sm">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
+                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
+                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
+                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}

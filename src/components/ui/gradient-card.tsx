@@ -96,14 +96,30 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                 }}
             />
 
-            {/* Purple/blue glow effect */}
+            {/* Purple/blue glow effect - VERY VISIBLE */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
+                className="absolute bottom-0 left-0 right-0 h-1/3 z-20"
                 style={{
                     background: `
-            radial-gradient(ellipse at bottom right, rgba(172, 92, 255, 0.8) -10%, rgba(79, 70, 229, 0) 60%),
-            radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.8) -10%, rgba(79, 70, 229, 0) 60%)
+            radial-gradient(ellipse at bottom right, rgba(172, 92, 255, 0.95) -10%, rgba(79, 70, 229, 0.3) 50%),
+            radial-gradient(ellipse at bottom left, rgba(56, 189, 248, 0.95) -10%, rgba(79, 70, 229, 0.3) 50%)
           `,
+                    filter: "blur(25px)",
+                }}
+                animate={{
+                    opacity: isHovered ? 1 : 0.95,
+                }}
+                transition={{
+                    duration: 0.4,
+                    ease: "easeOut"
+                }}
+            />
+
+            {/* Central purple glow - VERY PROMINENT */}
+            <motion.div
+                className="absolute bottom-0 left-0 right-0 h-1/3 z-20"
+                style={{
+                    background: `radial-gradient(ellipse at bottom center, rgba(161, 58, 229, 1) -40%, rgba(79, 70, 229, 0.5) 35%, transparent 65%)`,
                     filter: "blur(30px)",
                 }}
                 animate={{
@@ -115,19 +131,12 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                 }}
             />
 
-            {/* Central purple glow - More visible */}
-            <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
+            {/* Solid gradient band at very bottom - ALWAYS VISIBLE */}
+            <div
+                className="absolute bottom-0 left-0 right-0 h-24 z-20"
                 style={{
-                    background: `radial-gradient(ellipse at bottom center, rgba(161, 58, 229, 0.9) -30%, rgba(79, 70, 229, 0.3) 40%, transparent 70%)`,
-                    filter: "blur(35px)",
-                }}
-                animate={{
-                    opacity: isHovered ? 1 : 0.85,
-                }}
-                transition={{
-                    duration: 0.4,
-                    ease: "easeOut"
+                    background: 'linear-gradient(to top, rgba(161, 58, 229, 0.6), rgba(79, 70, 229, 0.4), transparent)',
+                    pointerEvents: 'none'
                 }}
             />
             {/* Enhanced bottom border glow */}
