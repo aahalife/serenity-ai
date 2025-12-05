@@ -56,7 +56,11 @@ export const externalApi = {
             body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error('Chat failed');
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error(`Chat API Error (${res.status}):`, errorText);
+            throw new Error(`Chat failed: ${res.status} ${res.statusText} - ${errorText.substring(0, 100)}`);
+        }
 
         // Handle Streamed Response
         const reader = res.body?.getReader();

@@ -157,20 +157,22 @@ export default function CoolBreathingPage() {
 
         const interval = setInterval(() => {
             // Check if we can move to next state
-            // We need "Sensor Confirmation"
-            // For simplicity in this version, we'll use a mix of Timer + Sensor Gating
-            // i.e. Timer doesn't advance unless sensor value is roughly correct
-
             let isUserComplying = false;
             if (!isFaceEnabled && !isAudioEnabled) {
                 isUserComplying = true; // Auto-mode if sensors off
             } else {
                 if (breathingState === 'inhale') isUserComplying = breathValue > 0.2; // Growing
                 if (breathingState === 'exhale') isUserComplying = breathValue < 0.8; // Shrinking
-                if (breathingState === 'hold') isUserComplying = true; // Hard to validate hold, assume yes
+                if (breathingState === 'hold') isUserComplying = true; // Always count down hold
             }
 
-            if (isUserComplying) {
+            // Progress Logic
+            if (breathingState === 'hold') {
+                // Fixed timer for Hold (independent of sensor for now to encourage holding)
+                progressRef.current += (100 / (holdDuration * 20)); // 50ms interval = 20 ticks/sec
+                const remaining = Math.ceil(holdDuration - (progressRef.current / 100 * holdDuration));
+                setInstruction(`Hold... ${remaining}s`);
+            } else if (isUserComplying) {
                 progressRef.current += 1; // 1% per 50ms = 5 seconds total roughly
             }
 
@@ -180,7 +182,7 @@ export default function CoolBreathingPage() {
 
                 if (breathingState === 'inhale') {
                     setBreathingState('hold');
-                    setInstruction(`Hold for ${holdDuration}s`);
+                    // Instruction updated in next tick
                 } else if (breathingState === 'hold') {
                     setBreathingState('exhale');
                     setInstruction("Exhale slowly...");
@@ -287,12 +289,12 @@ export default function CoolBreathingPage() {
                 </button>
 
                 <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', textAlign: 'center', width: '100%', pointerEvents: 'none' }}>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', margin: 0, fontFamily: 'var(--font-montage)' }}>Cool Breathing</h1>
-                    <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)', margin: '4px 0 0 0', fontWeight: 500 }}>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', margin: 0, fontFamily: 'var(--font-montage)', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>Cool Breathing</h1>
+                    <p style={{ fontSize: '1.5rem', color: 'white', margin: '8px 0 0 0', fontWeight: 700, textShadow: '0 2px 10px rgba(0,0,0,0.8)', letterSpacing: '0.5px' }}>
                         {instruction}
                     </p>
                     {breathingState !== 'intro' && breathingState !== 'completed' && (
-                        <div style={{ width: 100, height: 4, background: 'rgba(255,255,255,0.2)', margin: '8px auto', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: 150, height: 6, background: 'rgba(255,255,255,0.2)', margin: '12px auto', borderRadius: 3, overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
                             <motion.div
                                 style={{ height: '100%', background: '#4f46e5' }}
                                 animate={{ width: `${progressRef.current}%` }}
