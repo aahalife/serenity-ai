@@ -79,6 +79,14 @@ function Particles({ breathValue, shape, color }: BreathingCanvasProps) {
         const smoothedBreath = pointsRef.current.userData.smoothedBreath;
         const scale = 1 + smoothedBreath * 1.5;
 
+        // Restore particle position updates
+        for (let i = 0; i < count * 3; i++) {
+            currentPositions[i] += (targetPositions[i] - currentPositions[i]) * 0.05;
+        }
+
+        const geometry = pointsRef.current.geometry;
+        geometry.attributes.position.needsUpdate = true;
+
         pointsRef.current.scale.set(scale, scale, scale);
         pointsRef.current.rotation.y = time * 0.1;
         pointsRef.current.rotation.z = time * 0.05;
