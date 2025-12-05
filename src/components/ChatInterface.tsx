@@ -19,7 +19,10 @@ interface Message {
     timestamp: Date;
 }
 
+import { useSession } from "next-auth/react";
+
 export default function ChatInterface() {
+    const { data: session } = useSession();
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -298,16 +301,26 @@ export default function ChatInterface() {
                 if (savedUserProfile) {
                     try {
                         const profile = JSON.parse(savedUserProfile);
-                        if (profile.email) {
-                            console.log("401 detected. Attempting auto-registration...");
+
+                        // Use session email if profile email is missing
+                        const emailToUse = profile.email || session?.user?.email;
+
+                        if (emailToUse) {
+                            console.log("401 detected. Attempting auto-registration for:", emailToUse);
+
+                            // Update profile with email if missing
+                            if (!profile.email) {
+                                profile.email = emailToUse;
+                                localStorage.setItem("userProfile", JSON.stringify(profile));
+                            }
 
                             // 1. Register
-                            const shadowPassword = `google_oauth_${profile.email}_secret`;
+                            const shadowPassword = `google_oauth_${emailToUse}_secret`;
                             try {
                                 await externalApi.register({
-                                    email: profile.email,
+                                    email: emailToUse,
                                     password: shadowPassword,
-                                    name: profile.name || "User",
+                                    name: profile.name || session?.user?.name || "User",
                                     age: parseInt(profile.age) || 25, // Ensure int
                                     gender_identity: profile.gender || "Prefer not to say",
                                     location: profile.location || "Unknown",
@@ -319,16 +332,10 @@ export default function ChatInterface() {
                             }
 
                             // 2. Login
-                            const data = await externalApi.login(profile.email, shadowPassword);
+                            const data = await externalApi.login(emailToUse, shadowPassword);
                             if (data && data.access_token) {
                                 localStorage.setItem("external_api_token", data.access_token);
                                 console.log("Login successful, retrying chat...");
-
-                                // 3. Retry Chat
-                                // We need to wait a bit or just let the user try again?
-                                // Better to retry automatically once.
-                                // But to avoid infinite loops, we should probably just notify user "Connected! Try again."
-                                // Or recursively call handleSend? Let's notify for safety.
 
                                 const successMsg: Message = {
                                     id: (Date.now() + 1).toString(),
@@ -339,6 +346,8 @@ export default function ChatInterface() {
                                 setMessages((prev) => [...prev, successMsg]);
                                 return;
                             }
+                        } else {
+                            console.error("Cannot auto-register: No email found in profile or session.");
                         }
                     } catch (authError) {
                         console.error("Auto-registration failed", authError);
