@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { getUserStressProfile, getPersonalizedTechniques, StressProfile } from '@/lib/stress-relief/user-preferences';
 import LiquidGlass from '@/components/LiquidGlass';
 import { useAudio } from '@/hooks/useAudio';
+import { LiquidEffectAnimation } from '@/components/ui/liquid-effect-animation';
 
 // ... imports
 
@@ -96,7 +97,10 @@ export default function StressReliefPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 pb-32">
+        <div className="min-h-screen bg-[#0a0a0a] text-white p-4 md:p-8 pb-32 relative">
+            {/* Liquid Effect Background */}
+            <LiquidEffectAnimation />
+
             {/* Header */}
             <header className="max-w-6xl mx-auto mb-8 md:mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
                 <div className="flex-1">
@@ -185,31 +189,33 @@ export default function StressReliefPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+                            className="flex justify-center items-center"
                         >
-                            {categories.map(category => (
-                                <motion.div
-                                    key={category.id}
-                                    whileHover={{ scale: 1.02, y: -2 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="h-full"
-                                >
-                                    <LiquidGlass
-                                        onClick={() => handleCategoryClick(category)}
-                                        className="h-full cursor-pointer min-h-[200px] flex flex-col justify-center items-center text-center p-8 group"
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl w-full">
+                                {categories.map(category => (
+                                    <motion.div
+                                        key={category.id}
+                                        whileHover={{ scale: 1.02, y: -2 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="h-full max-w-sm mx-auto w-full"
                                     >
-                                        <h3 className="text-2xl font-bold text-white/90 mb-3 font-montage group-hover:text-blue-300 transition-colors">
-                                            {category.label}
-                                        </h3>
-                                        <p className="text-sm text-white/60 font-petrona leading-relaxed mb-4">
-                                            {category.description}
-                                        </p>
-                                        <div className="mt-auto text-xs text-white/40 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
-                                            {category.phrase_count} Phrases
-                                        </div>
-                                    </LiquidGlass>
-                                </motion.div>
-                            ))}
+                                        <LiquidGlass
+                                            onClick={() => handleCategoryClick(category)}
+                                            className="h-full cursor-pointer min-h-[180px] flex flex-col justify-center items-center text-center p-6 group"
+                                        >
+                                            <h3 className="text-xl font-bold text-white/90 mb-2 font-montage group-hover:text-blue-300 transition-colors">
+                                                {category.label}
+                                            </h3>
+                                            <p className="text-xs text-white/60 font-petrona leading-relaxed mb-3">
+                                                {category.description}
+                                            </p>
+                                            <div className="mt-auto text-xs text-white/40 uppercase tracking-widest border border-white/10 px-3 py-1 rounded-full">
+                                                {category.phrase_count} Phrases
+                                            </div>
+                                        </LiquidGlass>
+                                    </motion.div>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
