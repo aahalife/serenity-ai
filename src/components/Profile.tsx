@@ -290,6 +290,21 @@ export default function Profile() {
                                         </p>
                                     </div>
                                 )}
+
+                                {/* Regenerate button when profile exists */}
+                                <div className="mt-6 pt-4 border-t border-white/10 flex flex-col items-center">
+                                    {generationError && (
+                                        <p className="text-red-400 text-sm mb-3 bg-red-500/10 px-3 py-2 rounded">{generationError}</p>
+                                    )}
+                                    <button
+                                        className="px-4 py-2 bg-purple-600/80 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        onClick={handleGenerateProfile}
+                                        disabled={isGenerating}
+                                    >
+                                        {isGenerating ? "Regenerating..." : "Refresh Deep Profile"}
+                                    </button>
+                                    <p className="text-white/40 text-xs mt-2">Click to update your analysis with latest information</p>
+                                </div>
                             </>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-10 text-center">
