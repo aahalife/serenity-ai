@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame, extend, Object3DNode } from '@react-three/fiber';
+import { Canvas, useFrame, extend } from '@react-three/fiber';
 import { OrbitControls, shaderMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 import { generatePoints } from './utils/geometry';
@@ -103,7 +103,7 @@ extend({ StressBallMaterial });
 // Type definitions for the custom material
 declare module '@react-three/fiber' {
     interface ThreeElements {
-        stressBallMaterial: Object3DNode<THREE.ShaderMaterial, typeof StressBallMaterial>;
+        stressBallMaterial: any;
     }
 }
 
