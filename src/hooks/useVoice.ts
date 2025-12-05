@@ -25,9 +25,15 @@ export function useVoice(options: UseVoiceOptions = {}) {
             mediaRecorderRef.current = mediaRecorder;
             chunksRef.current = [];
 
-            // VAD Setup
+            // Reuse or create AudioContext
             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
             const audioContext = new AudioContext();
+
+            // Ensure context is running (browsers suspend it sometimes)
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+
             const source = audioContext.createMediaStreamSource(stream);
             const analyser = audioContext.createAnalyser();
             analyser.fftSize = 512;
@@ -39,7 +45,7 @@ export function useVoice(options: UseVoiceOptions = {}) {
             let silenceStart = Date.now();
             let isSpeakingDetected = false;
             const silenceThreshold = 1500; // 1.5 seconds of silence to stop
-            const volumeThreshold = 20; // Sensitivity threshold (0-255)
+            const volumeThreshold = 15; // Slightly more sensitive (was 20)
 
             const checkSilence = () => {
                 if (mediaRecorder.state !== "recording") return;
