@@ -13,7 +13,6 @@ export default function Profile() {
 
     useEffect(() => {
         setIsMounted(true);
-        // Move all localStorage logic inside useEffect to avoid hydration mismatch
         const loadProfile = async () => {
             try {
                 const savedUserProfile = localStorage.getItem("userProfile");
@@ -21,7 +20,7 @@ export default function Profile() {
                 const savedStressProfile = getUserStressProfile();
                 setStressProfile(savedStressProfile);
 
-                let currentProfile = {};
+                let currentProfile: any = {};
 
                 if (savedUserProfile) {
                     const basic = JSON.parse(savedUserProfile);
@@ -31,49 +30,72 @@ export default function Profile() {
                 }
 
                 // Try to fetch latest deep profile from API
+                let deepData = null;
                 try {
                     const res = await fetch('/api/chat/details');
                     if (res.ok) {
                         const data = await res.json();
                         if (data && data.user_profile) {
-                            // Merge and save
-                            const deepData = typeof data.user_profile === 'string'
+                            deepData = typeof data.user_profile === 'string'
                                 ? JSON.parse(data.user_profile)
                                 : data.user_profile;
 
-                            localStorage.setItem("deepProfile", JSON.stringify(deepData));
-
-                            currentProfile = {
-                                ...currentProfile,
-                                ...deepData,
-                                deepProfileText: typeof data.user_profile === 'string' ? data.user_profile : JSON.stringify(data.user_profile, null, 2),
-                                ocean: deepData.traits || deepData.ocean || {}
-                            };
+                            // Check if it's the empty object or valid
+                            if (Object.keys(deepData).length === 0) {
+                                deepData = null; // Treat empty object as null to trigger fallback
+                            }
                         }
                     }
                 } catch (err) {
-                    console.warn("Failed to fetch latest deep profile", err);
+                    console.warn("Failed to fetch latest deep profile from chat API", err);
                 }
 
-                // Fallback to local storage if API didn't return new data or failed
-                if (!currentProfile.hasOwnProperty('ocean') && savedDeepProfile) {
-                    let deep = {};
-                    let deepText = "";
+                // Fallback: Call Inference API if chat API failed or returned empty
+                if (!deepData) {
+                    console.log("Deep profile missing, attempting inference...");
                     try {
-                        deep = JSON.parse(savedDeepProfile);
-                        if (typeof deep === 'string') {
-                            deepText = deep;
-                            deep = {};
+                        const inferenceRes = await fetch('/api/inference/profile', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: currentProfile.name,
+                                age: currentProfile.age,
+                                gender: currentProfile.gender,
+                                location: currentProfile.location,
+                                occupation: currentProfile.occupation,
+                                family: currentProfile.family
+                            })
+                        });
+
+                        if (inferenceRes.ok) {
+                            const inferenceData = await inferenceRes.json();
+                            if (inferenceData.profile) {
+                                deepData = inferenceData.profile;
+                                console.log("Inferred profile successfully");
+                            }
                         }
-                    } catch (e) {
-                        deepText = savedDeepProfile;
+                    } catch (infErr) {
+                        console.error("Inference failed", infErr);
                     }
+                }
+
+                // Final Merge
+                if (deepData) {
+                    localStorage.setItem("deepProfile", JSON.stringify(deepData));
                     currentProfile = {
                         ...currentProfile,
-                        ...deep,
-                        deepProfileText: deepText,
-                        ocean: (deep as any).traits || (deep as any).ocean || {}
+                        ...deepData,
+                        deepProfileText: JSON.stringify(deepData, null, 2),
+                        ocean: deepData.traits || deepData.ocean || {} // Keep backward compat if needed
                     };
+                } else if (savedDeepProfile) {
+                    // Last resort: local storage
+                    try {
+                        const saved = JSON.parse(savedDeepProfile);
+                        currentProfile = { ...currentProfile, ...saved };
+                    } catch (e) {
+                        console.error("Failed to parse saved profile", e);
+                    }
                 }
 
                 setProfile(currentProfile);
@@ -86,6 +108,29 @@ export default function Profile() {
 
         loadProfile();
     }, []);
+
+    // Helper to render sections
+    const renderSection = (title: string, data: any) => {
+        if (!data) return null;
+        return (
+            <div className="mb-6 last:mb-0">
+                <h3 className="text-sm font-bold text-purple-300 mb-2 uppercase tracking-wider">{title}</h3>
+                <div className="grid grid-cols-1 gap-2 text-sm text-white/80">
+                    {Object.entries(data).map(([key, value]) => {
+                        if (!value || key === 'confidence_notes') return null;
+                        return (
+                            <div key={key} className="flex flex-col sm:flex-row sm:justify-between border-b border-white/5 pb-2 last:border-0">
+                                <span className="text-white/50 capitalize">{key.replace(/_/g, ' ')}</span>
+                                <span className="text-right font-medium">
+                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
 
     // Prevent hydration mismatch by not rendering until mounted
     if (!isMounted) return null;
@@ -112,6 +157,7 @@ export default function Profile() {
                         <User className={styles.icon} />
                         <h2>Identity</h2>
                     </div>
+                    {/* Identity Inputs (Name, Age, etc.) - Keeping existing inputs */}
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Name</span>
                         <input
@@ -139,31 +185,6 @@ export default function Profile() {
                         />
                     </div>
                     <div className={styles.infoRow}>
-                        <span className={styles.label}>Birthday</span>
-                        <input
-                            type="date"
-                            className={styles.input}
-                            value={profile.birthday || ""}
-                            onChange={(e) => {
-                                const newProfile = { ...profile, birthday: e.target.value };
-                                setProfile(newProfile);
-                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
-                            }}
-                        />
-                    </div>
-                    {profile.birthday && (
-                        <div className={styles.infoRow}>
-                            <span className={styles.label}>Zodiac</span>
-                            <div className="flex items-center gap-2 text-white/80">
-                                {(() => {
-                                    const { getZodiacSign } = require('@/utils/zodiac');
-                                    const z = getZodiacSign(profile.birthday);
-                                    return <span className="font-bold text-purple-300">{z.symbol} {z.name}</span>;
-                                })()}
-                            </div>
-                        </div>
-                    )}
-                    <div className={styles.infoRow}>
                         <span className={styles.label}>Gender</span>
                         <input
                             type="text"
@@ -181,7 +202,7 @@ export default function Profile() {
                         <input
                             type="text"
                             className={styles.input}
-                            value={profile.location || ""}
+                            value={profile.location?.city || profile.location || ""}
                             onChange={(e) => {
                                 const newProfile = { ...profile, location: e.target.value };
                                 setProfile(newProfile);
@@ -202,125 +223,33 @@ export default function Profile() {
                             }}
                         />
                     </div>
-                    <div className={styles.infoRow}>
-                        <span className={styles.label}>Family</span>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            value={profile.family || ""}
-                            onChange={(e) => {
-                                const newProfile = { ...profile, family: e.target.value };
-                                setProfile(newProfile);
-                                localStorage.setItem("userProfile", JSON.stringify(newProfile));
-                            }}
-                        />
-                    </div>
                 </motion.div>
 
+                {/* Deep Profile Card - Expanded */}
                 <motion.div
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                >
-                    <div className={styles.cardHeader}>
-                        <div className="p-2 rounded-full bg-purple-500/20 text-purple-300">
-                            <User className={styles.icon} />
-                        </div>
-                        <h2>Family Circle</h2>
-                    </div>
-
-                    <div className={styles.infoRow}>
-                        <span className={styles.label}>Family Code</span>
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                className="bg-white/10 px-3 py-1 rounded text-sm font-mono text-blue-300 border border-white/10 focus:outline-none focus:border-blue-400 w-32"
-                                value={profile.familyCode || ""}
-                                placeholder="Enter Code"
-                                onChange={(e) => {
-                                    const newProfile = { ...profile, familyCode: e.target.value.toUpperCase() };
-                                    setProfile(newProfile);
-                                    localStorage.setItem("userProfile", JSON.stringify(newProfile));
-                                }}
-                            />
-                            <span className="text-xs text-white/40">(Share this)</span>
-                        </div>
-                    </div>
-
-                    <div className="mt-6">
-                        <h3 className="text-sm font-bold text-white/80 mb-3">Members</h3>
-                        <div className="space-y-3">
-                            {/* Current User */}
-                            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-300 text-xs font-bold">
-                                    You
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-white">{profile.name || "You"}</p>
-                                    <p className="text-xs text-white/50">{profile.family || "Member"}</p>
-                                </div>
-                            </div>
-
-                            {/* Mock Family Members (only if family code is set/simulated) */}
-                            {profile.familyCode && (
-                                <>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                                        <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 text-xs font-bold">
-                                            JS
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-white">Jane Smith</p>
-                                            <p className="text-xs text-white/50">Wife • Deep Profile: Conscientious</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-                                        <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center text-green-300 text-xs font-bold">
-                                            TS
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-white">Timmy Smith</p>
-                                            <p className="text-xs text-white/50">Son • Deep Profile: Energetic</p>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-
-                            {!profile.familyCode && (
-                                <p className="text-xs text-white/40 italic">Register others with your code to see them here.</p>
-                            )}
-                        </div>
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    className={styles.card}
+                    className={`${styles.card} col-span-1 md:col-span-2`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                 >
                     <div className={styles.cardHeader}>
                         <Brain className={styles.icon} />
-                        <h2>Deep Profile</h2>
+                        <h2>Deep Profile Analysis</h2>
                     </div>
-                    <div className={styles.oceanGrid}>
-                        {profile.ocean && typeof profile.ocean === 'object' && Object.entries(profile.ocean).length > 0 ? (
+
+                    <div className="p-4 bg-white/5 rounded-xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar">
+                        {profile.professional_financial || profile.psychological_social ? (
                             <>
-                                {Object.entries(profile.ocean).map(([trait, score]: [string, any]) => (
-                                    <div key={trait} className={styles.trait}>
-                                        <span className={styles.traitName}>{trait}</span>
-                                        <div className={styles.traitBar}>
-                                            <div
-                                                className={styles.traitFill}
-                                                style={{ width: `${(typeof score === 'number' ? score : 0.5) * 100}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                                {/* Display Goal if available */}
+                                {renderSection("Professional & Financial", profile.professional_financial)}
+                                {renderSection("Psychological & Social", profile.psychological_social)}
+                                {renderSection("Lifestyle Preferences", profile.lifestyle_preferences)}
+                                {renderSection("Health & Wellness", profile.health_wellness)}
+                                {renderSection("Future Aspirations", profile.future_aspirations)}
+                                {renderSection("Habits & Behaviors", profile.habits_behaviors)}
+
                                 {profile.behaviour_change && profile.behaviour_change.goals && (
-                                    <div className="col-span-2 mt-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                                        <h4 className="text-sm font-bold text-blue-300 mb-1">Current Goal</h4>
+                                    <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                        <h4 className="text-sm font-bold text-blue-300 mb-2">Current Goal</h4>
                                         <p className="text-sm text-white/90">
                                             {Array.isArray(profile.behaviour_change.goals)
                                                 ? profile.behaviour_change.goals.join(", ")
@@ -329,12 +258,16 @@ export default function Profile() {
                                     </div>
                                 )}
                             </>
-                        ) : profile.deepProfileText ? (
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/10 text-sm text-white/80 leading-relaxed whitespace-pre-wrap">
-                                {profile.deepProfileText}
-                            </div>
                         ) : (
-                            <p className={styles.emptyState}>Complete onboarding to generate your deep profile.</p>
+                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                <p className="text-white/60 mb-4">Complete your profile details to generate a deep analysis.</p>
+                                <button
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm transition-colors"
+                                    onClick={() => window.location.reload()}
+                                >
+                                    Refresh / Generate
+                                </button>
+                            </div>
                         )}
                     </div>
                 </motion.div>
@@ -372,45 +305,8 @@ export default function Profile() {
                             </button>
                         </div>
                     </div>
-                    <div className={styles.settingRow}>
-                        <span>Instagram</span>
-                        <button
-                            className={styles.connectButton}
-                            onClick={() => window.location.href = "/api/integrations/auth?appName=instagram"}
-                        >
-                            Connect
-                        </button>
-                    </div>
-                    <div className={styles.settingRow}>
-                        <span>Google People</span>
-                        <button
-                            className={styles.connectButton}
-                            onClick={() => window.location.href = "/api/integrations/auth?appName=google-people"}
-                        >
-                            Connect
-                        </button>
-                    </div>
                 </motion.div>
 
-                <motion.div
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <div className={styles.cardHeader}>
-                        <Settings className={styles.icon} />
-                        <h2>Preferences</h2>
-                    </div>
-                    <div className={styles.settingRow}>
-                        <span>Voice Input</span>
-                        <div className={styles.toggle}>On</div>
-                    </div>
-                    <div className={styles.settingRow}>
-                        <span>Notifications</span>
-                        <div className={styles.toggle}>Off</div>
-                    </div>
-                </motion.div>
                 <motion.div
                     className={styles.card}
                     initial={{ opacity: 0, y: 20 }}
