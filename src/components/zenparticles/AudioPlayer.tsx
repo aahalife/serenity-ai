@@ -34,15 +34,15 @@ const AudioPlayer: React.FC = () => {
             {isPlaying && (
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-sm border border-white/10 text-xs text-white/50 animate-fade-in">
                     <Music size={12} className="animate-pulse" />
-                    <span className="font-light tracking-wide">Japanese Zen</span>
+                    <span className="font-light tracking-wide">Cool Breathing</span>
                 </div>
             )}
 
-            {/* Relaxing Japanese Koto/Flute ambient music */}
+            {/* Relaxing Ambient Music */}
             <audio
                 ref={audioRef}
                 loop
-                src="https://cdn.pixabay.com/audio/2021/09/06/audio_39436d4007.mp3"
+                src="/audio/coolBreathe2.mp3"
             />
         </div>
     );
