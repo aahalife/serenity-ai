@@ -1,3 +1,7 @@
+"use client";
+
+import React, { useState, useRef } from 'react';
+import { Volume2, VolumeX, Music } from 'lucide-react';
 import styles from './AudioPlayer.module.css';
 
 const AudioPlayer: React.FC = () => {
