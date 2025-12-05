@@ -159,7 +159,7 @@ const Controls: React.FC<ControlsProps> = ({
                         {/* AI Generator */}
                         <div>
                             <label className={styles.sectionLabel}>
-                                <Wand2 size={10} className="text-purple-400" />
+                                <Wand2 size={10} color="#c084fc" />
                                 AI Generator
                             </label>
                             <form onSubmit={handleMagicSubmit} className={styles.inputGroup}>
@@ -177,7 +177,7 @@ const Controls: React.FC<ControlsProps> = ({
                                     disabled={isGenerating || !magicPrompt}
                                     className={styles.actionButton}
                                 >
-                                    {isGenerating ? <Wand2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                                    {isGenerating ? <Wand2 size={16} className={styles.animateSpin} /> : <Plus size={16} />}
                                 </button>
                             </form>
                         </div>
@@ -185,7 +185,7 @@ const Controls: React.FC<ControlsProps> = ({
                         {/* Photo Upload (Stress Ball Mode) */}
                         <div>
                             <label className={styles.sectionLabel}>
-                                <ImageIcon size={10} className="text-blue-400" />
+                                <ImageIcon size={10} color="#60a5fa" />
                                 Stress Ball Mode
                             </label>
                             <div
@@ -196,11 +196,11 @@ const Controls: React.FC<ControlsProps> = ({
                                     ref={fileInputRef}
                                     type="file"
                                     accept="image/*"
-                                    className="hidden"
+                                    className={styles.hidden}
                                     onChange={handlePhotoUpload}
                                 />
                                 <div className={styles.uploadIconWrapper}>
-                                    <Upload size={16} className="text-blue-400" />
+                                    <Upload size={16} color="#60a5fa" />
                                 </div>
                                 <span className={styles.uploadText}>Upload Photo</span>
                                 <span className={styles.uploadSubText}>Stamps your photo onto a 3D ball</span>
@@ -234,7 +234,7 @@ const Controls: React.FC<ControlsProps> = ({
                                             onClick={() => handleSavedShapeClick(shape)}
                                             className={clsx(styles.gridButton, isActive && styles.active)}
                                         >
-                                            <Star size={20} className={clsx(styles.gridButtonIcon, isActive ? "text-purple-400 fill-purple-400/20" : "")} />
+                                            <Star size={20} className={clsx(styles.gridButtonIcon, isActive && styles.activeStarIcon)} />
                                             <span className={styles.gridButtonLabel} title={shape.label}>{shape.label}</span>
                                         </button>
                                     );

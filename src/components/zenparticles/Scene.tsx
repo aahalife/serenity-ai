@@ -267,7 +267,14 @@ const ParticleMesh: React.FC<{ state: ParticleState; handStatus: HandStatus }> =
 
 const Scene: React.FC<SceneProps> = (props) => {
     return (
-        <div className="w-full h-screen absolute top-0 left-0 bg-gradient-to-br from-gray-900 to-black">
+        <div style={{
+            width: '100%',
+            height: '100vh',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            background: 'linear-gradient(to bottom right, #111827, #000000)'
+        }}>
             <Canvas camera={{ position: [0, 0, 4.5], fov: 60 }}>
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} intensity={1} />

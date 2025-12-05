@@ -339,3 +339,26 @@
 .panel::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+.hidden {
+    display: none;
+}
+
+.animateSpin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.activeStarIcon {
+    color: #c084fc;
+    fill: rgba(192, 132, 252, 0.2);
+}
