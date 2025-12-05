@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { User, Settings, Shield, Activity, Brain } from "lucide-react";
 import { getUserStressProfile, saveUserStressProfile, StressProfile } from "@/lib/stress-relief/user-preferences";
 import MeshBackground from "@/components/MeshBackground";
+import { GradientCard } from "@/components/ui/gradient-card";
 import styles from "./Profile.module.css";
 
 export default function Profile() {
@@ -181,16 +182,13 @@ export default function Profile() {
             </header>
 
             <div className={styles.grid}>
-                <motion.div
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <GradientCard
+                    icon={<User size={24} />}
+                    className="col-span-1"
                 >
-                    <div className={styles.cardHeader}>
-                        <User className={styles.icon} />
-                        <h2>Identity</h2>
-                    </div>
-                    {/* Identity Inputs (Name, Age, etc.) - Keeping existing inputs */}
+                    <h2 className="text-2xl font-semibold text-white mb-6">Identity</h2>
+
+                    {/* Identity Inputs (Name, Age, etc.) */}
                     <div className={styles.infoRow}>
                         <span className={styles.label}>Name</span>
                         <input
@@ -256,19 +254,14 @@ export default function Profile() {
                             }}
                         />
                     </div>
-                </motion.div>
+                </GradientCard>
 
                 {/* Deep Profile Card - Expanded */}
-                <motion.div
-                    className={`${styles.card} col-span-1 md:col-span-2`}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
+                <GradientCard
+                    icon={<Brain size={24} />}
+                    className="col-span-1 md:col-span-2"
                 >
-                    <div className={styles.cardHeader}>
-                        <Brain className={styles.icon} />
-                        <h2>Deep Profile Analysis</h2>
-                    </div>
+                    <h2 className="text-2xl font-semibold text-white mb-6">Deep Profile Analysis</h2>
 
                     <div className="p-4 bg-white/5 rounded-xl border border-white/10 max-h-[600px] overflow-y-auto custom-scrollbar">
                         {profile.professional_financial || profile.psychological_social ? (
@@ -322,18 +315,13 @@ export default function Profile() {
                             </div>
                         )}
                     </div>
-                </motion.div>
+                </GradientCard>
 
-                <motion.div
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                <GradientCard
+                    icon={<Shield size={24} />}
+                    className="col-span-1"
                 >
-                    <div className={styles.cardHeader}>
-                        <Shield className={styles.icon} />
-                        <h2>Integrations</h2>
-                    </div>
+                    <h2 className="text-2xl font-semibold text-white mb-6">Integrations</h2>
                     <div className={styles.settingRow}>
                         <span>WhatsApp Number</span>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
@@ -357,18 +345,13 @@ export default function Profile() {
                             </button>
                         </div>
                     </div>
-                </motion.div>
+                </GradientCard>
 
-                <motion.div
-                    className={styles.card}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
+                <GradientCard
+                    icon={<Activity size={24} />}
+                    className="col-span-1"
                 >
-                    <div className={styles.cardHeader}>
-                        <Activity className={styles.icon} />
-                        <h2>Stress Relief Preferences</h2>
-                    </div>
+                    <h2 className="text-2xl font-semibold text-white mb-6">Stress Relief Preferences</h2>
 
                     <div className={styles.settingRow}>
                         <span>Coping Style</span>
@@ -422,7 +405,7 @@ export default function Profile() {
                             />
                         </div>
                     </div>
-                </motion.div>
+                </GradientCard>
             </div>
         </div>
     );
