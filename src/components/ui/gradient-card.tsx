@@ -43,11 +43,13 @@ export const GradientCard: React.FC<GradientCardProps> = ({
     return (
         <motion.div
             ref={cardRef}
-            className={`relative rounded-4xl overflow-hidden ${className}`}
+            className={`relative overflow-hidden ${className}`}
             style={{
                 transformStyle: "preserve-3d",
                 backgroundColor: "#0e131f",
-                boxShadow: "0 -10px 100px 10px rgba(78, 99, 255, 0.15), 0 0 10px 0 rgba(0, 0, 0, 0.5)",
+                borderRadius: "32px",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                boxShadow: "0 -10px 100px 10px rgba(78, 99, 255, 0.15), 0 0 10px 0 rgba(0, 0, 0, 0.5), inset 0 0 60px rgba(139, 92, 246, 0.1)",
             }}
             initial={{ y: 0 }}
             animate={{
@@ -98,13 +100,14 @@ export const GradientCard: React.FC<GradientCardProps> = ({
 
             {/* Large smooth gradient area - 3D effect like reference */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-1/2 z-20"
+                className="absolute bottom-0 left-0 right-0 z-20"
                 style={{
+                    height: "60%",
                     background: `
-            radial-gradient(ellipse 140% 100% at bottom left, rgba(56, 189, 248, 0.7) 0%, rgba(34, 211, 238, 0.4) 25%, transparent 60%),
-            radial-gradient(ellipse 140% 100% at bottom right, rgba(168, 85, 247, 0.7) 0%, rgba(139, 92, 246, 0.4) 25%, transparent 60%)
-          `,
-                    filter: "blur(40px)",
+                        radial-gradient(ellipse 150% 100% at 10% 100%, rgba(56, 189, 248, 0.9) 0%, rgba(34, 211, 238, 0.5) 30%, transparent 70%),
+                        radial-gradient(ellipse 150% 100% at 90% 100%, rgba(168, 85, 247, 0.9) 0%, rgba(139, 92, 246, 0.5) 30%, transparent 70%)
+                    `,
+                    filter: "blur(30px)",
                 }}
                 animate={{
                     opacity: isHovered ? 1 : 0.95,
@@ -115,15 +118,16 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                 }}
             />
 
-            {/* Softer center blend for depth */}
+            {/* Central purple glow for depth */}
             <motion.div
-                className="absolute bottom-0 left-0 right-0 h-2/5 z-19"
+                className="absolute bottom-0 left-0 right-0 z-19"
                 style={{
-                    background: `radial-gradient(ellipse 120% 100% at bottom center, rgba(147, 51, 234, 0.6) 0%, rgba(99, 102, 241, 0.3) 30%, transparent 70%)`,
-                    filter: "blur(50px)",
+                    height: "50%",
+                    background: `radial-gradient(ellipse 130% 100% at 50% 100%, rgba(147, 51, 234, 0.8) 0%, rgba(99, 102, 241, 0.4) 35%, transparent 70%)`,
+                    filter: "blur(35px)",
                 }}
                 animate={{
-                    opacity: isHovered ? 0.9 : 0.85,
+                    opacity: isHovered ? 0.95 : 0.9,
                 }}
                 transition={{
                     duration: 0.5,
@@ -133,9 +137,10 @@ export const GradientCard: React.FC<GradientCardProps> = ({
 
             {/* Bottom edge highlight for 3D pop */}
             <div
-                className="absolute bottom-0 left-0 right-0 h-32 z-21"
+                className="absolute bottom-0 left-0 right-0 z-21"
                 style={{
-                    background: 'linear-gradient(to top, rgba(139, 92, 246, 0.5) 0%, rgba(99, 102, 241, 0.3) 40%, transparent 100%)',
+                    height: "100px",
+                    background: 'linear-gradient(to top, rgba(139, 92, 246, 0.7) 0%, rgba(99, 102, 241, 0.4) 50%, transparent 100%)',
                     pointerEvents: 'none'
                 }}
             />
