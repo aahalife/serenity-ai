@@ -108,10 +108,10 @@ export const GradientCard: React.FC<GradientCardProps> = ({
 
             {/* CONTENT WRAPPER - High Z-Index & Flex Layout */}
             <div
-                className="relative z-20 flex flex-col justify-start h-full p-8"
+                className="relative z-20 flex flex-col justify-start p-8"
             >
                 {icon && (
-                    <div className="mb-6">
+                    <div className="mb-6 shrink-0">
                         <motion.div
                             className="w-12 h-12 rounded-2xl flex items-center justify-center text-white bg-white/5 border border-white/10 backdrop-blur-sm shadow-lg"
                             animate={{
@@ -124,7 +124,7 @@ export const GradientCard: React.FC<GradientCardProps> = ({
                     </div>
                 )}
 
-                <div className="flex-1 w-full">
+                <div className="w-full text-left">
                     {children}
                 </div>
             </div>
