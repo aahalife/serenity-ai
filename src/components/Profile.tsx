@@ -63,8 +63,9 @@ export default function Profile() {
         return String(value);
     };
 
-    // Helper function to format key names for display
+    // Helper function to format key names for display with proper spacing
     const formatKeyName = (key: string): string => {
+        // Convert snake_case to Title Case with spaces
         return key
             .replace(/_/g, ' ')
             .replace(/\b\w/g, c => c.toUpperCase());
@@ -320,15 +321,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Professional & Financial</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.professional_financial).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -343,15 +344,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Psychological & Social</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.psychological_social).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -366,15 +367,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Lifestyle Preferences</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.lifestyle_preferences).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -389,15 +390,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Health & Wellness</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.health_wellness).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -412,15 +413,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Future Aspirations</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.future_aspirations).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}
@@ -435,15 +436,15 @@ export default function Profile() {
                                 className="col-span-1"
                             >
                                 <h2 className="text-xl font-semibold text-white mb-4">Habits & Behaviors</h2>
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     {Object.entries(profile.habits_behaviors).map(([key, value]) => {
                                         if (!value || key === 'confidence_notes') return null;
                                         const formattedValue = formatProfileValue(value);
                                         if (!formattedValue) return null;
                                         return (
-                                            <div key={key} className="flex flex-col gap-1 border-b border-white/5 pb-3 last:border-0">
-                                                <span className="text-white/50 text-xs font-medium uppercase tracking-wide">{formatKeyName(key)}</span>
-                                                <span className="text-white/90 text-sm leading-relaxed">{formattedValue}</span>
+                                            <div key={key} className="border-b border-white/10 pb-4 last:border-0">
+                                                <span className="text-cyan-400 font-semibold text-sm">{formatKeyName(key)}:</span>
+                                                <span className="text-white/90 text-sm ml-2 leading-relaxed">{formattedValue}</span>
                                             </div>
                                         );
                                     })}

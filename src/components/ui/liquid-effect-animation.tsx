@@ -20,10 +20,11 @@ export function LiquidEffectAnimation() {
         const canvas = document.getElementById('liquid-canvas');
         if (canvas && LiquidBackground) {
           const app = LiquidBackground(canvas);
-          app.loadImage('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&h=800&fit=crop');
-          app.liquidPlane.material.metalness = 0.75;
-          app.liquidPlane.material.roughness = 0.25;
-          app.liquidPlane.uniforms.displacementScale.value = 5;
+          // Use a dark blue/navy gradient image - no pink/red
+          app.loadImage('https://images.unsplash.com/photo-1557683316-973673baf926?w=1200&h=800&fit=crop');
+          app.liquidPlane.material.metalness = 0.85;
+          app.liquidPlane.material.roughness = 0.2;
+          app.liquidPlane.uniforms.displacementScale.value = 3;
           app.setRain(false);
           window.__liquidApp = app;
         }
@@ -48,21 +49,31 @@ export function LiquidEffectAnimation() {
     }, [])
 
     return (
-        <canvas
-            ref={canvasRef}
-            id="liquid-canvas"
+        <div
             style={{
                 position: 'fixed',
                 top: 0,
                 left: 0,
-                width: '100%',
-                height: '100%',
-                minHeight: '100vh',
-                minWidth: '100vw',
+                width: '100vw',
+                height: '100vh',
                 zIndex: 0,
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                background: 'linear-gradient(180deg, #0a1628 0%, #0d1f3c 50%, #0a1a30 100%)'
             }}
-        />
+        >
+            <canvas
+                ref={canvasRef}
+                id="liquid-canvas"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    opacity: 0.6
+                }}
+            />
+        </div>
     )
 }
 
