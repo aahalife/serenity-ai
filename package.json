@@ -14,10 +14,12 @@
     "@google/genai": "^1.31.0",
     "@google/generative-ai": "^0.24.1",
     "@mediapipe/tasks-vision": "^0.10.22-rc.20250304",
+    "@radix-ui/react-slot": "^1.2.4",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@supabase/supabase-js": "^2.84.0",
     "@types/three": "^0.181.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "composio-core": "^0.5.39",
     "framer-motion": "^12.23.25",
@@ -29,6 +31,7 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-webcam": "^7.2.0",
+    "tailwind-merge": "^3.4.0",
     "three": "^0.181.2"
   },
   "devDependencies": {
