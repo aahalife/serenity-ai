@@ -1,6 +1,4 @@
-"use client";
-
-import type { TargetAndTransition } from "motion/react";
+import type { TargetAndTransition, Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -98,7 +96,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
     const words = fullText.split(" ");
 
     // Container variants for staggering
-    const container = {
+    const container: Variants = {
         hidden: { opacity: 0 },
         visible: (i = 1) => ({
             opacity: 1,
@@ -107,7 +105,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
     };
 
     // Child variants for each letter
-    const child = {
+    const child: Variants = {
         visible: {
             opacity: 1,
             x: 0,
