@@ -112,33 +112,34 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                             fontSize: fontSize,
                             strokeWidth: 2.5,
                             color: "white",
-                            id: "greeting-1",
+                            id: "greeting-line-1",
                             duration: 2000,
                             textAlign: "center",
                             x: 0,
-                            y: 50, // Move down slightly
+                            y: 10,
                             letterSpacing: 2,
-                            autoAnimation: true,
                         },
                         {
                             text: subText,
-                            fontSize: fontSize * 0.6, // Smaller subtext
+                            fontSize: fontSize * 0.6,
                             strokeWidth: 2,
                             color: "white",
-                            id: "greeting-2",
-                            duration: 2000,
+                            id: "greeting-line-2",
+                            duration: 1500,
                             textAlign: "center",
                             x: 0,
-                            y: 10, // Relative to previous line
+                            y: 60, // Relative advance to place it below line 1
                             letterSpacing: 1,
-                            autoAnimation: true,
-                            queued: true, // Play after first
+                            queue: true, // Wait for previous step
                         }
                     ],
                     {
                         fontSize: fontSize,
                         strokeWidth: 2.5,
                         color: "white",
+                        autoAnimation: true,
+                        // @ts-ignore
+                        queue: true, // Use 'queue' for sequential playback
                     }
                 );
             } catch (error) {
