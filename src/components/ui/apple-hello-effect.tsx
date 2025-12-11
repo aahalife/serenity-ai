@@ -1,7 +1,7 @@
 import type { TargetAndTransition, Variants } from "motion/react";
 import { motion, useAnimation } from "motion/react";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const initialProps: TargetAndTransition = {
     pathLength: 0,
@@ -74,67 +74,73 @@ function AppleHelloEnglishEffect({
 
 // Derived Component to handle the full greeting "Hello [Name]! Reflect & Thrive"
 function GreetingHeader({ className, name }: { className?: string, name?: string }) {
-    // "Hello [Name]! Reflect & Thrive"
-    // If name is missing: "Hello! Reflect & Thrive"
-    const fullText = name
-        ? `Hello ${name}! Reflect & Thrive`
-        : `Hello! Reflect & Thrive`;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const varaInstance = useRef<any>(null);
 
-    // Container variants for staggering
-    const container: Variants = {
-        hidden: { opacity: 0 },
-        visible: (i = 1) => ({
-            opacity: 1,
-            transition: { staggerChildren: 0.12, delayChildren: 0.04 * i }, // Slower stagger for handwriting feel
-        }),
-    };
+    useEffect(() => {
+        if (!containerRef.current) return;
 
-    // Child variants for each letter - emulate writing
-    const child: Variants = {
-        visible: {
-            opacity: 1,
-            y: 0,
-            x: 0,
-            transition: {
-                type: "spring",
-                damping: 12,
-                stiffness: 100,
-            },
-        },
-        hidden: {
-            opacity: 0,
-            y: 5,
-            x: -2,
-            transition: {
-                type: "spring",
-                damping: 12,
-                stiffness: 100,
-            },
-        },
-    };
+        // Cleanup previous instance
+        containerRef.current.innerHTML = "";
+
+        // "Hello [Name]! Reflect & Thrive"
+        const text = name
+            ? `Hello ${name}! Reflect & Thrive`
+            : `Hello! Reflect & Thrive`;
+
+        const fontSize = window.innerWidth < 768 ? 32 : 48;
+
+        // Dynamically import Vara to avoid SSR usage of window
+        const initVara = async () => {
+            try {
+                // @ts-ignore
+                const Vara = (await import("vara")).default;
+
+                varaInstance.current = new Vara(
+                    "#vara-container",
+                    "/fonts/Pacifico.json",
+                    [
+                        {
+                            text: text,
+                            fontSize: fontSize,
+                            strokeWidth: 1.5,
+                            color: "white",
+                            id: "greeting",
+                            duration: 3500,
+                            textAlign: "left",
+                            x: 10,
+                            y: 10,
+                        },
+                    ],
+                    {
+                        fontSize: fontSize,
+                        strokeWidth: 1.5,
+                        color: "white",
+                        autoAnimation: true,
+                        queued: true,
+                    }
+                );
+            } catch (error) {
+                console.error("Failed to load Vara:", error);
+            }
+        };
+
+        initVara();
+
+        // Cleanup function
+        return () => {
+            if (containerRef.current) {
+                containerRef.current.innerHTML = "";
+            }
+        };
+    }, [name]);
 
     return (
-        <motion.div
-            className={cn("flex flex-wrap items-end gap-x-1", className)}
-            variants={container}
-            initial="hidden"
-            animate="visible"
-        >
-            {Array.from(fullText).map((letter, index) => (
-                <motion.span
-                    variants={child}
-                    key={index}
-                    className="text-4xl md:text-5xl font-normal text-white font-playwrite"
-                    style={{
-                        lineHeight: '1.2',
-                        display: "inline-block", // Needed for transform animations
-                        minWidth: letter === " " ? "0.3em" : "auto" // Ensure spaces are visible
-                    }}
-                >
-                    {letter === " " ? "\u00A0" : letter}
-                </motion.span>
-            ))}
-        </motion.div>
+        <div
+            id="vara-container"
+            ref={containerRef}
+            className={cn("w-full h-32 md:h-40 overflow-hidden", className)}
+        />
     );
 }
 
