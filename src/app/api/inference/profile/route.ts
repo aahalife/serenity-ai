@@ -10,6 +10,7 @@ const NEW_PROFILE_PROMPT = `You are tasked with creating a comprehensive user pr
 - Location: {{LOCATION}}
 - Occupation: {{OCCUPATION}}
 - Family: {{FAMILY}}
+- Birthday: {{BIRTHDAY}}
 
 ## Instructions for Inference:
 
@@ -127,7 +128,9 @@ Generate a JSON object with the following structure. For any field where you can
     },
     "values_priorities": {
       "probable_for_demographic": "[age and cultural context]"
-    }
+    },
+    "zodiac_sign": "[Calculated from Birthday]",
+    "zodiac_traits": "[Personality traits associated with the sign]"
   },
   
   "habits_behaviors": {
@@ -213,6 +216,12 @@ Generate a JSON object with the following structure. For any field where you can
 - DO NOT infer specific political or religious beliefs without explicit indicators
 - DO NOT assume family structure or relationship quality
 - DO NOT infer personality traits or psychological profiles
+- DO NOT infer specific medical conditions, mental health diagnoses, or trauma
+
+### Zodiac Inference:
+- Use the provided **Birthday** to determine the Zodiac/Star sign (e.g., Aries, Taurus).
+- Infer general personality traits associated with that sign (e.g., Aries -> bold, ambitious; Pisces -> empathetic, artistic).
+- Include these insights in the profile under \`zodiac_sign\` and \`zodiac_traits\`.
 
 Remember: This profile represents statistical probabilities and common patterns, not certainties about the individual. Always mark inferences with appropriate confidence levels and avoid stereotyping.
 `;
@@ -225,9 +234,9 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, age, gender, location, occupation, family } = body;
+    const { name, age, gender, location, occupation, family, birthday } = body;
 
-    console.log("Profile Inference Request (Claude):", { name, age, gender, location, occupation });
+    console.log("Profile Inference Request (Claude):", { name, age, gender, location, occupation, birthday });
 
     const prompt = NEW_PROFILE_PROMPT
       .replace("{{NAME}}", name || "User")
@@ -235,7 +244,8 @@ export async function POST(req: Request) {
       .replace("{{GENDER}}", gender || "Unknown")
       .replace("{{LOCATION}}", location || "Unknown")
       .replace("{{OCCUPATION}}", occupation || "Unknown")
-      .replace("{{FAMILY}}", family || "Unknown");
+      .replace("{{FAMILY}}", family || "Unknown")
+      .replace("{{BIRTHDAY}}", birthday || "Unknown");
 
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-5-20250929",

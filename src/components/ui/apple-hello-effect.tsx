@@ -80,6 +80,8 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
     useEffect(() => {
         if (!containerRef.current) return;
 
+        let ignore = false;
+
         // Cleanup previous instance
         containerRef.current.innerHTML = "";
 
@@ -90,13 +92,17 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
             : `Hello! Reflect & Thrive`;
 
         // Increased font size for better readability
-        const fontSize = window.innerWidth < 768 ? 36 : 58;
+        const fontSize = window.innerWidth < 768 ? 42 : 72; // 4. Increase font size: `mobile ? 42 : 72`.
 
         // Dynamically import Vara to avoid SSR usage of window
         const initVara = async () => {
             try {
                 // @ts-ignore
                 const Vara = (await import("vara")).default;
+
+                if (ignore || !containerRef.current) return; // 2. Check `if (ignore || !containerRef.current) return;`
+
+                containerRef.current.innerHTML = ""; // Ensure clean state before drawing
 
                 varaInstance.current = new Vara(
                     "#vara-container",
@@ -105,7 +111,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                         {
                             text: text,
                             fontSize: fontSize,
-                            strokeWidth: 2,
+                            strokeWidth: 2.5, // 6. Fix `strokeWidth` slightly bolder (2.5)
                             color: "white",
                             id: "greeting",
                             duration: 3000,
@@ -117,7 +123,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                     ],
                     {
                         fontSize: fontSize,
-                        strokeWidth: 2,
+                        strokeWidth: 2.5, // 6. Fix `strokeWidth` slightly bolder (2.5)
                         color: "white",
                         autoAnimation: true,
                         queued: true,
@@ -128,10 +134,12 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
             }
         };
 
-        initVara();
+        const timer = setTimeout(() => initVara(), 100); // Add setTimeout
 
         // Cleanup function
         return () => {
+            ignore = true; // 3. Set `ignore = true` in cleanup.
+            clearTimeout(timer); // Clear the timeout
             if (containerRef.current) {
                 containerRef.current.innerHTML = "";
             }
@@ -142,7 +150,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
         <div
             id="vara-container"
             ref={containerRef}
-            className={cn("w-full h-32 md:h-40 overflow-hidden", className)}
+            className={cn("w-full h-40 md:h-64 overflow-hidden flex items-center justify-center", className)} // 5. Update `h-32 md:h-40` to `h-40 md:h-64`
         />
     );
 }

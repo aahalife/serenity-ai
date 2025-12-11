@@ -37,7 +37,8 @@ export default function Onboarding() {
         gender: "",
         location: "",
         occupation: "",
-        family: ""
+        family: "",
+        birthday: "",
     });
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const { play, stop } = useAudio();
@@ -225,8 +226,8 @@ export default function Onboarding() {
                                         />
                                         <input
                                             type="date"
-                                            value={(formData as any).birthday || ""}
-                                            onChange={(e) => setFormData({ ...formData, birthday: e.target.value } as any)}
+                                            value={formData.birthday}
+                                            onChange={(e) => setFormData({ ...formData, birthday: e.target.value })}
                                             placeholder="Birthday"
                                             className={`${styles.input} col-span-2`}
                                         />

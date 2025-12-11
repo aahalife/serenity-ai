@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { LogOut, LogIn } from "lucide-react";
+import { ThemeSwitcher } from "./ui/apple-liquid-glass-switcher";
 
 interface SidebarProps {
     isCollapsed: boolean;
@@ -20,6 +21,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
     const { data: session, status } = useSession();
     const [userProfile, setUserProfile] = useState<any>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [theme, setTheme] = useState<"light" | "dark" | "dim">("dark");
 
     useEffect(() => {
         const handleResize = () => {
@@ -36,6 +38,20 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []); // Empty dependency array to run only on mount
+
+    // Apply theme effect
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove("light", "dark", "dim");
+
+        if (theme === "dim") {
+            root.classList.add("dark"); // Map dim to dark for Tailwind
+            root.setAttribute("data-theme", "dim");
+        } else {
+            root.classList.add(theme);
+            root.setAttribute("data-theme", theme);
+        }
+    }, [theme]);
 
     useEffect(() => {
         const savedProfile = localStorage.getItem("userProfile");
@@ -123,6 +139,13 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                     );
                 })}
             </nav>
+
+            {/* Theme Switcher - Only visible when expanded */}
+            {!isCollapsed && (
+                <div className="px-4 mb-4 flex justify-center">
+                    <ThemeSwitcher value={theme} onValueChange={setTheme} />
+                </div>
+            )}
 
             <div className={styles.userProfile}>
                 {status === "authenticated" && session?.user ? (
