@@ -1,8 +1,9 @@
 "use client";
 
 import type { TargetAndTransition } from "motion/react";
-import { motion } from "motion/react";
+import { motion, useAnimation } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const initialProps: TargetAndTransition = {
     pathLength: 0,
@@ -19,8 +20,6 @@ type Props = React.ComponentProps<typeof motion.svg> & {
     onAnimationComplete?: () => void;
 };
 
-// ... (Effect components below)
-
 function AppleHelloEnglishEffect({
     className,
     speed = 1,
@@ -31,12 +30,12 @@ function AppleHelloEnglishEffect({
 
     return (
         <motion.svg
-            className={cn("h-20", className)}
+            className={cn("h-16", className)} // Reduced height from h-20 to h-16
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 638 200"
             fill="none"
             stroke="currentColor"
-            strokeWidth="14.8883"
+            strokeWidth="12" // Slightly thinner stroke to match font
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
@@ -69,7 +68,7 @@ function AppleHelloEnglishEffect({
                     delay: calc(0.7),
                     opacity: { duration: 0.7, delay: calc(0.7) },
                 }}
-                onAnimationComplete={onAnimationComplete}
+                onAnimationComplete={onAnimationComplete} // This triggers the text animation
             />
         </motion.svg>
     );
@@ -77,20 +76,92 @@ function AppleHelloEnglishEffect({
 
 // Derived Component to handle the full greeting "Hello [Name]! Reflect & Thrive"
 function GreetingHeader({ className, name }: { className?: string, name?: string }) {
+    const [startText, setStartText] = useState(false);
+
+    const text = `${name ? "!" : ""} Reflect & Thrive`;
+
+    // Explicitly handle the logic: if name exists, render "Name + text". Else just "text" with punctuation adjusted?
+    // User wants: "Hello [Name]! Reflect & Thrive"
+    // If name is "Bharat", it becomes: "Hello Bharat! Reflect & Thrive"
+    // The "Hello" is the SVG.
+    // The rest is text.
+
+    // If name is present: textToShow = " " + name + "! Reflect & Thrive"
+    // If name is missing: textToShow = "! Reflect & Thrive" -> actually "! Reflect & Thrive" looks weird after "Hello".
+    // Better fallback: if no name, just "Reflect & Thrive" (with space) or "! Reflect & Thrive".
+    // Let's assume punctuation: "Hello" (SVG) + " " + "Name" + "!" + "Reflect..."
+
+    const fullText = name
+        ? ` ${name}! Reflect & Thrive`
+        : `! Reflect & Thrive`;
+
+    const words = fullText.split(" ");
+
+    // Container variants for staggering
+    const container = {
+        hidden: { opacity: 0 },
+        visible: (i = 1) => ({
+            opacity: 1,
+            transition: { staggerChildren: 0.08, delayChildren: 0.04 * i },
+        }),
+    };
+
+    // Child variants for each letter
+    const child = {
+        visible: {
+            opacity: 1,
+            x: 0,
+            y: 0,
+            transition: {
+                type: "spring",
+                damping: 12,
+                stiffness: 100,
+            },
+        },
+        hidden: {
+            opacity: 0,
+            x: -5,
+            y: 5,
+            transition: {
+                type: "spring",
+                damping: 12,
+                stiffness: 100,
+            },
+        },
+    };
+
     return (
-        <div className={cn("flex flex-wrap items-center gap-2", className)}>
+        <div className={cn("flex flex-wrap items-end gap-2", className)}>
             {/* The Hello SVG Animation */}
-            <AppleHelloEnglishEffect className="h-20 text-white w-auto" speed={1} />
+            {/* Reduced height to match text better */}
+            <AppleHelloEnglishEffect
+                className="h-14 md:h-20 text-white w-auto"
+                speed={0.8} // Faster animation (smaller number = faster? No, original had speed=1. User said "hello animation is too big make it smaller". )
+                // Note: The original component uses `duration: calc(value)`. if speed is higher, `x * speed`, duration is longer. 
+                // So to make it faster, speed should be < 1. 
+                // Wait, original logic: `calc = (x) => x * speed`. 
+                // If speed is 0.5, duration is halved -> Faster.
+                onAnimationComplete={() => setStartText(true)}
+            />
 
             {/* The Dynamic Name and Slogan */}
-            <motion.h1
-                className="text-4xl md:text-5xl font-normal text-white font-montage mt-4"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 2.5, duration: 1 }}
+            <motion.div
+                className="flex overflow-hidden pb-1" // pb-1 for descenders
+                variants={container}
+                initial="hidden"
+                animate={startText ? "visible" : "hidden"}
             >
-                {name ? `${name}! ` : "! "}Reflect & Thrive
-            </motion.h1>
+                {Array.from(fullText).map((letter, index) => (
+                    <motion.span
+                        variants={child}
+                        key={index}
+                        className="text-4xl md:text-6xl font-normal text-white font-sacramento" // Use Sacramento
+                        style={{ lineHeight: '0.8' }} // Adjust line height to align with SVG
+                    >
+                        {letter === " " ? "\u00A0" : letter}
+                    </motion.span>
+                ))}
+            </motion.div>
         </div>
     );
 }

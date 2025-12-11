@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Roboto } from "next/font/google";
+import { Inter, Roboto, Sacramento } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -13,6 +13,13 @@ const roboto = Roboto({
     weight: ["400", "500", "700"],
     subsets: ["latin"],
     variable: "--font-roboto",
+    display: "swap",
+});
+
+const sacramento = Sacramento({
+    weight: "400",
+    subsets: ["latin"],
+    variable: "--font-sacramento",
     display: "swap",
 });
 
@@ -67,7 +74,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} antialiased`}>
+            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} ${sacramento.variable} antialiased`}>
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>
