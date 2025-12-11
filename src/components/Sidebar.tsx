@@ -129,10 +129,12 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
                             {isActive && (
                                 <motion.div
                                     layoutId="activeNav"
-                                    className={styles.activeIndicator}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
+                                    className="nav-active-indicator"
+                                    transition={{
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 30,
+                                    }}
                                 />
                             )}
                         </Link>

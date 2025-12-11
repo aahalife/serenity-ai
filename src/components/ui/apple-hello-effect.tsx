@@ -86,13 +86,12 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
         containerRef.current.innerHTML = "";
 
         // "Hello [Name]! Reflect & Thrive"
-        console.log("Greeting name prop:", name);
-        const text = name
-            ? `Hello ${name}! Reflect & Thrive`
-            : `Hello! Reflect & Thrive`;
+        const greetingText = name ? `Hello ${name}!` : "Hello!";
+        const subText = "Reflect & Thrive";
 
         // Increased font size for better readability
-        const fontSize = window.innerWidth < 768 ? 42 : 72; // 4. Increase font size: `mobile ? 42 : 72`.
+        const fontSize = window.innerWidth < 768 ? 42 : 72;
+        const containerWidth = containerRef.current.clientWidth;
 
         // Dynamically import Vara to avoid SSR usage of window
         const initVara = async () => {
@@ -100,33 +99,46 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                 // @ts-ignore
                 const Vara = (await import("vara")).default;
 
-                if (ignore || !containerRef.current) return; // 2. Check `if (ignore || !containerRef.current) return;`
+                if (ignore || !containerRef.current) return;
 
-                containerRef.current.innerHTML = ""; // Ensure clean state before drawing
+                containerRef.current.innerHTML = "";
 
                 varaInstance.current = new Vara(
                     "#vara-container",
                     "/fonts/Pacifico.json",
                     [
                         {
-                            text: text,
+                            text: greetingText,
                             fontSize: fontSize,
-                            strokeWidth: 2.5, // 6. Fix `strokeWidth` slightly bolder (2.5)
+                            strokeWidth: 2.5,
                             color: "white",
-                            id: "greeting",
-                            duration: 3000,
+                            id: "greeting-1",
+                            duration: 2000,
                             textAlign: "center",
                             x: 0,
-                            y: 5,
+                            y: 50, // Move down slightly
                             letterSpacing: 2,
+                            autoAnimation: true,
                         },
+                        {
+                            text: subText,
+                            fontSize: fontSize * 0.6, // Smaller subtext
+                            strokeWidth: 2,
+                            color: "white",
+                            id: "greeting-2",
+                            duration: 2000,
+                            textAlign: "center",
+                            x: 0,
+                            y: 10, // Relative to previous line
+                            letterSpacing: 1,
+                            autoAnimation: true,
+                            queued: true, // Play after first
+                        }
                     ],
                     {
                         fontSize: fontSize,
-                        strokeWidth: 2.5, // 6. Fix `strokeWidth` slightly bolder (2.5)
+                        strokeWidth: 2.5,
                         color: "white",
-                        autoAnimation: true,
-                        queued: true,
                     }
                 );
             } catch (error) {

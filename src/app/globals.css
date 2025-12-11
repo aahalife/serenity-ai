@@ -448,89 +448,157 @@ button {
 .lg-content:hover::after {
     --angle-1: -125deg;
 }
+
 /* Styles for the switcher (Liquid Glass Effect) */
 .switcher {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.05); /* Subtle glass background */
-  overflow: hidden; 
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 9999px;
+    background-color: #171717;
+    /* Darker background from reference */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .switcher__option {
-  position: relative;
-  cursor: pointer;
-  z-index: 2; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
+    position: relative;
+    cursor: pointer;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .switcher__input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .switcher__icon {
-  width: 2rem; 
-  height: 2rem; 
-  padding: 0.25rem; 
-  border-radius: 9999px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  fill: currentColor;
-  --c: #a1a1aa; /* Default gray for unselected icons */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    fill: currentColor;
+    --c: #a1a1aa;
+    /* Default gray for unselected icons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.switcher__input:checked + .switcher__icon {
-  --c: #fff; /* White for selected icon */
+.switcher__input:checked+.switcher__icon {
+    --c: #fff;
+    /* White for selected icon */
 }
 
 .switcher__filter {
-  position: absolute;
-  top: 0.5rem; 
-  left: 0.5rem; 
-  width: 2rem;   
-  height: 2rem;  
-  pointer-events: none;
-  z-index: 1;
-  filter: url(#switcher);
-  transform: translateX(calc((2rem + 0.5rem) * var(--offset, 0))); 
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 9999px;
+    background-color: #3f3f46;
+    /* Lighter grey for the active pill */
+    filter: url(#switcher);
+    transform: translateX(calc((2rem + 0.5rem) * var(--offset, 0)));
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy elastic transition */
 }
 
 /* Data attribute driven transform for filter */
-.switcher[data-previous="1"] { --offset: 0; }
-.switcher[data-previous="2"] { --offset: 1; }
-.switcher[data-previous="3"] { --offset: 2; }
+.switcher[data-previous="1"] {
+    --offset: 0;
+}
 
-input[c-option="1"]:checked ~ .switcher__filter { --offset: 0 !important; }
-input[c-option="2"]:checked ~ .switcher__filter { --offset: 1 !important; }
-input[c-option="3"]:checked ~ .switcher__filter { --offset: 2 !important; }
+.switcher[data-previous="2"] {
+    --offset: 1;
+}
+
+.switcher[data-previous="3"] {
+    --offset: 2;
+}
+
+input[data-option="1"]:checked~.switcher__filter {
+    --offset: 0 !important;
+}
+
+input[data-option="2"]:checked~.switcher__filter {
+    --offset: 1 !important;
+}
+
+input[data-option="3"]:checked~.switcher__filter {
+    --offset: 2 !important;
+}
 
 @keyframes scaleToggle {
-  0% { scale: 1 1; }
-  50% { scale: 1.1 1; }
-  100% { scale: 1 1; }
+    0% {
+        transform: scale(1, 1);
+    }
+
+    50% {
+        transform: scale(1.1, 1);
+    }
+
+    100% {
+        transform: scale(1, 1);
+    }
 }
 
-@keyframes scaleToggle2 {
-  0% { scale: 1 1; }
-  50% { scale: 1.2 1; }
-  100% { scale: 1 1; }
+/* Sidebar Liquid Active Indicator */
+.nav-active-indicator {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: linear-gradient(90deg,
+            rgba(59, 130, 246, 0.15) 0%,
+            rgba(37, 99, 235, 0.05) 100%);
+    /* Subtle blue gradient like screenshot */
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    /* Blueish border */
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 0 20px rgba(59, 130, 246, 0.05);
+    backdrop-filter: blur(8px);
+    z-index: -1;
 }
 
-@keyframes scaleToggle3 {
-  0% { scale: 1 1; }
-  50% { scale: 1.1 1; }
-  100% { scale: 1 1; }
+/* Optional: Add a subtle glow/shine animation */
+.nav-active-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent);
+    transform: skewX(-25deg);
+    animation: sidebar-shine 3s infinite;
+}
+
+@keyframes sidebar-shine {
+    0% {
+        left: -100%;
+    }
+
+    20% {
+        left: 200%;
+    }
+
+    100% {
+        left: 200%;
+    }
 }
