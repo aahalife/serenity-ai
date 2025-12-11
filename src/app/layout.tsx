@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Roboto, Sacramento } from "next/font/google";
+import { Inter, Roboto, Sacramento, Playwrite_US_Trad } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -20,6 +20,12 @@ const sacramento = Sacramento({
     weight: "400",
     subsets: ["latin"],
     variable: "--font-sacramento",
+    display: "swap",
+});
+
+const playwrite = Playwrite_US_Trad({
+    weight: "400",
+    variable: "--font-playwrite",
     display: "swap",
 });
 
@@ -74,7 +80,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} ${sacramento.variable} antialiased`}>
+            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} ${sacramento.variable} ${playwrite.variable} antialiased`}>
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>

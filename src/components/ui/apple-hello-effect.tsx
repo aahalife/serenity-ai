@@ -74,42 +74,27 @@ function AppleHelloEnglishEffect({
 
 // Derived Component to handle the full greeting "Hello [Name]! Reflect & Thrive"
 function GreetingHeader({ className, name }: { className?: string, name?: string }) {
-    const [startText, setStartText] = useState(false);
-
-    const text = `${name ? "!" : ""} Reflect & Thrive`;
-
-    // Explicitly handle the logic: if name exists, render "Name + text". Else just "text" with punctuation adjusted?
-    // User wants: "Hello [Name]! Reflect & Thrive"
-    // If name is "Bharat", it becomes: "Hello Bharat! Reflect & Thrive"
-    // The "Hello" is the SVG.
-    // The rest is text.
-
-    // If name is present: textToShow = " " + name + "! Reflect & Thrive"
-    // If name is missing: textToShow = "! Reflect & Thrive" -> actually "! Reflect & Thrive" looks weird after "Hello".
-    // Better fallback: if no name, just "Reflect & Thrive" (with space) or "! Reflect & Thrive".
-    // Let's assume punctuation: "Hello" (SVG) + " " + "Name" + "!" + "Reflect..."
-
+    // "Hello [Name]! Reflect & Thrive"
+    // If name is missing: "Hello! Reflect & Thrive"
     const fullText = name
-        ? ` ${name}! Reflect & Thrive`
-        : `! Reflect & Thrive`;
-
-    const words = fullText.split(" ");
+        ? `Hello ${name}! Reflect & Thrive`
+        : `Hello! Reflect & Thrive`;
 
     // Container variants for staggering
     const container: Variants = {
         hidden: { opacity: 0 },
         visible: (i = 1) => ({
             opacity: 1,
-            transition: { staggerChildren: 0.08, delayChildren: 0.04 * i },
+            transition: { staggerChildren: 0.12, delayChildren: 0.04 * i }, // Slower stagger for handwriting feel
         }),
     };
 
-    // Child variants for each letter
+    // Child variants for each letter - emulate writing
     const child: Variants = {
         visible: {
             opacity: 1,
-            x: 0,
             y: 0,
+            x: 0,
             transition: {
                 type: "spring",
                 damping: 12,
@@ -118,8 +103,8 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
         },
         hidden: {
             opacity: 0,
-            x: -5,
             y: 5,
+            x: -2,
             transition: {
                 type: "spring",
                 damping: 12,
@@ -129,38 +114,27 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
     };
 
     return (
-        <div className={cn("flex flex-wrap items-end gap-2", className)}>
-            {/* The Hello SVG Animation */}
-            {/* Reduced height to match text better */}
-            <AppleHelloEnglishEffect
-                className="h-14 md:h-20 text-white w-auto"
-                speed={0.8} // Faster animation (smaller number = faster? No, original had speed=1. User said "hello animation is too big make it smaller". )
-                // Note: The original component uses `duration: calc(value)`. if speed is higher, `x * speed`, duration is longer. 
-                // So to make it faster, speed should be < 1. 
-                // Wait, original logic: `calc = (x) => x * speed`. 
-                // If speed is 0.5, duration is halved -> Faster.
-                onAnimationComplete={() => setStartText(true)}
-            />
-
-            {/* The Dynamic Name and Slogan */}
-            <motion.div
-                className="flex overflow-hidden pb-1" // pb-1 for descenders
-                variants={container}
-                initial="hidden"
-                animate={startText ? "visible" : "hidden"}
-            >
-                {Array.from(fullText).map((letter, index) => (
-                    <motion.span
-                        variants={child}
-                        key={index}
-                        className="text-4xl md:text-6xl font-normal text-white font-sacramento" // Use Sacramento
-                        style={{ lineHeight: '0.8' }} // Adjust line height to align with SVG
-                    >
-                        {letter === " " ? "\u00A0" : letter}
-                    </motion.span>
-                ))}
-            </motion.div>
-        </div>
+        <motion.div
+            className={cn("flex flex-wrap items-end gap-x-1", className)}
+            variants={container}
+            initial="hidden"
+            animate="visible"
+        >
+            {Array.from(fullText).map((letter, index) => (
+                <motion.span
+                    variants={child}
+                    key={index}
+                    className="text-4xl md:text-5xl font-normal text-white font-playwrite"
+                    style={{
+                        lineHeight: '1.2',
+                        display: "inline-block", // Needed for transform animations
+                        minWidth: letter === " " ? "0.3em" : "auto" // Ensure spaces are visible
+                    }}
+                >
+                    {letter === " " ? "\u00A0" : letter}
+                </motion.span>
+            ))}
+        </motion.div>
     );
 }
 

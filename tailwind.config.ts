@@ -9,6 +9,7 @@ const config: Config = {
             fontFamily: {
                 montage: ["var(--font-montage)", "serif"],
                 sacramento: ["var(--font-sacramento)", "cursive"],
+                playwrite: ["var(--font-playwrite)", "cursive"],
             },
         },
     },
