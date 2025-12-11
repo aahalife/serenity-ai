@@ -84,11 +84,13 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
         containerRef.current.innerHTML = "";
 
         // "Hello [Name]! Reflect & Thrive"
+        console.log("Greeting name prop:", name);
         const text = name
             ? `Hello ${name}! Reflect & Thrive`
             : `Hello! Reflect & Thrive`;
 
-        const fontSize = window.innerWidth < 768 ? 32 : 48;
+        // Increased font size for better readability
+        const fontSize = window.innerWidth < 768 ? 36 : 58;
 
         // Dynamically import Vara to avoid SSR usage of window
         const initVara = async () => {
@@ -103,18 +105,19 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                         {
                             text: text,
                             fontSize: fontSize,
-                            strokeWidth: 1.5,
+                            strokeWidth: 2,
                             color: "white",
                             id: "greeting",
-                            duration: 3500,
-                            textAlign: "left",
-                            x: 10,
-                            y: 10,
+                            duration: 3000,
+                            textAlign: "center",
+                            x: 0,
+                            y: 5,
+                            letterSpacing: 2,
                         },
                     ],
                     {
                         fontSize: fontSize,
-                        strokeWidth: 1.5,
+                        strokeWidth: 2,
                         color: "white",
                         autoAnimation: true,
                         queued: true,
