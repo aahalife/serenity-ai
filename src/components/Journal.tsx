@@ -7,12 +7,15 @@ import { useAudio } from "@/hooks/useAudio";
 import LiquidGlass from "./LiquidGlass";
 import { motion, AnimatePresence } from "framer-motion";
 import { StorageService, JournalEntry } from "@/services/storage";
+import { GreetingHeader } from "@/components/ui/apple-hello-effect";
 
 export default function Journal() {
     const [entry, setEntry] = useState("");
     const [entries, setEntries] = useState<JournalEntry[]>([]);
     const [isRecording, setIsRecording] = useState(false);
     const [isTyping, setIsTyping] = useState(false);
+    const [userName, setUserName] = useState("");
+
     const { play, toggleMute, isMuted } = useAudio();
     const [showInputModal, setShowInputModal] = useState(false);
 
@@ -26,6 +29,17 @@ export default function Journal() {
             setEntries(data);
         };
         loadEntries();
+
+        // Load User Name
+        try {
+            const savedProfile = localStorage.getItem("userProfile");
+            if (savedProfile) {
+                const { name } = JSON.parse(savedProfile);
+                if (name) setUserName(name.split(" ")[0]); // Use first name
+            }
+        } catch (e) {
+            console.error("Failed to load user name", e);
+        }
 
         // Crossfade logic: Play new background
         play("/audio/journalbkg.m4a", { volume: 0.3, loop: true, fadeInDuration: 2000 });
@@ -114,7 +128,7 @@ export default function Journal() {
             </div>
 
             <div className={styles.content}>
-                <h1 className={`${styles.title} font-montage`}>Reflect & Thrive</h1>
+                <GreetingHeader name={userName} className={`${styles.title} mb-4`} />
                 <p className={styles.subtitle}>Your thoughts are safe here.</p>
             </div>
 
