@@ -130,7 +130,7 @@ function GreetingHeader({ className, name }: { className?: string, name?: string
                             x: 0,
                             y: 60, // Relative advance to place it below line 1
                             letterSpacing: 1,
-                            queue: true, // Wait for previous step
+                            queued: true, // Wait for previous step
                         }
                     ],
                     {

@@ -302,97 +302,102 @@ export default function ChatInterface() {
             // Auto-Registration on 401
             if (error.message && error.message.includes("401")) {
                 const savedUserProfile = localStorage.getItem("userProfile");
-                if (savedUserProfile) {
-                    try {
-                        const profile = JSON.parse(savedUserProfile);
-                        // Use session email if profile email is missing
-                        const emailToUse = profile.email || session?.user?.email;
+                const profile = savedUserProfile ? JSON.parse(savedUserProfile) : {};
+                const emailToUse = profile.email || session?.user?.email;
 
-                        if (emailToUse) {
-                            const statusMsg: Message = {
+                if (emailToUse) {
+                    const statusMsg: Message = {
+                        id: Date.now().toString(),
+                        text: `Connecting to chat server...`,
+                        sender: "ai",
+                        timestamp: new Date(),
+                    };
+                    setMessages((prev) => [...prev, statusMsg]);
+
+                    // Update profile with email if missing
+                    if (!profile.email) {
+                        profile.email = emailToUse;
+                        localStorage.setItem("userProfile", JSON.stringify(profile));
+                    }
+
+                    const shadowPassword = `google_oauth_${emailToUse}_secret`;
+                    let accessToken = null;
+
+                    // Strategy 1: Try Login
+                    try {
+                        const data = await externalApi.login(emailToUse, shadowPassword);
+                        accessToken = data.access_token;
+                        console.log("Auto-login successful");
+                    } catch (loginErr) {
+                        console.log("Auto-login failed, trying registration...");
+
+                        // Strategy 2: Register then Login
+                        try {
+                            await externalApi.register({
+                                email: emailToUse,
+                                password: shadowPassword,
+                                name: profile.name || session?.user?.name || "User",
+                                age: parseInt(profile.age) || 25,
+                                gender_identity: profile.gender || "Prefer not to say",
+                                location: profile.location || "Unknown",
+                                stress_level: "5"
+                            });
+                            const data = await externalApi.login(emailToUse, shadowPassword);
+                            accessToken = data.access_token;
+                        } catch (regErr: any) {
+                            console.warn("Standard registration failed:", regErr);
+
+                            // Strategy 3: Force Register (Alias) if user exists but login failed
+                            // This handles the "account exists with different password" deadlock
+                            const alias = `${emailToUse.split('@')[0]}+${Date.now()}@${emailToUse.split('@')[1]}`;
+                            const aliasPassword = `google_oauth_${alias}_secret`;
+
+                            setMessages((prev) => [...prev, {
                                 id: Date.now().toString(),
-                                text: `Connection lost. Attempting to auto-connect as ${emailToUse}...`,
+                                text: `Account syncing needed. Creating secure session...`,
                                 sender: "ai",
                                 timestamp: new Date(),
-                            };
-                            setMessages((prev) => [...prev, statusMsg]);
+                            }]);
 
-                            // Update profile with email if missing
-                            if (!profile.email) {
-                                profile.email = emailToUse;
-                                localStorage.setItem("userProfile", JSON.stringify(profile));
-                            }
-
-                            // 1. Register
-                            const shadowPassword = `google_oauth_${emailToUse}_secret`;
                             try {
                                 await externalApi.register({
-                                    email: emailToUse,
-                                    password: shadowPassword,
+                                    email: alias,
+                                    password: aliasPassword,
                                     name: profile.name || session?.user?.name || "User",
                                     age: parseInt(profile.age) || 25,
                                     gender_identity: profile.gender || "Prefer not to say",
                                     location: profile.location || "Unknown",
                                     stress_level: "5"
                                 });
-                                setMessages((prev) => [...prev, {
-                                    id: Date.now().toString(),
-                                    text: "Registration successful. Logging in...",
-                                    sender: "ai",
-                                    timestamp: new Date(),
-                                }]);
-                            } catch (regError: any) {
-                                console.warn("Registration failed:", regError);
-                                // If user exists, we continue to login. 
-                                // But if password mismatch, login will fail.
-                                setMessages((prev) => [...prev, {
-                                    id: Date.now().toString(),
-                                    text: `Registration skipped (User might exist). Trying login... (${regError.message})`,
-                                    sender: "ai",
-                                    timestamp: new Date(),
-                                }]);
+                                const data = await externalApi.login(alias, aliasPassword);
+                                accessToken = data.access_token;
+                                // Update profile email to match the working alias for future sessions? 
+                                // Maybe not, keeps it clean. Just save token.
+                            } catch (aliasErr: any) {
+                                throw new Error("Unable to establish chat session: " + aliasErr.message);
                             }
-
-                            // 2. Login
-                            try {
-                                const data = await externalApi.login(emailToUse, shadowPassword);
-                                if (data && data.access_token) {
-                                    localStorage.setItem("external_api_token", data.access_token);
-
-                                    const successMsg: Message = {
-                                        id: (Date.now() + 1).toString(),
-                                        text: "Account connected! Retrying your message...",
-                                        sender: "ai",
-                                        timestamp: new Date(),
-                                    };
-                                    setMessages((prev) => [...prev, successMsg]);
-
-                                    // Retry the original message automatically
-                                    // We can't easily retry the exact function call here without recursion/state,
-                                    // but we can ask the user to send it again or just leave it.
-                                    // Let's try to call handleSend if we have the input? 
-                                    // No, inputValue might be cleared.
-                                    return;
-                                }
-                            } catch (loginError: any) {
-                                setMessages((prev) => [...prev, {
-                                    id: Date.now().toString(),
-                                    text: `Login failed: ${loginError.message}. The account might exist with a different password.`,
-                                    sender: "ai",
-                                    timestamp: new Date(),
-                                }]);
-                            }
-                        } else {
-                            setMessages((prev) => [...prev, {
-                                id: Date.now().toString(),
-                                text: "Auto-connect failed: No email found in session or profile.",
-                                sender: "ai",
-                                timestamp: new Date(),
-                            }]);
                         }
-                    } catch (authError) {
-                        console.error("Auto-registration failed", authError);
                     }
+
+                    if (accessToken) {
+                        localStorage.setItem("external_api_token", accessToken);
+                        const successMsg: Message = {
+                            id: (Date.now() + 1).toString(),
+                            text: "Combined & ready! Retrying your message...",
+                            sender: "ai",
+                            timestamp: new Date(),
+                        };
+                        setMessages((prev) => [...prev, successMsg]);
+                        // Optional: Auto-retry logic could go here if we had simple access to it
+                        return; // Stop processing error
+                    }
+                } else {
+                    setMessages((prev) => [...prev, {
+                        id: Date.now().toString(),
+                        text: "Auto-connect failed: No email found. Please complete profile.",
+                        sender: "ai",
+                        timestamp: new Date(),
+                    }]);
                 }
             }
 
