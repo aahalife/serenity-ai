@@ -67,18 +67,86 @@
     --radius-blob: 60% 40% 30% 70% / 60% 30% 70% 40%;
 
     --font-sans: var(--font-inter);
-    --font-heading: var(--font-montage);
-    --font-montage: 'Montage', serif;
+    --font-heading: 'Recoleta', serif;
+    --font-recoleta: 'Recoleta', serif;
 }
 
 @font-face {
-    font-family: 'Montage';
-    src: url('/styles/font/Montage.woff2') format('woff2'),
-        url('/styles/font/Montage.woff') format('woff');
+    font-family: 'Recoleta';
+    src: url('/fonts/recoleta.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
 }
+
+:root {
+    /* ... existing vars ... */
+    --font-heading: 'Recoleta', serif;
+    /* Updated from Montage */
+    /* ... */
+}
+
+/* ... existing styles ... */
+
+/* True Liquid Glass Effect (Reference Implementation) */
+/* SVG Filter definitions should be added to the DOM, but here are the classes */
+
+.glass-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* width/height controlled by component */
+    padding: 12px;
+    background: transparent;
+    border-radius: 9999px;
+    outline: none;
+    border: none;
+    z-index: 0;
+    transition: transform 0.2s ease;
+}
+
+.glass-btn:active {
+    transform: scale(0.95);
+}
+
+.glass-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 9999px;
+    box-shadow: inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7), inset 0 0 3px 1px rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.glass-btn::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    border-radius: 9999px;
+    backdrop-filter: blur(12px);
+    /* Fallback or additional blur */
+    /* filter: url(#btn-glass); - Requires SVG filter in DOM */
+    overflow: hidden;
+    isolation: isolate;
+}
+
+/* Sidebar Active Indicator using Liquid Glass */
+.nav-active-indicator {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    z-index: -1;
+    /* Liquid Glass props */
+    box-shadow: inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5), inset 0 0 3px 1px rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+}
+
 
 * {
     box-sizing: border-box;
