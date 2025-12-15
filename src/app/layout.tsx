@@ -57,8 +57,8 @@ export const metadata: Metadata = {
     description: "Your intelligent companion for well-being.",
     appleWebApp: {
         capable: true,
+        title: "Serenity AI",
         statusBarStyle: "black-translucent",
-        title: "Serenity",
     },
 };
 
@@ -80,7 +80,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={`${inter.variable} ${roboto.variable} ${montage.variable} ${petrona.variable} ${sacramento.variable} ${playwrite.variable} antialiased`}>
+            <body
+                className={`${petrona.variable} antialiased`}
+            >
                 <Providers>
                     <Layout>{children}</Layout>
                 </Providers>
