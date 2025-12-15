@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight, Sparkles, Brain, MessageSquare, Globe, Hand } from "lucide-react";
+import { Home, Wind, MessageCircle, BookOpen, Activity, Settings, User, Trophy, ChevronLeft, ChevronRight, Sparkles, Brain, MessageSquare, Globe, Hand, Bot } from "lucide-react";
 import styles from "./Sidebar.module.css";
 import clsx from "clsx";
 import { motion } from "framer-motion";
@@ -47,6 +47,7 @@ export default function Sidebar({ isCollapsed, toggleCollapse }: SidebarProps) {
 
     const navItems = [
         { name: "Dashboard", href: "/", icon: Home },
+        { name: "Home AI", href: "/home-ai", icon: Bot },
         { name: "Breathe", href: "/breathing", icon: Wind },
         { name: "Cool Breathe", href: "/cool-breathing", icon: Globe },
         { name: "Journal", href: "/journal", icon: BookOpen },
