@@ -2,8 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Mic, Loader2, StopCircle, Phone } from "lucide-react";
-import { generateLifeCoachResponse } from "@/lib/life-coach/agent";
+import { Send, Sparkles, Mic, Loader2, StopCircle, Phone, ArrowUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 type Message = {
@@ -30,7 +29,7 @@ export default function LifeCoachPage() {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
@@ -41,10 +40,6 @@ export default function LifeCoachPage() {
         setIsLoading(true);
 
         try {
-            // In a real app, this should be an API call to avoid exposing secrets on client
-            // But since this is a Next.js server component/action file, we can invoke it via a proxy or API route
-            // For now, simpler to use a dedicated API route again to be safe and compatible with edge
-
             const response = await fetch('/api/life-coach/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -57,14 +52,14 @@ export default function LifeCoachPage() {
             const data = await response.json();
             if (data.error) {
                 console.error("Chat Error:", data.error);
-                setMessages(prev => [...prev, { role: 'assistant', content: "[worried] I'm having trouble connecting. Please try again.." }]);
+                setMessages(prev => [...prev, { role: 'assistant', content: "[worried] I'm having trouble connecting to my expert database. Please try again.." }]);
             } else {
                 setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
             }
 
         } catch (error) {
             console.error("Failed to send message:", error);
-            setMessages(prev => [...prev, { role: 'assistant', content: "[worried] Something went wrong. Please check your connection.." }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: "[worried] Something went wrong with the connection. Please check your internet.." }]);
         } finally {
             setIsLoading(false);
         }
@@ -78,9 +73,9 @@ export default function LifeCoachPage() {
     };
 
     return (
-        <div className="relative w-full h-screen overflow-hidden bg-black text-foreground">
-            {/* Background Video */}
-            <div className="absolute inset-0 z-0 opacity-30">
+        <div className="relative w-full h-screen overflow-hidden bg-black text-foreground font-sans">
+            {/* Ambient Background Video */}
+            <div className="absolute inset-0 z-0 opacity-40">
                 <video
                     autoPlay
                     loop
@@ -90,95 +85,108 @@ export default function LifeCoachPage() {
                 >
                     <source src="/assets/videos/aurora.mp4" type="video/mp4" />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/90 backdrop-blur-[2px]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black/95 backdrop-blur-[1px]" />
             </div>
 
-            <div className="relative z-10 w-full h-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col pt-20">
+            <div className="relative z-10 w-full h-full max-w-5xl mx-auto flex flex-col md:pt-6">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 bg-white/5 backdrop-blur-xl rounded-t-3xl border border-white/10 border-b-0">
+                <div className="flex items-center justify-between px-6 py-4 mx-4 mt-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-500/20">
-                            <Sparkles className="w-6 h-6 text-white" />
+                        <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+                            <Sparkles className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-xl font-medium text-white tracking-wide">The Mentor</h1>
-                            <p className="text-sm text-white/50">Life Strategy & Wisdom • Gemini 3.0</p>
+                            <h1 className="text-lg font-semibold text-white tracking-wide">The Mentor</h1>
+                            <p className="text-xs text-white/50 font-medium tracking-wider uppercase">Life Strategy & Wisdom</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsPaused(!isPaused)}
-                            className={`p-2 rounded-xl transition-all border ${isPaused ? 'bg-amber-500/10 border-amber-500/30 text-amber-200' : 'bg-white/5 border-white/10 text-white/60 hover:text-white'}`}
+                            className={`p-2.5 rounded-xl transition-all border flex items-center gap-2 ${isPaused ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                             title={isPaused ? "Resume Daily Check-ins" : "Pause Daily Check-ins"}
                         >
-                            <StopCircle className="w-5 h-5" />
+                            <StopCircle className="w-4 h-4" />
+                            <span className="text-xs font-medium hidden sm:inline">{isPaused ? "Paused" : "Active"}</span>
                         </button>
-                        <div className="h-8 w-[1px] bg-white/10 mx-1" />
-                        <button className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl transition-colors">
+                        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-xl transition-all font-medium text-sm">
                             <Phone className="w-4 h-4" />
-                            <span className="text-sm font-medium">WhatsApp</span>
+                            <span className="hidden sm:inline">WhatsApp</span>
                         </button>
                     </div>
                 </div>
 
                 {/* Chat Area */}
-                <div className="flex-1 bg-black/20 backdrop-blur-xl border-x border-white/10 p-6 overflow-y-auto space-y-6">
+                <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollhider">
                     <AnimatePresence initial={false}>
                         {messages.map((msg, index) => (
                             <motion.div
                                 key={index}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
+                                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`max-w-[85%] rounded-3xl p-5 ${msg.role === 'user'
-                                        ? 'bg-indigo-600/20 border border-indigo-500/30 rounded-tr-sm text-right'
-                                        : 'bg-white/10 border border-white/5 rounded-tl-sm'
+                                <div className={`max-w-[85%] md:max-w-[70%] rounded-3xl p-5 shadow-xl ${msg.role === 'user'
+                                    ? 'bg-gradient-to-br from-indigo-600/30 to-violet-600/30 border border-indigo-500/30 rounded-tr-sm text-right backdrop-blur-md'
+                                    : 'bg-white/5 border border-white/10 rounded-tl-sm backdrop-blur-md'
                                     }`}>
-                                    <p className="text-base text-white/90 leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                    <p className="text-[15px] md:text-base text-white/90 leading-relaxed whitespace-pre-wrap font-light tracking-wide">{msg.content}</p>
                                 </div>
                             </motion.div>
                         ))}
                     </AnimatePresence>
+
                     {isLoading && (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex justify-start"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-start pl-2"
                         >
-                            <div className="bg-white/5 border border-white/5 rounded-3xl rounded-tl-sm p-4 flex items-center gap-3">
-                                <Loader2 className="w-5 h-5 animate-spin text-white/50" />
-                                <span className="text-sm text-white/50">Consulting the playbook...</span>
+                            <div className="bg-white/5 border border-white/5 rounded-3xl rounded-tl-sm px-5 py-3 flex items-center gap-3 backdrop-blur-sm">
+                                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                                <span className="text-sm text-indigo-200/70 font-medium animate-pulse">Consulting the Playbook...</span>
                             </div>
                         </motion.div>
                     )}
-                    <div ref={messagesEndRef} />
+                    <div ref={messagesEndRef} className="h-4" />
                 </div>
 
                 {/* Input Area */}
-                <div className="p-4 bg-white/5 backdrop-blur-xl rounded-b-3xl border border-white/10 border-t-0">
-                    <div className="relative flex items-center gap-3">
-                        <button className="p-4 rounded-full hover:bg-white/10 transition-colors text-white/60">
-                            <Mic className="w-6 h-6" />
+                <div className="p-4 md:p-6 bg-gradient-to-t from-black via-black/90 to-transparent">
+                    <div className="relative max-w-4xl mx-auto bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 flex items-end gap-2 shadow-2xl ring-1 ring-white/5 focus-within:ring-indigo-500/30 transition-all">
+                        <button className="p-3 rounded-xl hover:bg-white/10 transition-colors text-white/40 hover:text-white/80">
+                            <Mic className="w-5 h-5" />
                         </button>
-                        <input
-                            type="text"
+
+                        <textarea
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Share a thought, or paste a link to analyze..."
+                            placeholder="Share a thought, situation, or paste a link..."
                             disabled={isLoading}
-                            className="flex-1 bg-black/30 border border-white/10 rounded-2xl px-6 py-4 text-base text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all disabled:opacity-50"
+                            rows={1}
+                            className="flex-1 bg-transparent border-0 text-base text-white placeholder:text-white/20 focus:ring-0 focus:outline-none py-3 min-h-[48px] max-h-[120px] resize-none"
+                            style={{ height: 'auto', minHeight: '48px' }}
+                            onInput={(e) => {
+                                const target = e.target as HTMLTextAreaElement;
+                                target.style.height = 'auto';
+                                target.style.height = `${target.scrollHeight}px`;
+                            }}
                         />
+
                         <button
                             onClick={handleSend}
                             disabled={isLoading || !input.trim()}
-                            className="p-4 bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white rounded-2xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95"
+                            className="p-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-30 disabled:cursor-not-allowed group"
                         >
-                            <Send className="w-5 h-5" />
+                            <ArrowUp className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
                         </button>
                     </div>
+                    <p className="text-center text-[10px] text-white/20 mt-3 font-medium uppercase tracking-widest">
+                        Powered by Gemini Hybrid & Claude Sonnet
+                    </p>
                 </div>
             </div>
         </div>
