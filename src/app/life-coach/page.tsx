@@ -91,7 +91,7 @@ export default function LifeCoachPage() {
             <div className="relative z-10 w-full h-full max-w-5xl mx-auto flex flex-col md:pt-6">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 mx-4 mt-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl">
+                <div className="flex items-center justify-between px-6 py-4 mx-4 mt-4 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl relative z-20">
                     <div className="flex items-center gap-4">
                         <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
                             <Sparkles className="w-5 h-5 text-white" />
@@ -104,21 +104,26 @@ export default function LifeCoachPage() {
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsPaused(!isPaused)}
-                            className={`p-2.5 rounded-xl transition-all border flex items-center gap-2 ${isPaused ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
+                            className={`p-2.5 rounded-xl transition-all border flex items-center gap-2 cursor-pointer ${isPaused ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-white/5 border-white/10 text-white/60 hover:text-white hover:bg-white/10'}`}
                             title={isPaused ? "Resume Daily Check-ins" : "Pause Daily Check-ins"}
                         >
                             <StopCircle className="w-4 h-4" />
                             <span className="text-xs font-medium hidden sm:inline">{isPaused ? "Paused" : "Active"}</span>
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-xl transition-all font-medium text-sm">
+                        <a
+                            href="https://wa.me/16696006540"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/20 rounded-xl transition-all font-medium text-sm cursor-pointer"
+                        >
                             <Phone className="w-4 h-4" />
                             <span className="hidden sm:inline">WhatsApp</span>
-                        </button>
+                        </a>
                     </div>
                 </div>
 
                 {/* Chat Area */}
-                <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollhider">
+                <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollhider relative z-10">
                     <AnimatePresence initial={false}>
                         {messages.map((msg, index) => (
                             <motion.div

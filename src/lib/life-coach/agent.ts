@@ -20,24 +20,100 @@ function extractUrls(text: string): string[] {
     return text.match(urlRegex) || [];
 }
 
-// Helper: Analyze Content using Gemini (The "Eyes")
+// Helper: Analyze Content using Gemini (The "Eyes") - Optimized for Transcripts
 async function analyzeContentWithGemini(url: string): Promise<string> {
     try {
-        // 1. Fetch Text Content (Fallback/Baseline)
-        let textContent = "";
-        try {
-            const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 5000 });
-            const $ = cheerio.load(response.data);
-            $('script').remove(); $('style').remove();
-            textContent = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 5000);
-        } catch (e) { console.warn("Failed to scrape text:", e); }
+        let contentToAnalyze = "";
+        let contentType = "Article/Web Page";
 
-        // 2. Determine Prompt based on generic content
+        // 1. YouTube Handling (Transcript)
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            try {
+                const { YoutubeTranscript } = await import('youtube-transcript');
+                const transcriptItems = await YoutubeTranscript.fetchTranscript(url);
+                const transcriptText = transcriptItems.map(item => item.text).join(' ');
+                contentToAnalyze = transcriptText.slice(0, 8000); // Reasonable limit for context
+                contentType = "YouTube Video Transcript";
+                console.log(`Successfully fetched transcript for ${url}`);
+            } catch (err) {
+                console.warn("YouTube Transcript fetch failed, falling back to basic metadata:", err);
+                contentToAnalyze = "Could not fetch transcript. Analyze based on available metadata or title if inferred.";
+            }
+        } else if (url.includes('instagram.com')) {
+            // 2. Instagram Handling (Caption as Proxy for Transcript)
+            try {
+                // Use a specialized UA to try and get the open graph tags
+                const response = await axios.get(url, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                        'Accept-Language': 'en-US,en;q=0.5'
+                    },
+                    timeout: 5000
+                });
+                const $ = cheerio.load(response.data);
+
+                // Content Strategy: 
+                // 1. Meta Description (often contains the caption text truncated)
+                // 2. JSON-LD (Script tag with structured data)
+
+                let caption = $('meta[property="og:description"]').attr('content') ||
+                    $('meta[name="description"]').attr('content') || "";
+
+                // Clean up the "X likes, Y comments - @Username on Instagram: ..." preamble
+                caption = caption.replace(/^[0-9,.]* likes, [0-9,.]* comments - .*? on Instagram: "/, '').replace(/"$/, '');
+
+                if (caption) {
+                    contentToAnalyze = caption;
+                    contentType = "Instagram Post Caption";
+                    console.log(`Successfully fetched Instagram caption for ${url}`);
+                } else {
+                    // Fallback: Try to find the shared data (very brittle, but worth a shot for "Lite" mode)
+                    const hiddenScript = $('script:contains("csrf_token")').html();
+                    if (hiddenScript) {
+                        // Very rough regex to find "caption":{"text":"..."}
+                        const match = hiddenScript.match(/"caption":\{"text":"(.*?)"\}/);
+                        if (match && match[1]) {
+                            contentToAnalyze = match[1].replace(/\\n/g, '\n');
+                            contentType = "Instagram Post Caption (via JSON)";
+                        }
+                    }
+                }
+
+                if (!contentToAnalyze) {
+                    contentToAnalyze = "Could not extract caption. Analysis will be based on link metadata only.";
+                }
+
+            } catch (err) {
+                console.warn("Instagram fetch failed:", err);
+                contentToAnalyze = "[Instagram Scraping Failed - Content is likely private or login-walled]";
+            }
+        } else {
+            // 3. General Web Page Handling
+            try {
+                const response = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, timeout: 5000 });
+                const $ = cheerio.load(response.data);
+                $('script').remove(); $('style').remove();
+                contentToAnalyze = $('body').text().replace(/\s+/g, ' ').trim().slice(0, 5000);
+            } catch (e) {
+                console.warn("Failed to scrape text:", e);
+                contentToAnalyze = "[Scraping Failed]";
+            }
+        }
+
+        if (!contentToAnalyze || contentToAnalyze.length < 50) {
+            return `[Could not retrieve meaningful content from ${url}]`;
+        }
+
+        // 3. Determine Prompt based on generic content
         const analysisPrompt = `
         You are an expert Content Analyst for a Life Coach.
-        Analyze this content from: ${url}
+        Analyze this ${contentType} from: ${url}
         
-        Extracted Text Preview: "${textContent.slice(0, 500)}..."
+        Content Preview: "${contentToAnalyze.slice(0, 200)}..."
+        
+        [Full Content Provided Below]
+        ${contentToAnalyze}
 
         Your Goal:
         1. Identify the core advice/claims.
@@ -48,7 +124,7 @@ async function analyzeContentWithGemini(url: string): Promise<string> {
         Return a concise structured summary.
         `;
 
-        // 3. Use Gemini 2.0 Flash Exp for fast, multimodal-ready analysis
+        // 3. Use Gemini 2.0 Flash Exp for fast analysis
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
         const result = await model.generateContent(analysisPrompt);
         return result.response.text();
