@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-});
+import { generateLifeCoachResponse } from '@/lib/life-coach/agent';
 
 export async function POST(req: Request) {
     try {
@@ -27,18 +23,9 @@ export async function POST(req: Request) {
         // Get user context (Mocked for now)
         const userContext = "User is feeling slightly stressed but productive.";
 
-        // Generate AI Response
-        const response = await anthropic.messages.create({
-            model: "claude-sonnet-4-5-20250929", // Or latest available
-            max_tokens: 150,
-            system: `You are Serenity, a supportive and wise AI friend. 
-            The user is chatting with you via WhatsApp. 
-            Keep your responses concise (under 2 sentences), warm, and empathetic.
-            Context: ${userContext}`,
-            messages: [{ role: "user", content: message }],
-        });
-
-        const aiText = response.content[0].type === 'text' ? response.content[0].text : "I'm here for you.";
+        // Generate AI Response using Life Coach Agent
+        // History could be fetched from DB strictly, but here we pass empty or minimal
+        const aiText = await generateLifeCoachResponse(message, [], userContext);
 
         // Send reply back directly via Twilio API
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
